@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kỳ Lân Gõ Phím</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap&subset=vietnamese">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">🦄 <span>Kỳ Lân Gõ Phím</span></div>
+    <div class="top-right">
+      <div class="gem-pill">💎 <span id="gemCount">0</span></div>
+      <button class="icon-btn" id="btnVoice" title="Bật/tắt giọng nói">🔊</button>
+      <button class="icon-btn" id="btnMusic" title="Bật/tắt nhạc">🎵</button>
+    </div>
+  </header>
+
+  <!-- TRANG CHỦ -->
+  <section class="screen" id="scr-home">
+    <div class="home-card">
+      <canvas id="homeCanvas" width="420" height="260"></canvas>
+      <h1>Kỳ Lân Gõ Phím</h1>
+      <p class="sub" id="homeHello">Cùng bạn nhỏ phiêu lưu qua 5 vương quốc và học gõ 10 ngón!</p>
+      <div class="home-buttons">
+        <button class="btn big pink" id="btnPlay">▶ Chơi ngay</button>
+        <button class="btn purple" id="btnWardrobe">👗 Tủ đồ</button>
+        <button class="btn mint" id="btnParent">👨‍👩‍👧 Góc bố mẹ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- NHẬP TÊN -->
+  <section class="screen" id="scr-name">
+    <div class="panel narrow center">
+      <div class="big-emoji">🦄</div>
+      <h2>Xin chào! Bé tên là gì nhỉ?</h2>
+      <input id="nameInput" maxlength="14" placeholder="Tên của bé" autocomplete="off">
+      <button class="btn big pink" id="btnNameOk">Tiếp tục ▶</button>
+      <p class="hint-text">Giọng nói sẽ gọi tên bé khi chơi 💕</p>
+    </div>
+  </section>
+
+  <!-- BẢN ĐỒ -->
+  <section class="screen" id="scr-map">
+    <div class="bar">
+      <button class="btn small" data-go="home">⬅ Trang chủ</button>
+      <h2>Bản đồ phiêu lưu</h2>
+      <button class="btn small mint" id="btnPractice">💪 Luyện phím yếu</button>
+    </div>
+    <div id="mapWorlds" class="worlds"></div>
+  </section>
+
+  <!-- GIỚI THIỆU MÀN -->
+  <section class="screen" id="scr-intro">
+    <div class="panel">
+      <div class="intro-head">
+        <div>
+          <div class="world-tag" id="introWorld"></div>
+          <h2 id="introTitle"></h2>
+        </div>
+        <div class="intro-keys" id="introKeys"></div>
+      </div>
+      <p class="intro-text" id="introText"></p>
+      <div class="posture" id="posture">
+        <div>🪑 <b>Ngồi thẳng lưng</b><br>chân chạm sàn</div>
+        <div>👀 <b>Mắt nhìn màn hình</b><br>không nhìn bàn phím</div>
+        <div>✋ <b>Tay ở hàng phím nhà</b><br>sờ gờ ở F và J</div>
+        <div>⏰ <b>Chơi 15–20 phút</b><br>rồi nghỉ mắt</div>
+      </div>
+      <div class="kb-area">
+        <div class="hand-slot" id="introHandL"></div>
+        <div id="introKb"></div>
+        <div class="hand-slot" id="introHandR"></div>
+      </div>
+      <div class="row-buttons">
+        <button class="btn" data-go="map">⬅ Bản đồ</button>
+        <button class="btn purple" id="btnReplayIntro">🔊 Nghe lại</button>
+        <button class="btn big pink" id="btnStart">Bắt đầu ▶ <small>(Enter)</small></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHƠI -->
+  <section class="screen" id="scr-game">
+    <div class="game-bar">
+      <button class="btn small" id="btnPause">⏸ Tạm dừng <small>(Esc)</small></button>
+      <div class="game-title" id="gameTitle"></div>
+      <div class="mode-tag" id="gameMode"></div>
+    </div>
+    <div class="canvas-wrap"><canvas id="gameCanvas" width="960" height="400"></canvas></div>
+    <div class="kb-area">
+      <div class="hand-slot" id="gameHandL"></div>
+      <div id="gameKb"></div>
+      <div class="hand-slot" id="gameHandR"></div>
+    </div>
+  </section>
+
+  <!-- KẾT QUẢ -->
+  <section class="screen" id="scr-result">
+    <div class="panel narrow center">
+      <h2 id="resTitle"></h2>
+      <div class="stars" id="resStars"></div>
+      <div class="res-grid">
+        <div><span id="resAcc"></span><small>Chính xác</small></div>
+        <div><span id="resWpm"></span><small>Từ / phút</small></div>
+        <div><span id="resCombo"></span><small>Combo cao nhất</small></div>
+        <div><span id="resGems"></span><small>Kim cương</small></div>
+      </div>
+      <p class="res-msg" id="resMsg"></p>
+      <div class="row-buttons">
+        <button class="btn" data-go="map">🗺 Bản đồ</button>
+        <button class="btn purple" id="btnRetry">↻ Chơi lại</button>
+        <button class="btn big pink" id="btnNext">Màn tiếp ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TỦ ĐỒ -->
+  <section class="screen" id="scr-wardrobe">
+    <div class="bar">
+      <button class="btn small" data-go="home">⬅ Trang chủ</button>
+      <h2>Tủ đồ công chúa</h2>
+      <div></div>
+    </div>
+    <div class="wardrobe">
+      <div class="preview"><canvas id="wardrobeCanvas" width="300" height="300"></canvas></div>
+      <div class="shop">
+        <div class="tabs" id="shopTabs"></div>
+        <div class="items" id="shopItems"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GÓC BỐ MẸ -->
+  <section class="screen" id="scr-parent">
+    <div class="bar">
+      <button class="btn small" data-go="home">⬅ Trang chủ</button>
+      <h2>Góc bố mẹ</h2>
+      <div></div>
+    </div>
+    <div class="parent">
+      <div class="cards" id="parentCards"></div>
+      <div class="panel">
+        <h3>Tiến bộ 15 lượt gần nhất</h3>
+        <div class="chart" id="parentChart"></div>
+      </div>
+      <div class="panel">
+        <h3>Bản đồ nhiệt bàn phím <small>(rê chuột lên phím để xem chi tiết)</small></h3>
+        <div id="heatKb"></div>
+        <div class="legend"><span class="lg g"></span>≥95% <span class="lg y"></span>85–95% <span class="lg r"></span>&lt;85% <span class="lg n"></span>chưa đủ dữ liệu</div>
+        <p id="parentAdvice" class="advice"></p>
+      </div>
+      <div class="panel settings">
+        <h3>Cài đặt</h3>
+        <label><input type="checkbox" id="setVoice"> Giọng nói hướng dẫn</label>
+        <label>Tốc độ giọng nói <input type="range" id="setRate" min="0.7" max="1.3" step="0.05"></label>
+        <label><input type="checkbox" id="setMusic"> Nhạc nền</label>
+        <label><input type="checkbox" id="setSfx"> Hiệu ứng âm thanh</label>
+        <label><input type="checkbox" id="setRelax"> Chế độ thư giãn (tắt chạy tự động & trái tim ở màn thử thách)</label>
+        <label>Nhắc nghỉ giải lao sau
+          <select id="setBreak"><option value="10">10 phút</option><option value="15">15 phút</option><option value="20">20 phút</option><option value="0">Không nhắc</option></select>
+        </label>
+        <label>Tên của bé <input id="setName" maxlength="14"></label>
+        <p class="hint-text" id="voiceStatus"></p>
+        <div class="row-buttons left">
+          <button class="btn small purple" id="btnTestVoice">🔊 Thử giọng nói</button>
+          <button class="btn small danger" id="btnReset">Xoá toàn bộ tiến trình</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Phương pháp luyện tập trong game</h3>
+        <ul class="tips">
+          <li><b>Chính xác trước, tốc độ sau:</b> 4 thế giới đầu nhân vật luôn đứng chờ bé – không áp lực thời gian.</li>
+          <li><b>Mỗi màn chỉ 2 phím mới</b>, trộn 60% phím mới + 40% phím cũ để ôn lại ngắt quãng.</li>
+          <li><b>Thứ tự học:</b> hàng phím nhà → G/H → hàng trên → hàng dưới → từ → câu → tốc độ.</li>
+          <li><b>Gợi ý đúng ngón:</b> khi bé gõ sai 2 lần hoặc lưỡng lự 5 giây, giọng nói nhắc phím và ngón cần dùng.</li>
+          <li><b>Luyện phím yếu:</b> game tự tìm những phím bé hay sai/chậm để tạo bài luyện riêng.</li>
+          <li><b>Khuyến nghị:</b> 15–20 phút/ngày, 5 ngày/tuần. Đừng che bàn phím ngay – để bé tự bỏ nhìn dần.</li>
+          <li><b>Bộ gõ tiếng Việt:</b> hãy tắt Unikey/EVKey (chuyển sang chế độ E) khi chơi.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal hidden" id="modal"><div class="modal-box" id="modalBox"></div></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/render.js"></script>
+<script src="js/keyboard.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
