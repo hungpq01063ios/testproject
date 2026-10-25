@@ -205,6 +205,8 @@ export class Board3D {
       this.pins[idx] = { g, head, phase: Math.random() * 6 };
     }
 
+    this._declutterPins(0.2);
+
     // Mô hình địa danh thu nhỏ
     this._landmarks();
 
@@ -222,6 +224,22 @@ export class Board3D {
     };
     mk('chest', 0.2, 0.78, 'chest', '#0E7C66');
     mk('chance', 0.8, 0.78, 'chance', '#5b2a86');
+  }
+
+  // Đẩy các ghim gần nhau ra xa đủ khoảng cách tối thiểu để không ghim nào bị che
+  _declutterPins(minD) {
+    const list = Object.values(this.pins).map(p => p.g.position);
+    for (let it = 0; it < 60; it++) {
+      let moved = false;
+      for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+        const a = list[i], b = list[j], dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
+        if (d >= minD) continue;
+        const ang = d > 1e-4 ? Math.atan2(dz, dx) : (i * 2.399), push = (minD - d) / 2;
+        a.x -= Math.cos(ang) * push; a.z -= Math.sin(ang) * push; b.x += Math.cos(ang) * push; b.z += Math.sin(ang) * push;
+        moved = true;
+      }
+      if (!moved) break;
+    }
   }
 
   _cardBack(art, color) {
@@ -267,13 +285,15 @@ export class Board3D {
     }
     hl.position.copy(at(108.7, 20.3)); this.scene.add(hl);
 
-    // Cầu Rồng (Đà Nẵng) — thân rồng uốn lượn vàng
-    const pts = []; for (let i = 0; i <= 40; i++) { const t = i / 40; pts.push(new THREE.Vector3(t * 1.4 - 0.7, 0.05 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.25, 0)); }
-    const dragon = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 80, 0.035, 8), gold);
+    // Cầu Rồng (Đà Nẵng) — thân rồng vàng uốn lượn trên mặt cầu, đặt sát bờ biển Đà Nẵng
+    const pts = []; for (let i = 0; i <= 40; i++) { const t = i / 40; pts.push(new THREE.Vector3(t * 1.0 - 0.5, 0.04 + Math.abs(Math.sin(t * Math.PI * 2.5)) * 0.2 + (t > 0.9 ? (t - 0.9) * 0.8 : 0), 0)); }
+    const dragon = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 80, 0.028, 8), gold);
     dragon.castShadow = true;
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 10), gold); head.scale.set(1.5, 1, 1); head.position.set(0.75, 0.12, 0);
-    const dg = new THREE.Group(); dg.add(dragon, head); dg.rotation.y = -0.6;
-    dg.position.copy(at(109.9, 17.6)); this.scene.add(dg);
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.03, 0.12), new THREE.MeshStandardMaterial({ color: 0x8a90a6, roughness: 0.6 }));
+    deck.position.y = 0.03; deck.castShadow = true;
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 10), gold); head.scale.set(1.6, 1, 1); head.position.set(0.55, 0.16, 0);
+    const dg = new THREE.Group(); dg.add(deck, dragon, head); dg.rotation.y = -1.0;
+    dg.position.copy(at(109.0, 16.4)); this.scene.add(dg);
     this.dragonHead = head;
 
     // Thuyền buồm nhỏ trôi trên Biển Đông

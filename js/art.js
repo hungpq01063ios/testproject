@@ -293,39 +293,78 @@ const SCENES = {
     for (let i = 0; i < 5; i++) palm(c, w * (0.08 + i * 0.12), h * 0.78, h * 0.16, 0.2);
   },
   dragonbridge(c, w, h) {
-    sky(c, w, h, '#0b1640', '#3b2a6b', 0.7); stars(c, w, h * 0.5, 60, 3); moon(c, w * 0.85, h * 0.15, w * 0.04);
-    for (let i = 0; i < 12; i++) { const bw = w * 0.07, bh = h * (0.08 + ((i * 53) % 13) / 60); c.fillStyle = '#1a1f3d'; c.fillRect(i * w * 0.085, h * 0.6 - bh, bw, bh); c.fillStyle = 'rgba(255,220,120,0.8)'; for (let r = 0; r < 6; r++) c.fillRect(i * w * 0.085 + 3 + (r % 2) * bw * 0.5, h * 0.6 - bh + 4 + Math.floor(r / 2) * 8, 3, 3); }
-    water(c, w, h, h * 0.6, '#2b2f6b', '#0a0f2a', 5);
-    // thân rồng lượn sóng
-    c.strokeStyle = '#ffcc33'; c.lineWidth = h * 0.035; c.lineCap = 'round'; c.shadowColor = '#ffb300'; c.shadowBlur = w * 0.04;
-    c.beginPath(); c.moveTo(w * 0.02, h * 0.62);
-    for (let x = 0; x <= w * 0.78; x += w / 60) c.lineTo(x, h * 0.55 - Math.abs(Math.sin(x / w * Math.PI * 3)) * h * 0.18);
-    c.stroke(); c.shadowBlur = 0;
-    // đầu rồng + lửa
-    const hx = w * 0.8, hy = h * 0.42;
-    c.fillStyle = '#ffcc33'; c.beginPath(); c.ellipse(hx, hy, w * 0.05, h * 0.035, -0.3, 0, 7); c.fill();
-    c.fillStyle = rg(c, hx + w * 0.12, hy - h * 0.04, 0, w * 0.15, [[0, '#fff3b0'], [0.4, '#ff9800'], [1, 'rgba(255,60,0,0)']]);
-    c.beginPath(); c.ellipse(hx + w * 0.12, hy - h * 0.04, w * 0.15, h * 0.06, -0.3, 0, 7); c.fill();
-    c.fillStyle = '#e8eaf6'; c.fillRect(0, h * 0.62, w * 0.8, h * 0.012);
-    c.fillStyle = 'rgba(255,200,80,0.25)'; c.fillRect(0, h * 0.64, w * 0.8, h * 0.2);
+    sky(c, w, h, '#0b1640', '#3b2a6b', 0.7); stars(c, w, h * 0.45, 60, 3); moon(c, w * 0.12, h * 0.14, w * 0.035);
+    // thành phố hai bờ sông Hàn
+    for (let i = 0; i < 13; i++) { const bw = w * 0.065, bh = h * (0.07 + ((i * 53) % 13) / 70); c.fillStyle = '#1a1f3d'; c.fillRect(i * w * 0.08, h * 0.56 - bh, bw, bh); c.fillStyle = 'rgba(255,220,120,0.75)'; for (let r = 0; r < 6; r++) c.fillRect(i * w * 0.08 + 3 + (r % 2) * bw * 0.5, h * 0.56 - bh + 4 + Math.floor(r / 2) * 8, 3, 3); }
+    water(c, w, h, h * 0.56, '#2b2f6b', '#0a0f2a', 5);
+    const deck = h * 0.62, x0 = w * 0.04, x1 = w * 0.74;
+    // thân rồng: các vòm thép uốn lượn, chân vòm chạm mặt cầu
+    const body = (yOf, alpha) => {
+      c.save(); c.globalAlpha = alpha; c.lineCap = 'round'; c.lineJoin = 'round';
+      c.beginPath();
+      for (let k = 0; k <= 80; k++) { const t = k / 80, x = x0 + (x1 - x0) * t; const y = yOf(deck - Math.abs(Math.sin(t * Math.PI * 2.5)) * h * 0.2 - (t > 0.9 ? (t - 0.9) * h * 1.2 : 0)); k ? c.lineTo(x, y) : c.moveTo(x, y); }
+      c.strokeStyle = '#b8860b'; c.lineWidth = h * 0.045; c.stroke();
+      c.strokeStyle = '#ffd54f'; c.lineWidth = h * 0.028; c.shadowColor = '#ffb300'; c.shadowBlur = alpha > 0.5 ? w * 0.03 : 0; c.stroke();
+      c.shadowBlur = 0; c.strokeStyle = '#fff3c4'; c.lineWidth = h * 0.006; c.setLineDash([h * 0.012, h * 0.018]); c.stroke();
+      c.restore();
+    };
+    body(y => 2 * deck + h * 0.03 - y, 0.25); // bóng phản chiếu dưới sông
+    // mặt cầu
+    c.fillStyle = '#d7dbe8'; c.fillRect(0, deck, w, h * 0.022); c.fillStyle = '#5c6380'; c.fillRect(0, deck + h * 0.022, w, h * 0.02);
+    for (let i = 0; i < 12; i++) { const x = i * w / 11; c.fillStyle = '#5c6380'; c.fillRect(x - 2, deck + h * 0.04, 4, h * 0.06); c.fillStyle = '#fff2b0'; c.beginPath(); c.arc(x, deck - h * 0.01, 2.5, 0, 7); c.fill(); }
+    body(y => y, 1);
+    // đuôi rồng xoắn
+    c.strokeStyle = '#ffd54f'; c.lineWidth = h * 0.02; c.lineCap = 'round'; c.beginPath(); c.moveTo(x0, deck); c.quadraticCurveTo(x0 - w * 0.04, deck - h * 0.08, x0 + w * 0.01, deck - h * 0.1); c.stroke();
+    // đầu rồng ngẩng cao phun lửa
+    const hx = x1 + w * 0.035, hy = deck - h * 0.3;
+    c.fillStyle = '#ffcc33'; c.beginPath(); c.moveTo(hx - w * 0.04, hy + h * 0.03); c.quadraticCurveTo(hx - w * 0.02, hy - h * 0.06, hx + w * 0.04, hy - h * 0.02); c.lineTo(hx + w * 0.06, hy + h * 0.005); c.lineTo(hx + w * 0.02, hy + h * 0.025); c.lineTo(hx + w * 0.05, hy + h * 0.045); c.quadraticCurveTo(hx, hy + h * 0.06, hx - w * 0.04, hy + h * 0.03); c.fill();
+    c.strokeStyle = '#ffcc33'; c.lineWidth = h * 0.01; c.beginPath(); c.moveTo(hx - w * 0.01, hy - h * 0.03); c.lineTo(hx - w * 0.05, hy - h * 0.09); c.moveTo(hx + w * 0.005, hy - h * 0.035); c.lineTo(hx - w * 0.025, hy - h * 0.1); c.stroke();
+    c.fillStyle = '#c62828'; c.beginPath(); c.arc(hx + w * 0.015, hy - h * 0.012, h * 0.008, 0, 7); c.fill();
+    const fx = hx + w * 0.06, fy = hy + h * 0.02;
+    c.strokeStyle = '#ffd54f'; c.lineWidth = h * 0.028; c.lineCap = 'round'; c.beginPath(); c.moveTo(x1, deck - h * 0.32); c.quadraticCurveTo(x1 + w * 0.01, hy - h * 0.02, hx - w * 0.03, hy + h * 0.02); c.stroke();
+    c.fillStyle = rg(c, fx + w * 0.1, fy, 0, w * 0.13, [[0, '#fffbe0'], [0.35, '#ffb300'], [0.7, 'rgba(255,87,34,0.8)'], [1, 'rgba(255,40,0,0)']]);
+    c.beginPath(); c.moveTo(fx, fy - h * 0.01); c.quadraticCurveTo(fx + w * 0.12, fy - h * 0.09, fx + w * 0.22, fy - h * 0.03); c.quadraticCurveTo(fx + w * 0.14, fy + h * 0.02, fx + w * 0.22, fy + h * 0.07); c.quadraticCurveTo(fx + w * 0.1, fy + h * 0.06, fx, fy + h * 0.01); c.fill();
   },
   goldenbridge(c, w, h) {
-    sky(c, w, h, '#b3d7ee', '#f0f6fa', 0.6);
-    ridge(c, w, h, h * 0.45, h * 0.15, '#7d9fa8', 12, 4);
-    c.fillStyle = 'rgba(255,255,255,0.7)'; c.fillRect(0, h * 0.42, w, h * 0.08);
-    ridge(c, w, h, h * 0.62, h * 0.12, '#3d6b4a', 14, 5);
-    // hai bàn tay đá
-    const hand = (x) => {
-      c.fillStyle = lg(c, x - w * 0.08, 0, x + w * 0.08, 0, [[0, '#6d6a62'], [0.5, '#9a958a'], [1, '#5e5b55']]);
-      c.beginPath(); c.moveTo(x - w * 0.07, h); c.lineTo(x - w * 0.06, h * 0.68);
-      for (let k = 0; k < 4; k++) { const fx = x - w * 0.06 + k * w * 0.04; c.quadraticCurveTo(fx + w * 0.005, h * (0.5 - (k === 1 || k === 2 ? 0.03 : 0)), fx + w * 0.02, h * 0.6); }
-      c.lineTo(x + w * 0.08, h); c.fill();
-      c.strokeStyle = 'rgba(70,110,60,0.6)'; c.lineWidth = 2; for (let k = 0; k < 6; k++) { c.beginPath(); c.moveTo(x - w * 0.05 + k * w * 0.02, h * 0.75); c.lineTo(x - w * 0.04 + k * w * 0.02, h * 0.9); c.stroke(); }
+    sky(c, w, h, '#a9cfe8', '#eef5f8', 0.6);
+    ridge(c, w, h, h * 0.38, h * 0.14, '#8fb0b8', 12, 4);
+    ridge(c, w, h, h * 0.52, h * 0.12, '#4f7e5c', 14, 5);
+    c.fillStyle = 'rgba(255,255,255,0.65)'; c.fillRect(0, h * 0.4, w, h * 0.07);
+    ridge(c, w, h, h * 0.78, h * 0.08, '#2f5e3d', 15, 6);
+    // bàn tay đá rêu phong nâng cầu
+    const deckY = x => h * (0.5 + 0.06 * Math.sin((x / w) * Math.PI));
+    const stone = (x0, x1) => lg(c, x0, 0, x1, 0, [[0, '#5e5a52'], [0.5, '#9b968b'], [1, '#55524b']]);
+    const hand = (cx, flip) => {
+      const top = deckY(cx), pw = w * 0.15;
+      c.fillStyle = stone(cx - pw, cx + pw);
+      c.beginPath(); c.moveTo(cx - pw * 0.55, h); c.lineTo(cx - pw * 0.6, top + h * 0.2);
+      c.quadraticCurveTo(cx - pw * 0.75, top + h * 0.1, cx - pw * 0.7, top + h * 0.04);
+      c.lineTo(cx + pw * 0.7, top + h * 0.04); c.quadraticCurveTo(cx + pw * 0.75, top + h * 0.1, cx + pw * 0.6, top + h * 0.2);
+      c.lineTo(cx + pw * 0.55, h); c.closePath(); c.fill();
+      // ngón cái
+      c.beginPath(); const tx = cx + (flip ? -1 : 1) * pw * 0.62; c.moveTo(tx, top + h * 0.17); c.quadraticCurveTo(tx + (flip ? -1 : 1) * pw * 0.35, top + h * 0.1, tx + (flip ? -1 : 1) * pw * 0.25, top - h * 0.01); c.lineTo(tx, top + h * 0.06); c.fill();
+      c.strokeStyle = 'rgba(70,110,60,0.55)'; c.lineWidth = 2;
+      for (let k = 0; k < 8; k++) { const x = cx - pw * 0.5 + k * pw * 0.14; c.beginPath(); c.moveTo(x, top + h * 0.12 + (k % 3) * h * 0.04); c.lineTo(x + 2, h); c.stroke(); }
+      return { cx, top, pw };
     };
-    hand(w * 0.32); hand(w * 0.62);
-    c.strokeStyle = '#f2c230'; c.lineWidth = h * 0.04; c.shadowColor = '#ffd54f'; c.shadowBlur = 12;
-    c.beginPath(); c.moveTo(-w * 0.05, h * 0.55); c.quadraticCurveTo(w * 0.45, h * 0.62, w * 1.05, h * 0.5); c.stroke(); c.shadowBlur = 0;
-    c.strokeStyle = '#c4921c'; c.lineWidth = 2; c.beginPath(); c.moveTo(-w * 0.05, h * 0.53); c.quadraticCurveTo(w * 0.45, h * 0.6, w * 1.05, h * 0.48); c.stroke();
+    const hands = [hand(w * 0.3, true), hand(w * 0.66, false)];
+    // mặt cầu vàng (nằm trong lòng bàn tay)
+    c.lineCap = 'butt';
+    c.strokeStyle = '#c4921c'; c.lineWidth = h * 0.05; c.beginPath(); for (let x = -10; x <= w + 10; x += 8) { const y = deckY(x) + h * 0.012; x < 0 ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke();
+    c.strokeStyle = '#f6c945'; c.lineWidth = h * 0.03; c.shadowColor = '#ffd54f'; c.shadowBlur = 10; c.beginPath(); for (let x = -10; x <= w + 10; x += 8) { const y = deckY(x); x < 0 ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke(); c.shadowBlur = 0;
+    c.strokeStyle = '#8a6412'; c.lineWidth = 1.5; for (let x = 0; x <= w; x += w / 40) { c.beginPath(); c.moveTo(x, deckY(x) - h * 0.015); c.lineTo(x, deckY(x) - h * 0.045); c.stroke(); }
+    c.beginPath(); for (let x = 0; x <= w; x += 8) { const y = deckY(x) - h * 0.045; x ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke();
+    // bốn ngón tay ôm lấy mép cầu (vẽ sau để nằm phía trước)
+    for (const { cx, top, pw } of hands) {
+      for (let k = 0; k < 4; k++) {
+        const fx = cx - pw * 0.52 + k * pw * 0.35, fwid = pw * 0.3;
+        c.fillStyle = stone(fx - fwid / 2, fx + fwid / 2);
+        c.beginPath(); c.moveTo(fx - fwid / 2, top + h * 0.06); c.lineTo(fx - fwid / 2, top - h * 0.02); c.quadraticCurveTo(fx, top - h * (0.07 + (k === 1 || k === 2 ? 0.02 : 0)), fx + fwid / 2, top - h * 0.02); c.lineTo(fx + fwid / 2, top + h * 0.06); c.fill();
+        c.strokeStyle = 'rgba(40,40,35,0.45)'; c.lineWidth = 1; c.stroke();
+      }
+    }
+    // người đi dạo trên cầu
+    for (let i = 0; i < 6; i++) { const x = w * (0.08 + i * 0.16), y = deckY(x) - h * 0.012; c.fillStyle = ['#e53935', '#1e88e5', '#fdd835', '#43a047'][i % 4]; c.fillRect(x, y - h * 0.035, w * 0.008, h * 0.03); c.beginPath(); c.arc(x + w * 0.004, y - h * 0.042, w * 0.006, 0, 7); c.fill(); }
   },
   lanterns(c, w, h) {
     sky(c, w, h, '#140c2e', '#3a1f55', 0.6); stars(c, w, h * 0.3, 30, 9); moon(c, w * 0.15, h * 0.12, w * 0.04);

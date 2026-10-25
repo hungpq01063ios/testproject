@@ -120,7 +120,7 @@ export const SPACES = [
     ],
     quiz: { q: 'Phú Quốc thường được mệnh danh là gì?', a: ['Đảo Ngọc', 'Đảo Vàng', 'Đảo Ngà'], c: 0 } },
 
-  { type: 'rail', name: 'Sân bay Đà Nẵng', province: 'Đà Nẵng', price: 200, art: 'plane', sound: 'plane', fx: 'sparkle',
+  { type: 'rail', name: 'Sân bay Đà\u00a0Nẵng', province: 'Đà Nẵng', price: 200, art: 'plane', sound: 'plane', fx: 'sparkle',
     facts: [
       'Sân bay quốc tế Đà Nẵng là cửa ngõ hàng không lớn thứ ba của Việt Nam.',
       'Nhà ga quốc tế T2 nổi bật với thiết kế mô phỏng những con sóng biển.',
@@ -147,7 +147,7 @@ export const SPACES = [
     ],
     quiz: { q: 'Cầu Rồng Đà Nẵng phun lửa vào thời điểm nào?', a: ['Mỗi sáng', '21h tối cuối tuần', 'Chỉ dịp Tết'], c: 1 } },
 
-  { type: 'property', group: 'orange', name: 'Cầu Vàng Bà Nà', province: 'Đà Nẵng', price: 200,
+  { type: 'property', group: 'orange', name: 'Cầu Vàng Bà\u00a0Nà', province: 'Đà Nẵng', price: 200,
     rent: [16, 80, 220, 600, 800, 1000], art: 'goldenbridge', sound: 'highland', fx: 'sparkle',
     facts: [
       'Cầu Vàng nằm ở độ cao khoảng 1.400 mét trên núi Bà Nà, mở cửa năm 2018.',
