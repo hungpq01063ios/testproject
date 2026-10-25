@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cờ Tỷ Phú Việt Nam</title>
+  <meta name="description" content="Cờ Tỷ Phú phiên bản Việt Nam 3D — khám phá 28 địa danh nổi tiếng, Ngân hàng biết nói tiếng Việt.">
+  <meta name="theme-color" content="#1a0f2e">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+  { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body>
+  <div id="scene"></div>
+
+  <!-- HUD trong trận -->
+  <div id="hud">
+    <header id="topbar">
+      <div class="brand"><span class="star">★</span> CỜ TỶ PHÚ <b>VIỆT NAM</b></div>
+      <div class="meta"><span id="round">Vòng 1</span><span id="bank-stock" title="Nhà / khách sạn còn trong ngân hàng"></span></div>
+      <nav class="tools">
+        <button id="btn-view" title="Toàn cảnh bàn cờ">🗺️</button>
+        <button id="btn-cam" title="Máy quay">🎥</button>
+        <button id="btn-voice" title="Giọng nói Ngân hàng">🗣️</button>
+        <button id="btn-music" title="Nhạc nền">🎵</button>
+        <button id="btn-sound" title="Hiệu ứng âm thanh">🔊</button>
+        <button id="btn-settings" title="Cài đặt">⚙️</button>
+        <button id="btn-help" title="Luật chơi">❓</button>
+        <button id="btn-full" title="Toàn màn hình">⛶</button>
+      </nav>
+    </header>
+    <aside id="players"></aside>
+    <div id="banker">
+      <div class="avatar" aria-hidden="true"><span>🏦</span></div>
+      <div class="bubble"><small>NGÂN HÀNG</small><p id="banker-text">Xin chào!</p></div>
+    </div>
+    <div id="dice-result"></div>
+    <div id="actions"></div>
+  </div>
+
+  <!-- Màn hình thiết lập -->
+  <section id="setup">
+    <div class="setup-bg"></div>
+    <div class="setup-card">
+      <div class="logo">
+        <div class="logo-top">CỜ TỶ PHÚ</div>
+        <div class="logo-bottom"><span>★</span> VIỆT NAM <span>★</span></div>
+        <p class="tagline">Hành trình khám phá 28 địa danh trên dải đất hình chữ S</p>
+      </div>
+      <div id="player-rows"></div>
+      <div class="setup-row">
+        <button id="add-player" class="btn">＋ Thêm người chơi</button>
+      </div>
+      <div class="setup-opts">
+        <label>Tiền khởi đầu
+          <select id="opt-money"><option value="1000">1 tỷ</option><option value="1500" selected>1,5 tỷ (chuẩn)</option><option value="2000">2 tỷ</option></select>
+        </label>
+        <label>Giới hạn vòng
+          <select id="opt-rounds"><option value="0">Không giới hạn</option><option value="15">15 vòng (~30 phút)</option><option value="25" selected>25 vòng (~45 phút)</option><option value="40">40 vòng</option></select>
+        </label>
+        <label>Đố vui địa lý
+          <select id="opt-quiz"><option value="1" selected>Bật (+20 Tr khi đúng)</option><option value="0">Tắt</option></select>
+        </label>
+      </div>
+      <div class="setup-actions">
+        <button id="btn-resume" class="btn" hidden>↺ Tiếp tục ván đã lưu</button>
+        <button id="btn-start" class="btn gold big">🎲 BẮT ĐẦU</button>
+      </div>
+      <p class="voice-note" id="voice-note"></p>
+    </div>
+  </section>
+
+  <div id="loading"><div class="spin-drum"></div><p>Đang dựng bàn cờ...</p></div>
+  <div id="toasts"></div>
+  <div id="tooltip"></div>
+  <div id="modal-root"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

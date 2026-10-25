@@ -1,0 +1,1 @@
+{"type":"module","name":"co-ty-phu-viet-nam","private":true,"scripts":{"test":"node tests/simulate.mjs 300","start":"python3 -m http.server 8080"}}
