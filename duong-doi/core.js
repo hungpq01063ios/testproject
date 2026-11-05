@@ -121,7 +121,7 @@
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
-  const roll = (st) => 1 + Math.floor(rand(st) * 10);
+  const roll = (st) => { st.rolls = (st.rolls || 0) + 1; return 1 + Math.floor(rand(st) * 10); };
   function pick(st, arr, n) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand(st) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
@@ -159,7 +159,7 @@
         career: null, salary: 0, degree: false, married: false, kids: 0, house: null,
         retired: false, forkPick: null, branches: [],
       })),
-      log: [], events: [], final: null,
+      log: [], events: [], final: null, spinFor: null, rolls: 0, playerRolls: 0,
     };
     log(st, `Ván mới với ${names.length} người chơi. ${names[0]} đi trước.`);
     return st;
@@ -167,7 +167,8 @@
 
   function spin(st, forced) {
     if (st.phase !== 'spin') return null;
-    const v = forced || roll(st);
+    const v = forced || roll(st); if (forced) st.rolls++;
+    st.playerRolls++;
     st.lastSpin = v; st.moveLeft = v; st.phase = 'moving'; st.events = []; st.result = '';
     log(st, `quay được ${v}`, cur(st));
     return v;
@@ -270,13 +271,8 @@
         return ask(st, 'job', t.stop === 'grad' ? 'Tốt nghiệp! Chọn nghề' : 'Chọn công việc đầu tiên',
           offers.map((c) => ({ label: c.name, hint: `Lương ${c.salary} tr/kỳ`, value: c })));
       }
-      case 'marry': {
-        const v = roll(st); let total = 0;
-        st.players.forEach((o) => { if (o !== p && !o.retired) { addCash(st, o, -v); total += v; } });
-        addCash(st, p, total); addStars(p, 10); p.married = true;
-        log(st, `kết hôn! Quay ${v}, mỗi người mừng ${v} tr (tổng ${total} tr), +10★`, p);
-        return done(st, `Đám cưới! Vòng quay mừng cưới ra ${v}: mỗi người chơi khác mừng ${v} tr. Nhận ${total} tr và +10★.`);
-      }
+      case 'marry':
+        return askSpin(st, 'marry', 'Đám cưới! Quay vòng mừng cưới', 'Mỗi người chơi khác mừng bạn đúng số vừa quay (triệu đồng)');
       case 'house': {
         const offers = pick(st, HOUSES, 3);
         return ask(st, 'house', 'Mua nhà?', offers.map((h) => ({ label: h.name, hint: `Giá ${h.price} tr · +${h.stars}★ · bán lại khi nghỉ hưu`, value: h }))
@@ -332,21 +328,16 @@
       }
       case 'invest': {
         if (!opt.value) { done(st, 'Bạn bỏ qua cơ hội đầu tư.'); log(st, 'bỏ qua đầu tư', p); return true; }
-        const v = roll(st); const back = v >= 7 ? 60 : v >= 4 ? 20 : 0;
-        addCash(st, p, back - 20);
-        log(st, `đầu tư 20 tr, quay ${v}, thu về ${back} tr`, p);
-        done(st, `Quay đầu tư ra ${v}: thu về ${back} tr (${money(back - 20)}).`); return true;
+        addCash(st, p, -20); log(st, 'góp 20 tr đầu tư', p);
+        askSpin(st, 'invest', 'Quay kết quả đầu tư', '7–10: nhận 60 tr · 4–6: nhận 20 tr · 1–3: mất trắng'); return true;
       }
       case 'mid': {
         if (opt.value === 'study') {
           addCash(st, p, -30); p.salary += 8; p.degree = true;
           log(st, 'học thạc sĩ: −30 tr, lương +8', p); done(st, `Học thạc sĩ: lương lên ${p.salary} tr/kỳ.`);
         } else if (opt.value === 'startup') {
-          addCash(st, p, -40); const v = roll(st);
-          if (v >= 6) { p.salary += 15; p.career = 'Nhà sáng lập'; }
-          else p.salary = Math.max(8, p.salary - 5);
-          log(st, `khởi nghiệp, quay ${v}: lương còn ${p.salary}`, p);
-          done(st, v >= 6 ? `Khởi nghiệp thành công (quay ${v})! Lương lên ${p.salary} tr/kỳ.` : `Khởi nghiệp chưa thành (quay ${v}). Lương còn ${p.salary} tr/kỳ.`);
+          addCash(st, p, -40); log(st, 'bỏ 40 tr khởi nghiệp', p);
+          askSpin(st, 'startup', 'Quay vận may khởi nghiệp', '6–10: lương +15 tr/kỳ · 1–5: lương −5 tr/kỳ');
         } else {
           addStars(p, 8); log(st, 'chọn sống chậm, +8★', p); done(st, 'Sống chậm lại: +8★.');
         }
@@ -354,6 +345,39 @@
       }
     }
     return false;
+  }
+
+  function askSpin(st, kind, title, hint) { st.phase = 'spinFor'; st.choice = null; st.spinFor = { kind, title, hint }; }
+
+  // The player spins for a pending outcome (wedding gifts, investment, startup, house resale).
+  function spinFor(st, forced) {
+    if (st.phase !== 'spinFor' || !st.spinFor) return null;
+    const v = forced || roll(st); if (forced) st.rolls++;
+    st.playerRolls++; st.lastSpin = v;
+    const p = cur(st), kind = st.spinFor.kind; st.spinFor = null;
+    log(st, `quay được ${v}`, p);
+    if (kind === 'marry') {
+      let total = 0;
+      st.players.forEach((o) => { if (o !== p && !o.retired) { addCash(st, o, -v); total += v; } });
+      addCash(st, p, total); addStars(p, 10); p.married = true;
+      log(st, `kết hôn! Mỗi người mừng ${v} tr (tổng ${total} tr), +10★`, p);
+      done(st, `Đám cưới! Vòng quay mừng cưới ra ${v}: mỗi người chơi khác mừng ${v} tr. Nhận ${total} tr và +10★.`);
+    } else if (kind === 'invest') {
+      const back = v >= 7 ? 60 : v >= 4 ? 20 : 0;
+      addCash(st, p, back);
+      log(st, `đầu tư quay ${v}, thu về ${back} tr`, p);
+      done(st, `Quay đầu tư ra ${v}: thu về ${back} tr (${money(back - 20)} so với tiền góp).`);
+    } else if (kind === 'startup') {
+      if (v >= 6) { p.salary += 15; p.career = 'Nhà sáng lập'; } else p.salary = Math.max(8, p.salary - 5);
+      log(st, `khởi nghiệp quay ${v}: lương còn ${p.salary}`, p);
+      done(st, v >= 6 ? `Khởi nghiệp thành công (quay ${v})! Lương lên ${p.salary} tr/kỳ.` : `Khởi nghiệp chưa thành (quay ${v}). Lương còn ${p.salary} tr/kỳ.`);
+    } else if (kind === 'resale') {
+      p.resaleSpin = v;
+      const k = v <= 3 ? 0.8 : v <= 7 ? 1.2 : 1.6, price = Math.round(p.house.price * k);
+      log(st, `bán ${p.house.name}: quay ${v}, giá ×${String(k).replace('.', ',')} = ${price} tr`, p);
+      done(st, `Bán ${p.house.name}: quay ${v}, giá ×${String(k).replace('.', ',')} → ${price} tr.`);
+    }
+    return v;
   }
 
   // Repay one loan early (before spinning) for LOAN_REPAY.
@@ -367,7 +391,16 @@
 
   function endTurn(st) {
     if (st.phase !== 'done') return false;
-    if (st.players.every((p) => p.retired)) { finish(st); return true; }
+    if (st.players.every((p) => p.retired)) {
+      const next = st.players.findIndex((p) => p.house && p.resaleSpin == null);
+      if (next >= 0) {
+        const p = st.players[next];
+        st.turn = next; st.lastSpin = null; st.result = ''; st.events = [];
+        askSpin(st, 'resale', `Quay giá bán ${p.house.name}`, `1–3: ×0,8 · 4–7: ×1,2 · 8–10: ×1,6 giá mua ${p.house.price} tr`);
+        return true;
+      }
+      finish(st); return true;
+    }
     let i = st.turn;
     do { i = (i + 1) % st.players.length; if (i === 0) st.round++; } while (st.players[i].retired);
     st.turn = i; st.phase = 'spin'; st.lastSpin = null; st.result = ''; st.events = [];
@@ -377,7 +410,7 @@
   function finish(st) {
     st.final = st.players.map((p) => {
       let resale = 0, resaleSpin = null;
-      if (p.house) { resaleSpin = roll(st); resale = Math.round(p.house.price * (resaleSpin <= 3 ? 0.8 : resaleSpin <= 7 ? 1.2 : 1.6)); }
+      if (p.house) { resaleSpin = p.resaleSpin; resale = Math.round(p.house.price * (resaleSpin <= 3 ? 0.8 : resaleSpin <= 7 ? 1.2 : 1.6)); }
       const debt = p.loans * LOAN_REPAY;
       const net = p.cash + resale - debt;
       return { name: p.name, color: p.color, cash: p.cash, resale, resaleSpin, debt, stars: p.stars, net, score: net + p.stars * STAR_VALUE };
@@ -386,7 +419,7 @@
     log(st, `Kết thúc! ${st.final[0].name} thắng với ${st.final[0].score} điểm đời.`);
   }
 
-  const api = { TILES, CAREERS, HOUSES, EVENTS, COLORS, START_CASH, LOAN, LOAN_REPAY, RETIRE_BONUS, STAR_VALUE, newGame, spin, step, choose, repay, endTurn, current: cur };
+  const api = { TILES, CAREERS, HOUSES, EVENTS, COLORS, START_CASH, LOAN, LOAN_REPAY, RETIRE_BONUS, STAR_VALUE, newGame, spin, spinFor, step, choose, repay, endTurn, current: cur };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.LifeCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

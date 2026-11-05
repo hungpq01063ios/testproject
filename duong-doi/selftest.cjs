@@ -93,7 +93,7 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
     if (shot) { await page.click('#endTurnBtn'); await idle(); }
 
     // ---- full game: keep clicking whatever the game offers until everyone retires ----
-    let actions = 0, choicesMade = 0;
+    let actions = 0, choicesMade = 0; const spinFors = {};
     while (actions < 3000) {
       const st = await S();
       if (st.phase === 'over') break;
@@ -101,6 +101,7 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
       if (shot && actions === 40) await page.screenshot({ path: shot, fullPage: true });
       if (st.phase === 'choice') { const n = st.choice.options.length; await page.click(`[data-choice="${actions % n}"]`); choicesMade++; }
       else if (st.phase === 'spin') await page.click('#spinBtn');
+      else if (st.phase === 'spinFor') { spinFors[st.spinFor.kind] = (spinFors[st.spinFor.kind] || 0) + 1; await page.click('#spinBtn'); }
       else if (st.phase === 'done') await page.click('#endTurnBtn');
       await idle();
     }
@@ -112,6 +113,8 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
     const vEnd = await page.evaluate(() => window.__duongdoi.view());
     const fam = end.players.map((p) => (p.married ? 1 : 0) + Math.min(3, p.kids));
     add('family-on-bike', JSON.stringify(fam) === JSON.stringify(vEnd.passengers), `passengers riding each motorbike ${JSON.stringify(vEnd.passengers)} match spouse + kids ${JSON.stringify(fam)}`);
+    add('player-spins', end.rolls === end.playerRolls && Object.keys(spinFors).length > 0,
+      `every one of ${end.rolls} spins came from a player pressing the wheel (${end.playerRolls} clicks); outcome spins: ${Object.entries(spinFors).map(([k, n]) => `${k}×${n}`).join(', ')}; automatic spins: ${end.rolls - end.playerRolls}`);
     add('no-errors', errors.length === 0, errors.length ? errors.join(' | ') : 'no script errors in the page');
   } catch (e) {
     add('run', false, String(e && e.stack || e));

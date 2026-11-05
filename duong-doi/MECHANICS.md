@@ -35,12 +35,12 @@ Mọi giá trị là **ước lượng thiết kế** (clean room: không lấy 
 | Nhà phố 4 tầng | 210 | 5 |
 | Biệt thự ven sông | 330 | 8 |
 
-Bán lại khi kết thúc: quay 1–3 ×0,8 · 4–7 ×1,2 · 8–10 ×1,6.
+Bán lại khi kết thúc: mỗi chủ nhà tự quay; 1–3 ×0,8 · 4–7 ×1,2 · 8–10 ×1,6.
 
 ## Gia đình, đầu tư, tuổi 40
-- Kết hôn: quay số v, mỗi người khác mừng v tr, +10★.
+- Kết hôn: người chơi tự quay số v, mỗi người khác mừng v tr, +10★.
 - Thêm con: −4 tr, +6★.
-- Đầu tư: góp 20 tr; quay 7–10 nhận 60, 4–6 nhận 20, 1–3 mất.
+- Đầu tư: góp 20 tr rồi tự quay; 7–10 nhận 60, 4–6 nhận 20, 1–3 mất.
 - Tuổi 40: Thạc sĩ (−30, lương +8) · Khởi nghiệp (−40; quay 6–10 lương +15, 1–5 lương −5, tối thiểu 8) · Sống chậm (+8★).
 
 ## Chấm điểm

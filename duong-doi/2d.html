@@ -387,9 +387,10 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
     busy = false; render(); save();
   }
   $('spinBtn').onclick = async () => {
-    if (busy || st.phase !== 'spin') return;
+    if (busy || (st.phase !== 'spin' && st.phase !== 'spinFor')) return;
     busy = true; render();
     const forced = window.__forceSpin; window.__forceSpin = null;
+    if (st.phase === 'spinFor') { const v = L.spinFor(st, forced); await animateWheel(v); busy = false; render(); save(); return; }
     const v = L.spin(st, forced); await animateWheel(v); await wait(FAST ? 0 : 150);
     await runMove();
   };
@@ -433,14 +434,14 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
     $('roundLbl').textContent = `Vòng ${st.round}`;
     $('turnName').textContent = p.name;
     $('turnMeta').textContent = `${p.career ? p.career + ' · ' + p.salary + ' tr/kỳ' : 'Chưa có việc'} · đang ở ô “${L.TILES[p.pos].label}”`;
-    $('spinBtn').hidden = st.phase !== 'spin' && st.phase !== 'moving';
-    $('spinBtn').disabled = busy || st.phase !== 'spin';
-    $('spinBtn').textContent = st.phase === 'moving' ? `Đang đi ${st.lastSpin} bước…` : 'Quay số';
+    $('spinBtn').hidden = !['spin', 'moving', 'spinFor'].includes(st.phase);
+    $('spinBtn').disabled = busy || (st.phase !== 'spin' && st.phase !== 'spinFor');
+    $('spinBtn').textContent = st.phase === 'moving' ? `Đang đi ${st.lastSpin} bước…` : st.phase === 'spinFor' ? 'Quay!' : 'Quay số';
     $('repayBtn').hidden = !(st.phase === 'spin' && p.loans > 0 && p.cash >= L.LOAN_REPAY);
     $('endTurnBtn').hidden = st.phase !== 'done';
     const next = st.players.length > 1 ? nextName() : '';
     $('endTurnBtn').textContent = st.players.every((q) => q.retired) ? 'Xem tổng kết' : `Chuyển lượt cho ${next}`;
-    $('result').innerHTML = st.phase === 'spin' ? `Đến lượt <strong>${esc(p.name)}</strong>. Bấm <strong>Quay số</strong>.`
+    $('result').innerHTML = st.phase === 'spinFor' && st.spinFor ? `<strong>${esc(st.spinFor.title)}</strong><br>${esc(st.spinFor.hint)}` : st.phase === 'spin' ? `Đến lượt <strong>${esc(p.name)}</strong>. Bấm <strong>Quay số</strong>.`
       : st.result ? `<strong>${st.lastSpin ? 'Quay ' + st.lastSpin + ' · ' : ''}</strong>${esc(st.result)}` : st.lastSpin ? `Quay được <strong>${st.lastSpin}</strong>.` : '';
     const ch = $('choices');
     if (st.phase === 'choice' && st.choice) {

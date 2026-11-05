@@ -27,18 +27,35 @@ Ván đang chơi được tự lưu trong trình duyệt. Mở lại trang và b
 | File | Vai trò |
 |---|---|
 | `core.js` | Logic game thuần (không phụ thuộc DOM): bàn cờ 79 ô, nghề, nhà, sự kiện, lượt chơi, chấm điểm. RNG có seed nên ván chơi tái lập được |
-| `index.html` | **Bản 3D** (Three.js): sa bàn làng quê – phố thị, công trình ở điểm dừng, quân xe máy chở cả nhà, vòng quay 3D, camera bám người chơi, pháo giấy, đồng xu, số tiền bay lên, âm thanh tổng hợp |
+| `index.html` + `app.js` | **Bản 3D** (Three.js): giao diện, quân xe máy chở cả nhà chạy theo đường cong, vòng quay 3D, camera bám người chơi, pháo giấy, đồng xu, số tiền bay lên, âm thanh tổng hợp |
+| `world.js` | Thế giới 3D dựng bằng code: đảo có địa hình, biển và sông hồ, đường lát đá uốn lượn, 7 vùng với công trình và ánh sáng riêng, cây cối, thuyền, chim, mây |
 | `2d.html` | Bản 2D nhẹ (bàn cờ SVG) cho máy yếu |
 | `vendor/` | Three.js r147 + OrbitControls (MIT), để chơi được khi không có mạng |
 | `selftest.cjs` | Self-test theo contract của Craft Anything |
 | `MECHANICS.md`, `mechanics.json` | Mọi thông số ảnh hưởng tới lối chơi |
 | `CREDITS.md` | Nguồn gốc nội dung |
 
+## Hành trình 3D
+
+| Vùng | Trên bàn cờ | Cảnh vật | Không khí |
+|---|---|---|---|
+| Hà Nội | Xuất phát → Tốt nghiệp / Nhận việc | Hồ Gươm, Tháp Rùa, cầu Thê Húc, đền Ngọc Sơn, Chùa Một Cột, Khuê Văn Các, hàng phượng đỏ, cổng làng | Buổi sáng |
+| Hội An | Kết hôn | Dãy phố vàng, dây đèn lồng, Chùa Cầu, thuyền thắp đèn trên sông | Chiều vàng, đèn lồng sáng |
+| Đà Lạt | Mua nhà | Rừng thông, đồi hoa, biệt thự Pháp, cánh hoa bay | Sương mù se lạnh |
+| Vịnh | Ngã rẽ | Đảo đá vôi, thuyền buồm nâu | |
+| Sapa / Sài Gòn | Đường gia đình / Đường sự nghiệp | Ruộng bậc thang, nhà sàn, núi Fansipan / toà tháp chọc trời, tháp có sân đỗ trực thăng, đèn đường | Trời trong / nắng trưa |
+| Bà Nà | Tuổi 40 | Cầu Vàng có đôi bàn tay đá đỡ, lâu đài, mây trong thung lũng | Mây mù |
+| Phú Quốc | Nghỉ hưu | Bãi biển, rặng dừa, cầu tàu, thuyền thúng, tháp chùa 7 tầng | Hoàng hôn, đom đóm |
+
+Khi quân xe sang vùng mới, tên vùng hiện lên và bầu trời, nắng, sương chuyển dần sang không khí của vùng đó.
+
 ## Điều khiển 3D
 
 - Kéo để xoay, cuộn/chụm hai ngón để zoom, chuột phải để dịch.
 - **Toàn cảnh / Theo người chơi**: đổi giữa nhìn cả sa bàn và camera bám người đang đi.
 - Rê chuột (hoặc chạm) vào ô để xem ô đó làm gì.
+- **Đồ hoạ: cao / nhẹ**: bản nhẹ tắt bóng đổ, giảm cây và hạt hiệu ứng cho máy yếu (mặc định trên điện thoại).
+- Mọi vòng quay đều do người chơi bấm: đi đường, mừng cưới, đầu tư, khởi nghiệp, giá bán nhà lúc kết thúc.
 
 ## Self-test (contract của Craft Anything)
 
@@ -55,6 +72,7 @@ Script mở game trong Chromium (Playwright), thiết lập 3 người chơi b�
 | `hud` | Tên, tiền, lương, ★ của mọi người chơi và thẻ lượt hiển thị đúng state |
 | `render-3d` | WebGL chạy, cảnh 3D được vẽ (đếm frame, ảnh chụp không phẳng) |
 | `family-on-bike` | Số người ngồi sau mỗi xe máy khớp vợ/chồng + con trong state |
+| `player-spins` | Mọi lần quay trong ván đều đến từ người chơi bấm vòng quay, không có lần quay tự động nào |
 | `hot-seat` | Chuyển lượt sang người 2, người 2 chọn nhánh còn lại |
 | `retire` | Chơi hết ván tới khi mọi người nghỉ hưu và màn tổng kết hiện ra |
 | `no-errors` | Không có lỗi script trong trang |
