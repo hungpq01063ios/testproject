@@ -1,0 +1,11 @@
+{
+  "name": "duong-doi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Đường Đời: a hot-seat life-path board game for 2–6 players in one browser.",
+  "scripts": {
+    "selftest": "node selftest.cjs --self-test checks/self-test.json --screenshot checks/board.png",
+    "serve": "python3 -m http.server 8080"
+  },
+  "license": "MIT"
+}

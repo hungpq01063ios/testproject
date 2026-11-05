@@ -1,0 +1,325 @@
+{
+  "version": 1,
+  "values": [
+    {
+      "name": "starting cash",
+      "value": 30,
+      "unit": "tr",
+      "group": "economy",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "loan size",
+      "value": 50,
+      "unit": "tr",
+      "group": "economy",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "loan repayment",
+      "value": 60,
+      "unit": "tr",
+      "group": "economy",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "payday landing bonus",
+      "value": 5,
+      "unit": "tr",
+      "group": "economy",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "university tuition",
+      "value": 50,
+      "unit": "tr",
+      "group": "economy",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "tax rate",
+      "value": 30,
+      "unit": "% of salary",
+      "group": "economy",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "spinner range",
+      "value": "1-10",
+      "unit": "",
+      "group": "movement",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "board tiles",
+      "value": 79,
+      "unit": "tiles",
+      "group": "movement",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "stop spaces end movement",
+      "value": true,
+      "unit": "",
+      "group": "movement",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "star value",
+      "value": 2,
+      "unit": "tr per star",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "retire bonus #1",
+      "value": 40,
+      "unit": "tr",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "retire bonus #2",
+      "value": 30,
+      "unit": "tr",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "retire bonus #3",
+      "value": 20,
+      "unit": "tr",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "retire bonus #4+",
+      "value": 10,
+      "unit": "tr",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "house resale spin 1-3",
+      "value": 0.8,
+      "unit": "x price",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "house resale spin 4-7",
+      "value": 1.2,
+      "unit": "x price",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "house resale spin 8-10",
+      "value": 1.6,
+      "unit": "x price",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "child cost",
+      "value": 4,
+      "unit": "tr",
+      "group": "family",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "child happiness",
+      "value": 6,
+      "unit": "stars",
+      "group": "family",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "wedding happiness",
+      "value": 10,
+      "unit": "stars",
+      "group": "family",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "invest stake",
+      "value": 20,
+      "unit": "tr",
+      "group": "invest",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "invest return spin 7-10",
+      "value": 60,
+      "unit": "tr",
+      "group": "invest",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "invest return spin 4-6",
+      "value": 20,
+      "unit": "tr",
+      "group": "invest",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ cơ khí salary",
+      "value": 14,
+      "unit": "tr/payday",
+      "group": "careers (basic)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Tài xế công nghệ salary",
+      "value": 12,
+      "unit": "tr/payday",
+      "group": "careers (basic)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Đầu bếp salary",
+      "value": 15,
+      "unit": "tr/payday",
+      "group": "careers (basic)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ cắt tóc salary",
+      "value": 11,
+      "unit": "tr/payday",
+      "group": "careers (basic)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nhân viên bán hàng salary",
+      "value": 13,
+      "unit": "tr/payday",
+      "group": "careers (basic)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ điện salary",
+      "value": 16,
+      "unit": "tr/payday",
+      "group": "careers (basic)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Kỹ sư phần mềm salary",
+      "value": 30,
+      "unit": "tr/payday",
+      "group": "careers (degree)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Bác sĩ salary",
+      "value": 35,
+      "unit": "tr/payday",
+      "group": "careers (degree)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Kiến trúc sư salary",
+      "value": 28,
+      "unit": "tr/payday",
+      "group": "careers (degree)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Giáo viên salary",
+      "value": 20,
+      "unit": "tr/payday",
+      "group": "careers (degree)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Kế toán salary",
+      "value": 22,
+      "unit": "tr/payday",
+      "group": "careers (degree)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Luật sư salary",
+      "value": 32,
+      "unit": "tr/payday",
+      "group": "careers (degree)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nhà báo salary",
+      "value": 24,
+      "unit": "tr/payday",
+      "group": "careers (degree)",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nhà vườn ở quê price",
+      "value": 90,
+      "unit": "tr",
+      "group": "houses",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Căn hộ chung cư price",
+      "value": 130,
+      "unit": "tr",
+      "group": "houses",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nhà phố 4 tầng price",
+      "value": 210,
+      "unit": "tr",
+      "group": "houses",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Biệt thự ven sông price",
+      "value": 330,
+      "unit": "tr",
+      "group": "houses",
+      "estimated": true,
+      "source": ""
+    }
+  ]
+}
