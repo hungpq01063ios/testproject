@@ -1,0 +1,482 @@
+<title>Đường Đời</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=Pattaya&display=swap">
+<style>
+/* Layout: a lacquer-panel board on the left, a hot-seat control column on the right; stacks on phones. */
+:root {
+  --lacquer: #1a1110;      /* sơn then: page ground */
+  --panel: #261917;        /* raised lacquer */
+  --panel-2: #33211e;
+  --line: #4a312c;
+  --cinnabar: #c8382c;     /* son đỏ */
+  --gold: #d9a947;         /* vàng thếp */
+  --gold-soft: #f0d58c;
+  --jade: #4f9c84;
+  --eggshell: #f3e8d6;     /* vỏ trứng: text */
+  --muted: #b9a58f;
+  --plum: #8a5a9e;
+  --font-display: "Pattaya", "Brush Script MT", cursive;
+  --font-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 10px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  background: var(--lacquer);
+  background-image: radial-gradient(1200px 600px at 20% -10%, #3a1d17 0%, transparent 60%), radial-gradient(900px 500px at 110% 110%, #2a1712 0%, transparent 60%);
+  color: var(--eggshell); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 24px;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+.num { font-variant-numeric: tabular-nums; }
+
+header.top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; max-width: 1280px; margin: 0 auto 12px; }
+header.top h1 { font-family: var(--font-display); font-weight: 400; font-size: 2.1rem; color: var(--gold); letter-spacing: .5px; line-height: 1; }
+header.top .sub { color: var(--muted); font-size: .85rem; }
+header.top .spacer { flex: 1; }
+.ghost { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .85rem; color: var(--muted); }
+.ghost:hover { border-color: var(--gold); color: var(--gold-soft); }
+
+/* ---------- Setup ---------- */
+#setup { max-width: 640px; margin: 4vh auto 0; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 28px clamp(18px, 4vw, 36px); display: grid; gap: 20px; }
+#setup h2 { font-family: var(--font-display); font-weight: 400; font-size: 2.6rem; color: var(--gold); line-height: 1.1; }
+#setup p.lead { margin: 0; color: var(--muted); max-width: 52ch; }
+.count { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.count button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel-2); font-weight: 700; }
+.count button[aria-pressed="true"] { background: var(--cinnabar); border-color: var(--cinnabar); }
+.names { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.names label { display: flex; align-items: center; gap: 8px; background: var(--panel-2); border-radius: 8px; padding: 6px 10px; border: 1px solid var(--line); }
+.names .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.names input { flex: 1; min-width: 0; background: transparent; border: 0; color: var(--eggshell); font: inherit; padding: 4px 0; }
+.label-sm { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.cta { background: var(--cinnabar); border: 0; border-radius: 999px; padding: 12px 26px; font-weight: 700; font-size: 1rem; box-shadow: 0 2px 0 #7d1e17; }
+.cta:hover { filter: brightness(1.08); }
+.cta:disabled { opacity: .45; cursor: not-allowed; }
+.cta.gold { background: var(--gold); color: #2a1a0c; box-shadow: 0 2px 0 #8a6420; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+/* ---------- Game ---------- */
+#game { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+.board-wrap { background: linear-gradient(160deg, #2b1a16, #1d1210); border: 1px solid var(--line); border-radius: 16px; padding: 10px; min-width: 0; position: relative; }
+.board-wrap svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 6px 2px; color: var(--muted); font-size: .78rem; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.side { display: grid; gap: 12px; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-width: 0; }
+.turn { display: grid; gap: 10px; border-top: 4px solid var(--pc, var(--gold)); }
+.turn .who { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.turn .who h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.9rem; color: var(--pc, var(--gold)); line-height: 1.1; }
+.turn .meta { color: var(--muted); font-size: .85rem; }
+.wheel-row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center; }
+#wheel { width: 150px; height: 150px; max-width: 100%; }
+.result { min-height: 48px; font-size: .95rem; }
+.result strong { color: var(--gold-soft); }
+.choices { display: grid; gap: 8px; }
+.choice-btn { text-align: left; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 2px; }
+.choice-btn:hover { border-color: var(--gold); }
+.choice-btn b { font-weight: 700; }
+.choice-btn small { color: var(--muted); font-size: .8rem; }
+.choice-title { font-weight: 700; color: var(--gold-soft); }
+
+table.hud { width: 100%; border-collapse: collapse; font-size: .85rem; }
+table.hud th { text-align: left; font-weight: 500; color: var(--muted); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; padding: 0 4px 6px; }
+table.hud td { padding: 7px 4px; border-top: 1px solid var(--line); vertical-align: top; }
+table.hud td.r, table.hud th.r { text-align: right; }
+table.hud tr.active td { background: rgba(217, 169, 71, .08); }
+table.hud .pname { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+table.hud .pname i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+table.hud .job { color: var(--muted); font-size: .75rem; font-weight: 400; }
+.tag { font-size: .68rem; border: 1px solid var(--line); border-radius: 999px; padding: 0 6px; color: var(--muted); white-space: nowrap; }
+.tag.done { border-color: var(--jade); color: #9fd6c3; }
+.debt { color: #f0907f; }
+ol.log { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; font-size: .82rem; display: grid; gap: 4px; }
+ol.log li { color: var(--muted); }
+ol.log li b { font-weight: 700; }
+details.rules summary { cursor: pointer; font-weight: 700; color: var(--gold-soft); }
+details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: .85rem; display: grid; gap: 4px; }
+
+/* Board SVG */
+.path { stroke: var(--gold); stroke-opacity: .45; stroke-width: 3; fill: none; stroke-dasharray: 2 7; stroke-linecap: round; }
+.tile circle, .tile rect { stroke: #0f0907; stroke-width: 2; }
+.tile text.g { font-family: var(--font-body); font-weight: 700; font-size: 15px; fill: #fff7e8; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.tile text.l { font-family: var(--font-body); font-size: 8.6px; fill: var(--muted); text-anchor: middle; pointer-events: none; }
+.tile.stop text.l { fill: #2a1a0c; font-weight: 700; font-size: 10px; }
+.tile.stop rect { fill: var(--gold); stroke: #6d4b14; stroke-width: 2.5; }
+.branch-name { font-family: var(--font-display); font-size: 15px; fill: var(--gold-soft); opacity: .85; }
+.token { transition: transform .26s ease-out; }
+.token circle { stroke: #fff7e8; stroke-width: 2; }
+.token text { font: 700 10px var(--font-body); fill: #170e0c; text-anchor: middle; dominant-baseline: central; }
+.token.active circle { stroke: var(--gold-soft); stroke-width: 3; }
+.halo { fill: none; stroke: var(--gold-soft); stroke-width: 2; opacity: .8; }
+
+/* Overlays */
+.overlay { position: fixed; inset: 0; background: rgba(10, 6, 5, .78); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); z-index: 20; }
+.overlay .card { max-width: 620px; width: 100%; display: grid; gap: 14px; max-height: 100%; overflow: auto; }
+.overlay h2 { font-family: var(--font-display); font-weight: 400; color: var(--gold); font-size: 2.3rem; line-height: 1.1; }
+.table-scroll { overflow-x: auto; }
+.handover { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--gold); color: var(--gold-soft); padding: 8px 18px; border-radius: 999px; font-weight: 700; z-index: 15; box-shadow: 0 6px 20px rgba(0,0,0,.4); max-width: calc(100% - 32px); text-align: center; }
+
+@media (max-width: 960px) {
+  #game { grid-template-columns: minmax(0, 1fr); }
+  .side { display: contents; }
+  #turnCard { order: -1; }
+}
+@media (prefers-reduced-motion: reduce) { .token { transition: none; } }
+</style>
+
+<header class="top">
+  <h1>Đường Đời</h1>
+  <span class="sub">Từ giảng đường đến tuổi nghỉ hưu · chơi luân phiên trên một máy</span>
+  <span class="spacer"></span>
+  <a class="ghost" href="index.html" style="text-decoration:none">Bản 3D</a>
+  <button class="ghost" id="newGameBtn" hidden>Ván mới</button>
+</header>
+
+<section id="setup">
+  <div class="label-sm">Thiết lập ván chơi</div>
+  <h2>Mỗi người một đường đời</h2>
+  <p class="lead">Quay số, chọn học đại học hay đi làm sớm, cưới vợ gả chồng, mua nhà, nuôi con, đầu tư và nghỉ hưu. Ai có nhiều Điểm Đời nhất (tài sản ròng + hạnh phúc) sẽ thắng.</p>
+  <div class="grid" style="display:grid;gap:8px">
+    <div class="label-sm">Số người chơi</div>
+    <div class="count" id="countBtns"></div>
+  </div>
+  <div class="names" id="names"></div>
+  <div class="row">
+    <button class="cta" id="startBtn">Bắt đầu ván mới</button>
+    <button class="cta gold" id="resumeBtn" hidden>Tiếp tục ván đang chơi</button>
+  </div>
+</section>
+
+<main id="game" hidden>
+  <div class="board-wrap">
+    <svg id="board" role="img" aria-label="Bàn cờ Đường Đời"></svg>
+    <div class="legend" id="legend"></div>
+  </div>
+  <aside class="side">
+    <section class="card turn" id="turnCard" aria-live="polite">
+      <div class="who"><span class="label-sm" id="roundLbl">Vòng 1</span><h2 id="turnName">—</h2></div>
+      <div class="meta" id="turnMeta"></div>
+      <div class="wheel-row">
+        <canvas id="wheel" width="300" height="300" aria-label="Vòng quay 1 đến 10"></canvas>
+        <div style="display:grid;gap:8px;min-width:0">
+          <button class="cta" id="spinBtn">Quay số</button>
+          <button class="ghost" id="repayBtn" hidden>Trả 1 khoản vay (60 tr)</button>
+          <button class="cta gold" id="endTurnBtn" hidden>Chuyển lượt</button>
+        </div>
+      </div>
+      <div class="result" id="result"></div>
+      <div class="choices" id="choices"></div>
+    </section>
+    <section class="card">
+      <div class="table-scroll">
+        <table class="hud" id="hud">
+          <thead><tr><th>Người chơi</th><th class="r">Tiền</th><th class="r">Lương</th><th class="r">★</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <div class="label-sm" style="margin-bottom:8px">Nhật ký</div>
+      <ol class="log" id="log"></ol>
+    </section>
+    <section class="card">
+      <details class="rules">
+        <summary>Luật chơi</summary>
+        <ul>
+          <li>Quay 1–10 rồi đi đúng số ô. Ô vàng lớn là <b>điểm dừng bắt buộc</b>: Tốt nghiệp, Nhận việc, Kết hôn, Mua nhà, Tuổi 40, Nghỉ hưu.</li>
+          <li>Đi qua <b>Ngày lương</b> nhận lương; dừng đúng ô được thêm 5 tr.</li>
+          <li>Ở ngã rẽ, bạn chọn đường. Đại học tốn 50 tr nhưng mở nghề lương cao.</li>
+          <li>Hết tiền thì tự động vay 50 tr. Mỗi khoản vay phải trả 60 tr khi kết thúc, hoặc trả sớm trước khi quay.</li>
+          <li>Người nghỉ hưu thứ 1/2/3/4+ nhận 40/30/20/10 tr. Nhà được bán lại theo vòng quay may rủi.</li>
+          <li><b>Điểm Đời</b> = tiền + giá bán nhà − nợ + 2 × hạnh phúc (★).</li>
+        </ul>
+      </details>
+    </section>
+  </aside>
+</main>
+
+<div class="overlay" id="overOverlay" hidden>
+  <div class="card" id="gameover">
+    <div class="label-sm">Tổng kết cuộc đời</div>
+    <h2 id="winnerTitle">—</h2>
+    <div class="table-scroll">
+      <table class="hud" id="finalTable">
+        <thead><tr><th>#</th><th>Người chơi</th><th class="r">Tiền</th><th class="r">Bán nhà</th><th class="r">Nợ</th><th class="r">★</th><th class="r">Điểm Đời</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="row">
+      <button class="cta" id="againBtn">Chơi lại cùng nhóm</button>
+      <button class="ghost" id="closeOverBtn">Xem lại bàn cờ</button>
+    </div>
+  </div>
+</div>
+<div class="handover" id="handover" hidden></div>
+
+<script src="core.js"></script>
+<script>
+(function () {
+  'use strict';
+  const L = window.LifeCore;
+  const qs = new URLSearchParams(location.search);
+  const FAST = qs.has('fast');
+  const reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const STEP_MS = FAST ? 0 : reduced ? 90 : 260;
+  const SAVE_KEY = 'duongdoi.save.v1';
+  const DEFAULT_NAMES = ['An', 'Bình', 'Chi', 'Dũng', 'Hoa', 'Khoa'];
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  let st = null, busy = false, wheelAngle = 0, count = 3, overDismissed = false;
+  const names = DEFAULT_NAMES.slice();
+
+  // ---------- Storage (best effort) ----------
+  function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(st)); } catch (e) {} }
+  function loadSaved() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); return s && s.version === 1 && s.players ? s : null; } catch (e) { return null; } }
+  function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
+
+  // ---------- Setup ----------
+  function renderSetup() {
+    const cb = $('countBtns'); cb.innerHTML = '';
+    for (let n = 2; n <= 6; n++) {
+      const b = document.createElement('button'); b.textContent = n; b.id = 'count' + n;
+      b.setAttribute('aria-pressed', String(n === count)); b.setAttribute('aria-label', n + ' người chơi');
+      b.onclick = () => { count = n; renderSetup(); }; cb.appendChild(b);
+    }
+    const box = $('names'); box.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const lab = document.createElement('label');
+      lab.innerHTML = `<span class="dot" style="background:${L.COLORS[i]}"></span><input id="pname${i}" maxlength="14" aria-label="Tên người chơi ${i + 1}">`;
+      const inp = lab.querySelector('input'); inp.value = names[i];
+      inp.oninput = () => { names[i] = inp.value; };
+      box.appendChild(lab);
+    }
+    const saved = loadSaved();
+    $('resumeBtn').hidden = !(saved && saved.phase !== 'over');
+  }
+  $('startBtn').onclick = () => {
+    const list = names.slice(0, count).map((n, i) => (n || '').trim() || DEFAULT_NAMES[i]);
+    const seed = qs.has('seed') ? parseInt(qs.get('seed'), 10) : undefined;
+    startGame(L.newGame(list, seed));
+  };
+  $('resumeBtn').onclick = () => { const s = loadSaved(); if (s) startGame(s); };
+  $('newGameBtn').onclick = () => { showSetup(); };
+  $('againBtn').onclick = () => { startGame(L.newGame(st.players.map((p) => p.name))); };
+  $('closeOverBtn').onclick = () => { overDismissed = true; $('overOverlay').hidden = true; };
+
+  function showSetup() { $('setup').hidden = false; $('game').hidden = true; $('newGameBtn').hidden = true; $('overOverlay').hidden = true; renderSetup(); }
+  function startGame(state) {
+    st = state; busy = false; overDismissed = false;
+    $('setup').hidden = true; $('game').hidden = false; $('newGameBtn').hidden = false;
+    drawBoard(); render(); save();
+  }
+
+  // ---------- Board ----------
+  const U = 66, PAD = 46;
+  const TX = (t) => PAD + t.x * U, TY = (t) => PAD + t.y * U;
+  const TYPE_STYLE = {
+    start: ['var(--jade)', '►'], payday: ['#b9862b', '₫'], event: ['#8f2e25', '?'], happy: ['#b0566f', '★'],
+    baby: ['#3e8a8a', '✿'], tax: ['#4b3a35', '%'], invest: ['var(--plum)', '↗'], gift: ['#a8752a', '✉'],
+    raise: ['#3f8a6c', '▲'], career: ['#5d6fa3', '⇄'], fork: ['#6b4a2f', 'Y'],
+  };
+  function tileStyle(t) {
+    if (t.type === 'money') return [t.cash >= 0 ? '#3f8a6c' : '#a8342a', t.cash >= 0 ? '+' : '−'];
+    return TYPE_STYLE[t.type] || ['#555', ''];
+  }
+  function wrapLabel(text) {
+    const words = text.split(' '); const lines = [''];
+    words.forEach((w) => { const lastLine = lines[lines.length - 1]; if ((lastLine + ' ' + w).trim().length > 12 && lastLine) lines.push(w); else lines[lines.length - 1] = (lastLine + ' ' + w).trim(); });
+    return lines.slice(0, 2);
+  }
+  function drawBoard() {
+    const svg = $('board');
+    const maxX = Math.max(...L.TILES.map((t) => t.x)), maxY = Math.max(...L.TILES.map((t) => t.y));
+    const W = PAD * 2 + maxX * U, H = PAD * 2 + maxY * U + 14;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    let paths = '', tiles = '', branches = '';
+    L.TILES.forEach((t) => t.next.forEach((n) => { const b = L.TILES[n]; paths += `<line class="path" x1="${TX(t)}" y1="${TY(t)}" x2="${TX(b)}" y2="${TY(b)}"/>`; }));
+    L.TILES.forEach((t) => {
+      const x = TX(t), y = TY(t);
+      const lines = wrapLabel(t.label);
+      if (t.type === 'stop') {
+        tiles += `<g class="tile stop" data-tile="${t.id}"><title>${esc(t.label)} (điểm dừng)</title><rect x="${x - 30}" y="${y - 22}" width="60" height="44" rx="9"/>` +
+          lines.map((ln, i) => `<text class="l" x="${x}" y="${y + (lines.length === 1 ? 3.5 : i * 11 - 2)}">${esc(ln)}</text>`).join('') + '</g>';
+      } else {
+        const [fill, glyph] = tileStyle(t);
+        let tip = t.label;
+        if (t.type === 'money' || t.type === 'happy') tip += ` (${t.cash ? (t.cash > 0 ? '+' : '') + t.cash + ' tr ' : ''}${t.stars ? (t.stars > 0 ? '+' : '') + t.stars + '★' : ''})`;
+        tiles += `<g class="tile" data-tile="${t.id}"><title>${esc(tip)}</title><circle cx="${x}" cy="${y}" r="17" fill="${fill}"/><text class="g" x="${x}" y="${y}">${glyph}</text>` +
+          lines.map((ln, i) => `<text class="l" x="${x}" y="${y + 28 + i * 9.5}">${esc(ln)}</text>`).join('') + '</g>';
+      }
+      if (t.branch) branches += `<text class="branch-name" x="${TX(t) + (t.y === 0 ? -4 : 0)}" y="${TY(t) - 24}" text-anchor="${t.x > 5 ? 'end' : 'start'}">${esc(t.branch.name)}</text>`;
+    });
+    svg.innerHTML = `<g>${paths}</g><g>${branches}</g><g>${tiles}</g><g id="tokens"></g>`;
+    $('legend').innerHTML = [['#b9862b', 'Ngày lương'], ['#8f2e25', 'Sự kiện'], ['#3f8a6c', 'Thu nhập'], ['#a8342a', 'Chi tiêu'], ['#b0566f', 'Hạnh phúc'], ['#3e8a8a', 'Con cái'], ['var(--plum)', 'Đầu tư'], ['var(--gold)', 'Điểm dừng']]
+      .map(([c, n]) => `<span><i style="background:${c}"></i>${n}</span>`).join('');
+  }
+  function renderTokens() {
+    const g = $('tokens'); if (!g) return;
+    const byTile = {};
+    st.players.forEach((p, i) => { (byTile[p.pos] = byTile[p.pos] || []).push(i); });
+    if (g.children.length !== st.players.length) {
+      g.innerHTML = st.players.map((p, i) => `<g class="token" data-player="${i}"><circle r="10" fill="${p.color}"/><text>${esc(p.name.charAt(0).toUpperCase())}</text></g>`).join('');
+    }
+    st.players.forEach((p, i) => {
+      const t = L.TILES[p.pos]; const group = byTile[p.pos]; const k = group.indexOf(i), n = group.length;
+      const ang = n > 1 ? (k / n) * Math.PI * 2 - Math.PI / 2 : 0; const r = n > 1 ? 14 : 0;
+      const el = g.querySelector(`[data-player="${i}"]`);
+      el.style.transform = `translate(${TX(t) + Math.cos(ang) * r}px, ${TY(t) + Math.sin(ang) * r - (n > 1 ? 0 : 0)}px)`;
+      el.classList.toggle('active', i === st.turn && st.phase !== 'over');
+      el.setAttribute('data-pos', p.pos);
+    });
+    // keep active token on top
+    const active = g.querySelector(`[data-player="${st.turn}"]`); if (active) g.appendChild(active);
+  }
+
+  // ---------- Wheel ----------
+  const wctx = $('wheel').getContext('2d');
+  function drawWheel(angle, highlight) {
+    const c = wctx, S = 300, R = 138; c.clearRect(0, 0, S, S);
+    c.save(); c.translate(S / 2, S / 2); c.rotate(angle);
+    for (let i = 0; i < 10; i++) {
+      const a0 = (i / 10) * Math.PI * 2 - Math.PI / 2 - Math.PI / 10, a1 = a0 + Math.PI / 5;
+      c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, a0, a1); c.closePath();
+      c.fillStyle = i % 3 === 0 ? '#c8382c' : i % 3 === 1 ? '#2a1a16' : '#8a2a22';
+      if (highlight === i + 1) c.fillStyle = '#d9a947';
+      c.fill(); c.strokeStyle = '#d9a947'; c.lineWidth = 2; c.stroke();
+      c.save(); c.rotate((a0 + a1) / 2); c.translate(R * 0.68, 0); c.rotate(Math.PI / 2);
+      c.fillStyle = highlight === i + 1 ? '#2a1a0c' : '#f3e8d6'; c.font = '700 30px "Be Vietnam Pro", system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(String(i + 1), 0, 0); c.restore();
+    }
+    c.beginPath(); c.arc(0, 0, 26, 0, Math.PI * 2); c.fillStyle = '#d9a947'; c.fill();
+    c.beginPath(); c.arc(0, 0, R, 0, Math.PI * 2); c.lineWidth = 6; c.strokeStyle = '#d9a947'; c.stroke();
+    c.restore();
+    c.beginPath(); c.moveTo(S / 2 - 14, 2); c.lineTo(S / 2 + 14, 2); c.lineTo(S / 2, 30); c.closePath(); c.fillStyle = '#f3e8d6'; c.fill();
+  }
+  function animateWheel(value) {
+    return new Promise((res) => {
+      const target = -((value - 1) / 10) * Math.PI * 2; // value at top
+      const base = wheelAngle - (wheelAngle % (Math.PI * 2));
+      const end = base - Math.PI * 2 * (FAST || reduced ? 0 : 4) + target - (FAST || reduced ? Math.PI * 2 : 0);
+      const dur = FAST ? 0 : reduced ? 150 : 1300; const start = wheelAngle; const t0 = performance.now();
+      if (!dur) { wheelAngle = end; drawWheel(end, value); return res(); }
+      (function frame(now) {
+        const k = Math.min(1, (now - t0) / dur); const e = 1 - Math.pow(1 - k, 3);
+        wheelAngle = start + (end - start) * e; drawWheel(wheelAngle, k === 1 ? value : null);
+        if (k < 1) requestAnimationFrame(frame); else res();
+      })(t0);
+    });
+  }
+
+  // ---------- Turn flow ----------
+  const wait = (ms) => new Promise((r) => (ms ? setTimeout(r, ms) : r()));
+  async function runMove() {
+    busy = true; render();
+    while (st.phase === 'moving') {
+      const r = L.step(st); renderTokens(); renderHud();
+      if (r === 'step') await wait(STEP_MS);
+    }
+    busy = false; render(); save();
+  }
+  $('spinBtn').onclick = async () => {
+    if (busy || st.phase !== 'spin') return;
+    busy = true; render();
+    const forced = window.__forceSpin; window.__forceSpin = null;
+    const v = L.spin(st, forced); await animateWheel(v); await wait(FAST ? 0 : 150);
+    await runMove();
+  };
+  $('repayBtn').onclick = () => { if (L.repay(st)) { render(); save(); } };
+  $('endTurnBtn').onclick = () => {
+    if (busy || !L.endTurn(st)) return;
+    render(); save();
+    if (st.phase === 'spin') {
+      const p = L.current(st); const h = $('handover');
+      h.textContent = `Chuyền máy cho ${p.name}`; h.style.borderColor = p.color; h.hidden = false;
+      clearTimeout(h._t); h._t = setTimeout(() => { h.hidden = true; }, FAST ? 0 : 1800);
+    }
+  };
+  function onChoice(i) {
+    if (busy) return;
+    const wasFork = st.choice && st.choice.kind === 'fork';
+    if (!L.choose(st, i)) return;
+    if (wasFork) runMove(); else { render(); save(); }
+  }
+
+  // ---------- Render ----------
+  function renderHud() {
+    $('hud').querySelector('tbody').innerHTML = st.players.map((p, i) => {
+      const tags = [];
+      if (p.degree) tags.push('<span class="tag">Có bằng</span>');
+      if (p.married) tags.push('<span class="tag">Đã cưới</span>');
+      if (p.kids) tags.push(`<span class="tag">${p.kids} con</span>`);
+      if (p.house) tags.push(`<span class="tag">${esc(p.house.name)}</span>`);
+      if (p.retired) tags.push(`<span class="tag done">Nghỉ hưu #${p.retireOrder}</span>`);
+      return `<tr class="${i === st.turn && st.phase !== 'over' ? 'active' : ''}" data-player-row="${i}">
+        <td><div class="pname"><i style="background:${p.color}"></i>${esc(p.name)}</div><div class="job">${esc(p.career || 'Chưa có việc')}</div><div class="row" style="gap:4px;margin-top:3px">${tags.join('')}</div></td>
+        <td class="r num" data-cash>${p.cash} tr${p.loans ? `<div class="debt">nợ ${p.loans}×${L.LOAN}</div>` : ''}</td>
+        <td class="r num" data-salary>${p.salary}</td>
+        <td class="r num" data-stars>${p.stars}</td></tr>`;
+    }).join('');
+  }
+  function render() {
+    if (!st) return;
+    const p = L.current(st);
+    $('turnCard').style.setProperty('--pc', p.color);
+    $('roundLbl').textContent = `Vòng ${st.round}`;
+    $('turnName').textContent = p.name;
+    $('turnMeta').textContent = `${p.career ? p.career + ' · ' + p.salary + ' tr/kỳ' : 'Chưa có việc'} · đang ở ô “${L.TILES[p.pos].label}”`;
+    $('spinBtn').hidden = st.phase !== 'spin' && st.phase !== 'moving';
+    $('spinBtn').disabled = busy || st.phase !== 'spin';
+    $('spinBtn').textContent = st.phase === 'moving' ? `Đang đi ${st.lastSpin} bước…` : 'Quay số';
+    $('repayBtn').hidden = !(st.phase === 'spin' && p.loans > 0 && p.cash >= L.LOAN_REPAY);
+    $('endTurnBtn').hidden = st.phase !== 'done';
+    const next = st.players.length > 1 ? nextName() : '';
+    $('endTurnBtn').textContent = st.players.every((q) => q.retired) ? 'Xem tổng kết' : `Chuyển lượt cho ${next}`;
+    $('result').innerHTML = st.phase === 'spin' ? `Đến lượt <strong>${esc(p.name)}</strong>. Bấm <strong>Quay số</strong>.`
+      : st.result ? `<strong>${st.lastSpin ? 'Quay ' + st.lastSpin + ' · ' : ''}</strong>${esc(st.result)}` : st.lastSpin ? `Quay được <strong>${st.lastSpin}</strong>.` : '';
+    const ch = $('choices');
+    if (st.phase === 'choice' && st.choice) {
+      ch.innerHTML = `<div class="choice-title">${esc(st.choice.title)}</div>` + st.choice.options.map((o, i) =>
+        `<button class="choice-btn" data-choice="${i}"><b>${esc(o.label)}</b>${o.hint ? `<small>${esc(o.hint)}</small>` : ''}</button>`).join('');
+      ch.querySelectorAll('button').forEach((b) => { b.onclick = () => onChoice(+b.dataset.choice); });
+    } else ch.innerHTML = '';
+    renderHud(); renderTokens();
+    $('log').innerHTML = st.log.slice(0, 40).map((e) => `<li>${e.who ? `<b style="color:${e.color}">${esc(e.who)}</b> ` : ''}${esc(e.text)}</li>`).join('');
+    if (st.phase === 'over') renderOver();
+    if (st.phase === 'spin' && st.lastSpin == null) drawWheel(wheelAngle, null);
+  }
+  function nextName() {
+    let i = st.turn; for (let k = 0; k < st.players.length; k++) { i = (i + 1) % st.players.length; if (!st.players[i].retired) return st.players[i].name; }
+    return '';
+  }
+  function renderOver() {
+    const f = st.final;
+    $('winnerTitle').textContent = `${f[0].name} có cuộc đời viên mãn nhất!`;
+    $('finalTable').querySelector('tbody').innerHTML = f.map((r, i) => `<tr><td class="num">${i + 1}</td><td><div class="pname"><i style="background:${r.color}"></i>${esc(r.name)}</div></td>
+      <td class="r num">${r.cash}</td><td class="r num">${r.resale}${r.resaleSpin ? ` <span class="job">(quay ${r.resaleSpin})</span>` : ''}</td><td class="r num debt">${r.debt ? '−' + r.debt : 0}</td><td class="r num">${r.stars}</td><td class="r num"><b>${r.score}</b></td></tr>`).join('');
+    $('overOverlay').hidden = overDismissed;
+    $('spinBtn').hidden = true; $('endTurnBtn').hidden = true;
+    $('result').innerHTML = `Ván đã kết thúc. <strong>${esc(f[0].name)}</strong> thắng với ${f[0].score} Điểm Đời.`;
+  }
+
+  // Test hook (read-only view of the game's own state, used by selftest.cjs).
+  window.__duongdoi = { get state() { return st; }, get busy() { return busy; }, tiles: L.TILES };
+
+  function boot(data) {
+    drawWheel(0, null);
+    if (data && data.state) startGame(data.state); else showSetup();
+  }
+  if (window.claude && window.claude.hot) {
+    window.claude.hot.snapshot && window.claude.hot.snapshot(() => ({ state: st }));
+    window.claude.hot.ready ? window.claude.hot.ready(boot) : boot(window.claude.hot.data || {});
+  } else boot({});
+})();
+</script>

@@ -27,10 +27,18 @@ Ván đang chơi được tự lưu trong trình duyệt. Mở lại trang và b
 | File | Vai trò |
 |---|---|
 | `core.js` | Logic game thuần (không phụ thuộc DOM): bàn cờ 79 ô, nghề, nhà, sự kiện, lượt chơi, chấm điểm. RNG có seed nên ván chơi tái lập được |
-| `index.html` | Giao diện: bàn cờ SVG, vòng quay canvas, bảng người chơi, nhật ký, tổng kết |
+| `index.html` | **Bản 3D** (Three.js): sa bàn làng quê – phố thị, công trình ở điểm dừng, quân xe máy chở cả nhà, vòng quay 3D, camera bám người chơi, pháo giấy, đồng xu, số tiền bay lên, âm thanh tổng hợp |
+| `2d.html` | Bản 2D nhẹ (bàn cờ SVG) cho máy yếu |
+| `vendor/` | Three.js r147 + OrbitControls (MIT), để chơi được khi không có mạng |
 | `selftest.cjs` | Self-test theo contract của Craft Anything |
 | `MECHANICS.md`, `mechanics.json` | Mọi thông số ảnh hưởng tới lối chơi |
 | `CREDITS.md` | Nguồn gốc nội dung |
+
+## Điều khiển 3D
+
+- Kéo để xoay, cuộn/chụm hai ngón để zoom, chuột phải để dịch.
+- **Toàn cảnh / Theo người chơi**: đổi giữa nhìn cả sa bàn và camera bám người đang đi.
+- Rê chuột (hoặc chạm) vào ô để xem ô đó làm gì.
 
 ## Self-test (contract của Craft Anything)
 
@@ -45,6 +53,8 @@ Script mở game trong Chromium (Playwright), thiết lập 3 người chơi b�
 | `move` | Quay 6 ở ngã rẽ, quân đi đúng 6 ô và token được vẽ ở ô mới |
 | `act` | Học phí đại học bị trừ (tự vay) và hiệu ứng ô dừng được áp dụng |
 | `hud` | Tên, tiền, lương, ★ của mọi người chơi và thẻ lượt hiển thị đúng state |
+| `render-3d` | WebGL chạy, cảnh 3D được vẽ (đếm frame, ảnh chụp không phẳng) |
+| `family-on-bike` | Số người ngồi sau mỗi xe máy khớp vợ/chồng + con trong state |
 | `hot-seat` | Chuyển lượt sang người 2, người 2 chọn nhánh còn lại |
 | `retire` | Chơi hết ván tới khi mọi người nghỉ hưu và màn tổng kết hiện ra |
 | `no-errors` | Không có lỗi script trong trang |

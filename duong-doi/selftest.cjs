@@ -32,7 +32,7 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
   await page.evaluate(() => { try { localStorage.clear(); } catch (e) {} });
 
   const S = () => page.evaluate(() => JSON.parse(JSON.stringify(window.__duongdoi.state)));
-  const idle = () => page.waitForFunction(() => window.__duongdoi.state && !window.__duongdoi.busy);
+  const idle = () => page.waitForFunction(() => window.__duongdoi.state && !window.__duongdoi.busy, null, { polling: 25 });
 
   try {
     // Setup: 3 players, as a group would type them.
@@ -52,9 +52,10 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
     await idle();
     let s1 = await S();
     const p1 = s1.players[0];
-    const tokenPos = await page.getAttribute('[data-player="0"]', 'data-pos');
-    add('move', p1.pos !== s0.players[0].pos && p1.pos === 6 && tokenPos === String(p1.pos),
-      `spun 6 at "${forkTitle}", ${p1.name} moved from tile ${s0.players[0].pos} to tile ${p1.pos} ("${await page.evaluate((i) => window.__duongdoi.tiles[i].label, p1.pos)}"), token drawn there`);
+    const view1 = await page.evaluate(() => window.__duongdoi.view());
+    const label = await page.evaluate((i) => window.__duongdoi.tiles[i].label, p1.pos);
+    add('move', p1.pos !== s0.players[0].pos && p1.pos === 6 && view1.tokenTile[0] === p1.pos,
+      `spun 6 at "${forkTitle}", ${p1.name} rode from tile ${s0.players[0].pos} to tile ${p1.pos} ("${label}"); the 3D motorbike is on tile ${view1.tokenTile[0]}`);
 
     // ---- act: the main action resolves — tuition paid (loan taken) and the landing tile applied ----
     const tuitionOk = p1.degree && p1.loans >= 1;
@@ -63,12 +64,18 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
 
     // ---- hud: names, cash, salary, stars for every player, plus the turn card ----
     const hud = await page.evaluate(() => {
-      const rows = [...document.querySelectorAll('#hud tbody tr')];
+      const rows = [...document.querySelectorAll('[data-player-row]')];
       return { rows: rows.map((r) => ({ name: r.querySelector('.pname').textContent.trim(), cash: r.querySelector('[data-cash]').textContent, salary: r.querySelector('[data-salary]').textContent, stars: r.querySelector('[data-stars]').textContent })),
-        turn: document.getElementById('turnName').textContent, tokens: document.querySelectorAll('#tokens .token').length, tiles: document.querySelectorAll('#board .tile').length };
+        turn: document.getElementById('turnName').textContent, view: window.__duongdoi.view() };
     });
-    const hudOk = hud.rows.length === 3 && hud.rows.every((r, i) => r.name === names[i] && r.cash.startsWith(String(s1.players[i].cash)) && r.stars === String(s1.players[i].stars)) && hud.turn === names[0] && hud.tokens === 3;
-    add('hud', hudOk, `turn card shows ${hud.turn}; table shows ${hud.rows.map((r) => `${r.name} ${r.cash.split('nợ')[0].trim()} / ${r.stars}★`).join(', ')}; ${hud.tokens} tokens on ${hud.tiles} tiles`);
+    const hudOk = hud.rows.length === 3 && hud.rows.every((r, i) => r.name === names[i] && r.cash === `${s1.players[i].cash} tr` && r.stars === String(s1.players[i].stars) && r.salary === String(s1.players[i].salary)) && hud.turn === names[0] && hud.view.tokens === 3;
+    add('hud', hudOk, `turn panel shows ${hud.turn}; player cards show ${hud.rows.map((r) => `${r.name} ${r.cash} / ${r.stars}★`).join(', ')}; ${hud.view.tokens} motorbikes on ${hud.view.tiles} tiles`);
+
+    // ---- render: the 3D scene is drawing (WebGL frames, a non-flat picture) ----
+    await page.waitForTimeout(1500);
+    const png = await page.locator('#scene').screenshot();
+    const v2 = await page.evaluate(() => window.__duongdoi.view());
+    add('render-3d', v2.webgl && v2.frames > 5 && png.length > 60000, `WebGL on, ${v2.frames} frames drawn, scene picture ${Math.round(png.length / 1024)} KB`);
 
     // ---- hot-seat: end turn passes the device to player 2, who takes the other branch ----
     await page.click('#endTurnBtn');
@@ -102,6 +109,9 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
     const winner = await page.textContent('#winnerTitle');
     add('retire', end.phase === 'over' && end.players.every((p) => p.retired) && overVisible && end.final.length === 3,
       `${actions} scripted actions (${choicesMade} choices), ${end.round} rounds; final screen: "${winner}" with ${end.final.map((f) => `${f.name} ${f.score}`).join(', ')}`);
+    const vEnd = await page.evaluate(() => window.__duongdoi.view());
+    const fam = end.players.map((p) => (p.married ? 1 : 0) + Math.min(3, p.kids));
+    add('family-on-bike', JSON.stringify(fam) === JSON.stringify(vEnd.passengers), `passengers riding each motorbike ${JSON.stringify(vEnd.passengers)} match spouse + kids ${JSON.stringify(fam)}`);
     add('no-errors', errors.length === 0, errors.length ? errors.join(' | ') : 'no script errors in the page');
   } catch (e) {
     add('run', false, String(e && e.stack || e));
