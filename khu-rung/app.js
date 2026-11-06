@@ -35,26 +35,35 @@
   // Read-aloud: one sentence at a time (never cut off mid-sentence), and wait for the browser's voices to load —
   // Chrome and Edge fill the voice list a moment after the page opens, which used to swallow the opening narration.
   const Voice = {
-    on: store.get('khurung.voice') !== 'off', voice: null, ready: false, queue: [], speaking: false, waited: 0, cur: null,
-    pick() { try { const v = speechSynthesis.getVoices(); if (v.length) { this.ready = true; this.voice = v.find((x) => /^vi/i.test(x.lang)) || null; this.pump(); } } catch (e) {} },
-    // say(text) → Promise that settles when the sentence has been read (or skipped). interrupt: drop what is waiting.
+    on: store.get('khurung.voice') !== 'off', voice: null, queue: [], speaking: false, cur: null, lastCancel: 0,
+    // Edge lists the device's own voices first and adds its online Vietnamese voices later, so look again every time
+    // until a Vietnamese voice turns up instead of deciding once.
+    pick() { try { const v = speechSynthesis.getVoices() || []; this.voice = v.find((x) => /^vi(-|_|$)/i.test(x.lang)) || v.find((x) => /vietnam|tiếng việt|hoaimy|namminh/i.test(x.name)) || null; } catch (e) { this.voice = null; } return this.voice; },
     say(text, opts) {
       if (!this.on || FAST || !window.speechSynthesis || !text) return Promise.resolve();
       if (opts && opts.interrupt) this.stop();
-      return new Promise((res) => { this.queue.push({ text, res }); while (this.queue.length > 3) this.queue.shift().res(); this.pump(); });
+      return new Promise((res) => { this.queue.push({ text, res, born: performance.now() }); while (this.queue.length > 3) this.queue.shift().res(); this.pump(); });
     },
-    stop() { this.queue.splice(0).forEach((q) => q.res()); try { if (this.speaking) speechSynthesis.cancel(); } catch (e) {} if (this.cur) { this.cur.res(); this.cur = null; } this.speaking = false; },
+    stop() { this.queue.splice(0).forEach((q) => q.res()); if (this.speaking) { try { speechSynthesis.cancel(); } catch (e) {} this.lastCancel = performance.now(); } if (this.cur) { const c = this.cur; this.cur = null; c.done(); } this.speaking = false; },
     pump() {
       if (this.speaking || !this.queue.length) return;
-      if (!this.ready) { this.pick(); if (!this.ready && this.waited < 4000) { this.waited += 200; setTimeout(() => this.pump(), 200); return; } }
-      if (!this.voice) { this.queue.splice(0).forEach((q) => q.res()); return; } // no Vietnamese voice on this device
-      const q = this.queue.shift(), u = new SpeechSynthesisUtterance(q.text); u.voice = this.voice; u.lang = this.voice.lang; u.rate = 0.95; u.pitch = 1.15;
-      let done = false; const fin = () => { if (done) return; done = true; this.speaking = false; this.cur = null; q.res(); this.pump(); };
-      u.onend = fin; u.onerror = fin; setTimeout(fin, 1500 + q.text.length * 110); // some browsers never fire onend
-      this.speaking = true; this.cur = q; try { speechSynthesis.speak(u); } catch (e) { fin(); }
+      if (!this.voice) this.pick();
+      if (!this.voice) { // wait up to 5 s for the voice list (per sentence, so a late list still gets used)
+        const q = this.queue[0]; if (performance.now() - q.born < 5000) { clearTimeout(this.retry); this.retry = setTimeout(() => this.pump(), 250); return; }
+        this.queue.shift().res(); return this.pump();
+      }
+      const wait = 160 - (performance.now() - this.lastCancel); // Chromium drops a speak() that follows cancel() too closely
+      if (wait > 0) { clearTimeout(this.retry); this.retry = setTimeout(() => this.pump(), wait); return; }
+      const q = this.queue.shift(), u = new SpeechSynthesisUtterance(q.text); u.voice = this.voice; u.lang = this.voice.lang || 'vi-VN'; u.rate = 0.95; u.pitch = 1.1;
+      let done = false; const fin = () => { if (done) return; done = true; clearTimeout(guard); if (this.cur && this.cur.u === u) this.cur = null; this.speaking = false; q.res(); this.pump(); };
+      const guard = setTimeout(fin, 2500 + q.text.length * 120); // some voices never fire onend
+      u.onend = fin; u.onerror = fin;
+      this.speaking = true; this.cur = { u, done: fin }; // keep a reference so the utterance is not garbage-collected mid-sentence
+      try { if (typeof speechSynthesis.resume === 'function') speechSynthesis.resume(); } catch (e) { /* not every browser has it */ }
+      try { speechSynthesis.speak(u); } catch (e) { fin(); }
     },
   };
-  try { speechSynthesis.onvoiceschanged = () => Voice.pick(); Voice.pick(); } catch (e) {}
+  try { speechSynthesis.addEventListener ? speechSynthesis.addEventListener('voiceschanged', () => { Voice.pick(); Voice.pump(); }) : (speechSynthesis.onvoiceschanged = () => { Voice.pick(); Voice.pump(); }); Voice.pick(); } catch (e) {}
   const toggle = (btn, obj, key) => { btn.setAttribute('aria-pressed', String(obj.on)); btn.onclick = () => { obj.on = !obj.on; btn.setAttribute('aria-pressed', String(obj.on)); if (key) store.set(key, obj.on ? 'on' : 'off'); if (!obj.on && obj.stop) obj.stop(); }; };
   toggle($('soundBtn'), Sfx); toggle($('voiceBtn'), Voice, 'khurung.voice');
 
@@ -378,7 +387,7 @@
   window.__forest = { get state() { return st; }, get busy() { return busy || !!dieAnim || tokens.some((t) => t.hop) || cineOn; }, view() { return { webgl: !!renderer.getContext(), frames, tokens: tokens.map((t) => t.g.userData.kind), tokenTile: st ? st.players.map((p) => p.pos) : [], cuts: cutsSeen.slice(), quality: QUALITY }; } };
   window.__forestMiniBot = (kind) => MINI.play(kind, { bot: true, friendImg: FRIEND_IMG.douc, face: THUMB.bear });
   window.__banner = (t) => banner(t);
-  window.__voice = () => ({ on: Voice.on, ready: Voice.ready, voice: Voice.voice && Voice.voice.lang, waiting: Voice.queue.length, speaking: Voice.speaking });
+  window.__voice = () => ({ on: Voice.on, voice: Voice.voice && Voice.voice.name, waiting: Voice.queue.length, speaking: Voice.speaking });
   window.__bridgeClear = () => W.bridgeClearance();
   window.__bannerQueue = () => ({ waiting: bannerQ.length, shown: document.querySelectorAll('.banner').length });
   window.__forestDbg = { zone(k, trees, rescued, restored) { Object.assign(st.zones[k], { trees, rescued, restored }); syncWorld(false); render(); }, time(i) { st.round = i + 1; W.setTime(i); render(); }, look(k) { focus = null; const z = zonePose(k, true); return flyTo(z.target, z.pos, 0.01); }, home() { focus = null; return flyTo(HOME_T, HOME_P, 0.01); } };
