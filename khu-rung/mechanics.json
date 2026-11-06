@@ -2,7 +2,31 @@
   "version": 1,
   "values": [
     {
-      "name": "trees to plant with 1 player",
+      "name": "trees per zone with 1 player(s)",
+      "value": 1,
+      "unit": "trees",
+      "group": "goal",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "trees per zone with 2 player(s)",
+      "value": 2,
+      "unit": "trees",
+      "group": "goal",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "trees per zone with 3 player(s)",
+      "value": 2,
+      "unit": "trees",
+      "group": "goal",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "trees per zone with 4 player(s)",
       "value": 3,
       "unit": "trees",
       "group": "goal",
@@ -10,55 +34,71 @@
       "source": ""
     },
     {
-      "name": "trees to plant with 2 players",
-      "value": 5,
+      "name": "trees per zone with 5 player(s)",
+      "value": 3,
       "unit": "trees",
       "group": "goal",
       "estimated": true,
       "source": ""
     },
     {
-      "name": "trees to plant with 3 players",
-      "value": 7,
+      "name": "trees per zone with 6 player(s)",
+      "value": 4,
       "unit": "trees",
       "group": "goal",
       "estimated": true,
       "source": ""
     },
     {
-      "name": "trees to plant with 4 players",
-      "value": 10,
-      "unit": "trees",
-      "group": "goal",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "trees to plant with 5 players",
-      "value": 12,
-      "unit": "trees",
-      "group": "goal",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "trees to plant with 6 players",
-      "value": 14,
-      "unit": "trees",
-      "group": "goal",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "storm steps until it arrives",
-      "value": 16,
+      "name": "storm steps with 1 player(s)",
+      "value": 38,
       "unit": "steps",
       "group": "storm",
       "estimated": true,
       "source": ""
     },
     {
-      "name": "storm per round",
+      "name": "storm steps with 2 player(s)",
+      "value": 27,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps with 3 player(s)",
+      "value": 15,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps with 4 player(s)",
+      "value": 15,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps with 5 player(s)",
+      "value": 12,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps with 6 player(s)",
+      "value": 12,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "per round",
       "value": 1,
       "unit": "step",
       "group": "storm",
@@ -66,7 +106,7 @@
       "source": ""
     },
     {
-      "name": "extra step when litter piles reach",
+      "name": "extra when litter reaches",
       "value": 4,
       "unit": "piles",
       "group": "storm",
@@ -74,8 +114,8 @@
       "source": ""
     },
     {
-      "name": "dark cloud tile",
-      "value": 1,
+      "name": "restored zone",
+      "value": -1,
       "unit": "step",
       "group": "storm",
       "estimated": true,
@@ -90,24 +130,16 @@
       "source": ""
     },
     {
-      "name": "starting seeds/water (solo 2)",
-      "value": 1,
-      "unit": "",
-      "group": "items",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "trees planted per visit (max)",
-      "value": 2,
-      "unit": "",
-      "group": "items",
-      "estimated": true,
-      "source": ""
-    },
-    {
       "name": "tiles",
-      "value": 24,
+      "value": 46,
+      "unit": "",
+      "group": "board",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "zones",
+      "value": 5,
       "unit": "",
       "group": "board",
       "estimated": true,
@@ -118,6 +150,54 @@
       "value": "1-6",
       "unit": "",
       "group": "board",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "catch",
+      "value": "Hứng hạt dẻ",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "sprout",
+      "value": "Tưới cây con",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "sort",
+      "value": "Phân loại rác",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "count",
+      "value": "Đếm cá",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "clouds",
+      "value": "Xua mây",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "find",
+      "value": "Tìm bạn trốn",
+      "unit": "",
+      "group": "mini-games",
       "estimated": true,
       "source": ""
     },
@@ -139,7 +219,7 @@
     },
     {
       "name": "Sóc",
-      "value": "Nhặt được 2 hạt giống",
+      "value": "Nhặt thêm 1 hạt giống",
       "unit": "",
       "group": "animals",
       "estimated": true,
@@ -147,7 +227,7 @@
     },
     {
       "name": "Rùa",
-      "value": "Lấy được 2 giọt nước ở suối",
+      "value": "Lấy thêm 1 giọt nước",
       "unit": "",
       "group": "animals",
       "estimated": true,
@@ -166,6 +246,46 @@
       "value": "Phun nước cho cả nhóm",
       "unit": "",
       "group": "animals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Rừng Tre",
+      "value": "Voọc con",
+      "unit": "",
+      "group": "zones",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Đồi Hoa",
+      "value": "Nai con",
+      "unit": "",
+      "group": "zones",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thác Nước",
+      "value": "Rái cá con",
+      "unit": "",
+      "group": "zones",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Đầm Sen",
+      "value": "Sếu con",
+      "unit": "",
+      "group": "zones",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Núi Đá",
+      "value": "Tê tê con",
+      "unit": "",
+      "group": "zones",
       "estimated": true,
       "source": ""
     }

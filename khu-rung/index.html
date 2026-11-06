@@ -40,7 +40,7 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
 .chip { background: #fff; border: 0; border-radius: 999px; padding: 8px 14px; font-weight: 800; font-size: .9rem; box-shadow: 0 4px 0 rgba(35,48,73,.12); }
 .chip[aria-pressed="false"] { opacity: .6; }
 
-#meters { top: calc(12px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); padding: 10px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: min(560px, calc(100% - 32px)); }
+#meters { top: calc(12px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); padding: 10px 14px; }
 .meter { display: grid; grid-template-columns: 44px 1fr; gap: 8px; align-items: center; }
 .meter img { width: 44px; height: 44px; }
 .meter .lbl { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; line-height: 1; }
@@ -50,7 +50,7 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
 #treeBar { background: linear-gradient(90deg, #7ed957, var(--leaf)); }
 #stormBar { background: linear-gradient(90deg, #a7aec4, var(--storm)); }
 
-#turnPanel { right: calc(16px + env(safe-area-inset-right, 0px)); top: calc(96px + env(safe-area-inset-top, 0px)); width: 330px; padding: 16px; display: grid; gap: 12px; border-color: var(--pc, #fff); }
+#turnPanel { right: calc(16px + env(safe-area-inset-right, 0px)); top: calc(150px + env(safe-area-inset-top, 0px)); max-height: calc(100% - 170px); overflow: auto; width: 330px; padding: 16px; display: grid; gap: 12px; border-color: var(--pc, #fff); }
 .who { display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: center; }
 .who img { width: 76px; height: 76px; border-radius: 22px; background: #eaf7e6; }
 .who h2 { font-size: 1.8rem; }
@@ -106,6 +106,48 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
 @keyframes drop { from { opacity: 0; transform: translateY(-30px) scale(.8); } to { opacity: 1; transform: none; } }
 .handover { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 14; background: #fff; border: 4px solid var(--pc, var(--sun)); border-radius: 999px; padding: 10px 22px; font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; box-shadow: 0 6px 0 rgba(35,48,73,.15); }
 
+#meters { width: min(760px, calc(100% - 32px)); display: grid; gap: 8px; grid-template-columns: 1fr; }
+.mrow { display: grid; grid-template-columns: auto auto 1fr; gap: 14px; align-items: center; }
+.mrow > .lbl { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; }
+.time { font-weight: 800; font-size: .85rem; background: #fff3c4; border-radius: 999px; padding: 3px 12px; }
+.zones { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.zchip { display: grid; grid-template-columns: 34px 1fr 36px; gap: 4px; align-items: center; background: #fff; border-radius: 16px; padding: 4px 6px; border: 3px solid #eef3f7; min-width: 0; }
+.zchip.done { border-color: var(--zc); background: #f3ffe9; }
+.zchip .zi { width: 34px; height: 34px; } .zchip b { font-family: var(--font-display); font-size: .9rem; line-height: 1; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zt { display: inline-flex; align-items: center; gap: 2px; font-weight: 800; font-size: .85rem; } .zt img { width: 18px; height: 18px; }
+.zchip .zf { width: 36px; height: 36px; border-radius: 10px; background: #eaf7e6; } .zchip .zf.lost { filter: grayscale(1) brightness(.6); opacity: .55; }
+.choice-btn span { display: grid; } .choice-btn small { color: var(--muted); font-size: .8rem; font-weight: 800; }
+.choice-btn.zdone { opacity: .7; }
+.fact-img { width: 96px; height: 96px; border-radius: 20px; background: #eaf7e6; justify-self: center; }
+.friends-row { display: grid; gap: 6px; } .friends-row > div, #endFriends { display: flex; gap: 10px; flex-wrap: wrap; }
+.friends-row .lbl { font-weight: 800; color: var(--muted); }
+.friends-row span, #endFriends span { display: grid; justify-items: center; font-weight: 800; font-size: .8rem; }
+.friends-row img, #endFriends img { width: 64px; height: 64px; border-radius: 16px; background: #eaf7e6; }
+#endFriends span.lost img { filter: grayscale(1); opacity: .5; }
+.cine { position: fixed; inset: 0; z-index: 16; pointer-events: none; }
+.cine-bar { position: absolute; left: 0; right: 0; height: 0; background: #111a2a; transition: height .5s ease; }
+.cine-bar.top { top: 0; } .cine-bar.bottom { bottom: 0; }
+.cine.on .cine-bar { height: 11vh; }
+.cine-cap { position: absolute; left: 50%; bottom: calc(13vh + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(820px, calc(100% - 32px)); text-align: center; color: #fff; text-shadow: 0 3px 0 rgba(17,26,42,.6), 0 6px 18px rgba(17,26,42,.5); opacity: 0; }
+.cine-cap.show { animation: capin 3.2s ease both; }
+.cine-cap h2 { font-size: clamp(1.8rem, 5vw, 3rem); } .cine-cap p { margin: 6px 0 0; font-weight: 800; font-size: clamp(1rem, 2.6vw, 1.35rem); }
+@keyframes capin { 0% { opacity: 0; transform: translate(-50%, 14px); } 12% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 1; } }
+.cine-skip { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); top: calc(12vh + 8px + env(safe-area-inset-top, 0px)); pointer-events: auto; }
+.mini { position: fixed; inset: 0; z-index: 18; display: grid; place-items: center; background: rgba(35, 48, 73, .45); padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+.mini-card { width: min(780px, 100%); background: var(--card); border: 5px solid var(--pc); border-radius: 28px; padding: 12px; display: grid; gap: 8px; box-shadow: 0 12px 0 rgba(35,48,73,.15); }
+.mini-head { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; }
+.mini-face { width: 64px; height: 64px; border-radius: 18px; background: #eaf7e6; }
+.mini-title { font-family: var(--font-display); font-weight: 800; font-size: 1.7rem; line-height: 1; }
+.mini-how { font-weight: 800; color: var(--muted); }
+.mini-stage { position: relative; }
+.mini-stage canvas { width: 100%; height: auto; display: block; border-radius: 18px; touch-action: none; }
+.mini-count { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: clamp(3rem, 12vw, 6rem); color: #fff; text-shadow: 0 6px 0 var(--leaf-deep); pointer-events: none; }
+.mini-end { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; background: rgba(255, 253, 246, .88); border-radius: 18px; }
+.mini-stars span { font-size: clamp(3rem, 10vw, 5rem); color: #d8dee6; display: inline-block; animation: drop .6s cubic-bezier(.3,1.5,.5,1) both; }
+.mini-stars span.on { color: var(--sun); text-shadow: 0 4px 0 #d9a51a; }
+.mini-cheer { font-family: var(--font-display); font-weight: 800; font-size: 2rem; }
+.mini-bar { height: 12px; border-radius: 99px; background: #e8eef5; overflow: hidden; } .mini-bar div { height: 100%; background: linear-gradient(90deg, var(--sun), var(--berry)); transition: width .1s linear; }
+@media (max-width: 900px) { .zones { grid-template-columns: repeat(3, minmax(0, 1fr)); } .mrow { grid-template-columns: 1fr auto; } .mrow .meter { grid-column: 1 / -1; } }
 @media (max-width: 900px) {
   body { overflow: auto; }
   #app { position: static; display: flex; flex-direction: column; gap: 12px; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
@@ -128,13 +170,15 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
     </div>
   </div>
   <section class="panel" id="meters" hidden>
-    <div class="meter"><img id="treeIcon" alt=""><div><div class="lbl"><span id="treeTxt" class="num">0/10</span> <small>cây đã trồng</small></div><div class="bar"><div id="treeBar" style="width:0%"></div></div></div></div>
-    <div class="meter"><img id="stormIcon" alt=""><div><div class="lbl"><span id="stormTxt" class="num">0/16</span> <small>mùa bão tới gần</small></div><div class="bar"><div id="stormBar" style="width:0%"></div></div></div></div>
+    <div class="mrow"><div class="lbl">Vùng hồi sinh <span id="restoredTxt" class="num">0/5</span></div><div class="time" id="timeTxt">Buổi sáng</div>
+      <div class="meter"><img id="stormIcon" alt=""><div><div class="lbl"><span id="stormTxt" class="num">0/16</span> <small>mùa bão tới gần</small></div><div class="bar"><div id="stormBar" style="width:0%"></div></div></div></div></div>
+    <div class="zones" id="zoneStrip"></div>
   </section>
   <aside class="panel" id="turnPanel" hidden aria-live="polite">
     <div class="who"><img id="whoImg" alt=""><div><h2 id="whoName">—</h2><p id="whoPower"></p></div></div>
     <div class="dice-row"><canvas id="dice" aria-label="Xúc xắc"></canvas><div style="display:grid;gap:10px"><button class="big" id="rollBtn">Tung xúc xắc</button><button class="big sun" id="nextBtn" hidden>Xong lượt</button></div></div>
     <div class="result" id="result"></div>
+    <img id="factImg" class="fact-img" alt="" hidden>
     <div class="choices" id="choices"></div>
   </aside>
   <section class="panel" id="friends" hidden></section>
@@ -143,8 +187,9 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
 <div class="overlay" id="setup">
   <div class="sheet">
     <h1>Khu Rừng Chung Tay</h1>
-    <p class="lead">Chọn các bạn thú sẽ cùng chơi. Cả nhóm gieo hạt, tưới nước, trồng cây và nhặt rác để khu rừng xanh lại trước khi mùa bão tới!</p>
+    <p class="lead">Chọn các bạn thú sẽ cùng chơi. Cả nhóm phiêu lưu qua 5 vùng rừng, trồng cây, chơi trò chơi và tìm các bạn nhỏ bị lạc để khu rừng hồi sinh trước khi mùa bão tới!</p>
     <div class="animals" id="animalCards"></div>
+    <div class="friends-row"><span class="lbl">Các bạn nhỏ đang chờ được tìm thấy:</span><div id="friendsRow"></div></div>
     <div class="row"><button class="big" id="startBtn" disabled>Vào rừng thôi!</button><button class="big sun" id="resumeBtn" hidden>Chơi tiếp ván cũ</button></div>
   </div>
 </div>
@@ -153,15 +198,18 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
   <div class="sheet" id="endSheet">
     <h1 id="endTitle">—</h1>
     <p class="lead" id="endLead"></p>
+    <div class="friends-row" id="endFriends"></div>
     <div class="badges" id="badges"></div>
     <div class="row"><button class="big" id="againBtn">Chơi lại</button><button class="big sun" id="pickBtn">Chọn bạn khác</button></div>
   </div>
 </div>
 <div class="handover" id="handover" hidden></div>
+<div class="cine" id="cine" hidden><div class="cine-bar top"></div><div class="cine-bar bottom"></div><div class="cine-cap" id="cineCap"><h2 id="cineTitle"></h2><p id="cineText"></p></div><button class="chip cine-skip" id="cineSkip" type="button">Bỏ qua ›</button></div>
 <div id="fxLayer"></div>
 
 <script src="vendor/three.min.js"></script>
 <script src="vendor/OrbitControls.js"></script>
 <script src="core.js"></script>
 <script src="world.js"></script>
+<script src="minigames.js"></script>
 <script src="app.js"></script>
