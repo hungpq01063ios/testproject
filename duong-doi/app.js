@@ -71,33 +71,99 @@
     const arm2 = arm.clone(); arm2.position.z = -0.12 * s; g.add(arm2);
     return g;
   }
-  function makeBike(color) {
-    const g = new T.Group(), body = mat(color, { roughness: 0.25, metalness: 0.35 }), dark = mat('#1f1c1c', { roughness: 0.55 }), chrome = mat('#dfe3e6', { metalness: 0.95, roughness: 0.18 });
-    const wheels = [];
-    for (const x of [-0.42, 0.44]) {
-      const w = new T.Group(); w.position.set(x, 0.22, 0);
-      w.add(mesh(new T.TorusGeometry(0.17, 0.06, 10, 24), dark));
-      const hub = mesh(new T.CylinderGeometry(0.07, 0.07, 0.1, 12), chrome); hub.rotation.x = Math.PI / 2; w.add(hub);
-      for (let k = 0; k < 3; k++) { const sp = mesh(new T.BoxGeometry(0.3, 0.02, 0.02), chrome); sp.rotation.z = k * Math.PI / 3; w.add(sp); }
-      wheels.push(w); g.add(w);
+  // ---- vehicles: bus → bicycle → motorbike → car → luxury car, chosen by net worth ----
+  function wheelGroup(x, y, z, r, tube, dark, chrome) {
+    const w = new T.Group(); w.position.set(x, y, z);
+    const tyre = mesh(new T.TorusGeometry(r, tube, 10, 26), dark); w.add(tyre);
+    const hub = mesh(new T.CylinderGeometry(r * 0.45, r * 0.45, tube * 1.6, 14), chrome); hub.rotation.x = Math.PI / 2; w.add(hub);
+    for (let k = 0; k < 3; k++) { const sp = mesh(new T.BoxGeometry(r * 1.8, 0.018, 0.018), chrome); sp.rotation.z = k * Math.PI / 3; w.add(sp); }
+    return w;
+  }
+  // Rider, spouse and up to three kids at slots [x, y, z, scale]; helmets on two wheels only.
+  function family(g, color, slots, helmets) {
+    const [rp, sp, ...kp] = slots;
+    const rider = person(color, rp[3] || 1, helmets ? color : '#2a1d17'); rider.position.set(rp[0], rp[1], rp[2]); g.add(rider);
+    const spouse = person('#f3e8d6', sp[3] || 0.95, helmets ? null : '#2a1d17'); spouse.position.set(sp[0], sp[1], sp[2]); g.add(spouse);
+    const kids = ['#ffd36b', '#9fd6c3', '#ffb3c8'].map((c, i) => { const k = person(c, (kp[i] && kp[i][3]) || 0.62, helmets ? c : '#2a1d17'); if (kp[i]) k.position.set(kp[i][0], kp[i][1], kp[i][2]); else k.visible = false; k.userData.slot = !!kp[i]; g.add(k); return k; });
+    return { rider, spouse, kids };
+  }
+  function vehicleModels(color) {
+    const body = mat(color, { roughness: 0.25, metalness: 0.35 }), dark = mat('#1f1c1c', { roughness: 0.55 }), chrome = mat('#dfe3e6', { metalness: 0.95, roughness: 0.18 });
+    const glass = new T.MeshStandardMaterial({ color: '#9fc6e0', metalness: 0.2, roughness: 0.05, transparent: true, opacity: 0.38, depthWrite: false });
+    const lampM = new T.MeshStandardMaterial({ color: '#fff6cf', emissive: '#ffe59a', emissiveIntensity: 1.4 });
+    const lampGlow = (g, x, y, z) => { g.add(mesh(new T.SphereGeometry(0.06, 12, 8), lampM, x, y, z)); const lg = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: '#ffe8a8', blending: T.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.7 })); lg.position.set(x + 0.06, y, z); lg.scale.setScalar(0.5); g.add(lg); };
+    const V = {};
+    // Motorbike
+    (function () {
+      const g = new T.Group(), wheels = [];
+      for (const x of [-0.42, 0.44]) { const w = wheelGroup(x, 0.22, 0, 0.17, 0.06, dark, chrome); wheels.push(w); g.add(w); }
+      const shell = mesh(new T.CapsuleGeometry(0.15, 0.48, 6, 14), body, -0.08, 0.44, 0); shell.rotation.z = Math.PI / 2; shell.scale.set(1, 1, 0.95); g.add(shell);
+      const front = mesh(new T.CapsuleGeometry(0.12, 0.22, 6, 12), body, 0.36, 0.55, 0); front.rotation.z = -0.35; g.add(front);
+      const seat = mesh(new T.CapsuleGeometry(0.11, 0.4, 4, 10), dark, -0.14, 0.62, 0); seat.rotation.z = Math.PI / 2; g.add(seat);
+      const bar = mesh(new T.CylinderGeometry(0.022, 0.022, 0.56, 8), chrome, 0.44, 0.83, 0); bar.rotation.x = Math.PI / 2; g.add(bar);
+      lampGlow(g, 0.53, 0.7, 0);
+      g.add(mesh(new T.BoxGeometry(0.04, 0.06, 0.14), new T.MeshStandardMaterial({ color: '#ff3b30', emissive: '#ff2a1a', emissiveIntensity: 1 }), -0.47, 0.55, 0));
+      const f = family(g, color, [[0.02, 0.6, 0], [-0.27, 0.6, 0], [0.24, 0.62, 0], [-0.48, 0.62, 0], [-0.12, 0.64, 0]], true);
+      g.scale.setScalar(1.35); V.motorbike = Object.assign({ g, wheels }, f);
+    })();
+    // Bicycle
+    (function () {
+      const g = new T.Group(), wheels = [], rod = (x1, y1, x2, y2, r) => { const len = Math.hypot(x2 - x1, y2 - y1); const m = mesh(new T.CylinderGeometry(r || 0.018, r || 0.018, len, 6), body, (x1 + x2) / 2, (y1 + y2) / 2, 0); m.rotation.z = Math.atan2(y2 - y1, x2 - x1) - Math.PI / 2; g.add(m); };
+      for (const x of [-0.42, 0.42]) { const w = wheelGroup(x, 0.26, 0, 0.24, 0.022, dark, chrome); wheels.push(w); g.add(w); }
+      rod(-0.42, 0.26, -0.05, 0.28); rod(-0.05, 0.28, 0.32, 0.58); rod(-0.05, 0.28, -0.12, 0.62); rod(-0.42, 0.26, -0.12, 0.62); rod(-0.12, 0.62, 0.32, 0.6); rod(0.42, 0.26, 0.34, 0.74);
+      const bar = mesh(new T.CylinderGeometry(0.016, 0.016, 0.42, 6), chrome, 0.34, 0.76, 0); bar.rotation.x = Math.PI / 2; g.add(bar);
+      g.add(mesh(new T.BoxGeometry(0.18, 0.04, 0.1), dark, -0.12, 0.64, 0));
+      g.add(mesh(new T.BoxGeometry(0.3, 0.03, 0.16), chrome, -0.36, 0.56, 0));
+      const basket = mesh(new T.CylinderGeometry(0.13, 0.1, 0.14, 12, 1, true), mat('#c9a865', { side: T.DoubleSide }), 0.5, 0.66, 0); g.add(basket);
+      const f = family(g, color, [[-0.1, 0.62, 0], [-0.38, 0.55, 0], [0.5, 0.58, 0, 0.5]], true);
+      g.scale.setScalar(1.35); V.bicycle = Object.assign({ g, wheels }, f);
+    })();
+    // Car and luxury car share a profile; the luxury one is taller, longer and darker.
+    function car(lux) {
+      const g = new T.Group(), wheels = [], L2 = lux ? 0.95 : 0.82, H = lux ? 0.88 : 0.74, sh = new T.Shape(), c = lux ? new T.Color(color).multiplyScalar(0.55).getStyle() : color;
+      sh.moveTo(-L2, 0.16); sh.lineTo(L2, 0.16); sh.quadraticCurveTo(L2 + 0.12, 0.2, L2 + 0.06, 0.46); sh.lineTo(L2 * 0.35, 0.5); sh.lineTo(-L2 * 0.92, 0.5); sh.quadraticCurveTo(-L2 - 0.08, 0.46, -L2, 0.16);
+      const geo = new T.ExtrudeGeometry(sh, { depth: lux ? 0.7 : 0.62, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 3 }); geo.translate(0, 0, -(lux ? 0.35 : 0.31));
+      g.add(mesh(geo, mat(c, { metalness: lux ? 0.7 : 0.45, roughness: lux ? 0.2 : 0.3 })));
+      const cab = new T.Shape(); cab.moveTo(-L2 * 0.82, 0.5); cab.lineTo(L2 * 0.3, 0.5); cab.lineTo(L2 * 0.02, H); cab.lineTo(-L2 * 0.7, H); cab.lineTo(-L2 * 0.82, 0.5);
+      const cg = new T.ExtrudeGeometry(cab, { depth: lux ? 0.64 : 0.56, bevelEnabled: false }); cg.translate(0, 0, -(lux ? 0.32 : 0.28));
+      const cabin = new T.Mesh(cg, glass); g.add(cabin);
+      g.add(mesh(new T.BoxGeometry(L2 * 0.74, 0.04, lux ? 0.66 : 0.58), mat(c, { metalness: 0.5 }), -L2 * 0.34, H, 0));
+      if (lux) { for (const z of [-0.26, 0.26]) g.add(mesh(new T.BoxGeometry(0.6, 0.03, 0.03), chrome, -0.3, H + 0.06, z)); }
+      for (const [x, z] of [[-L2 * 0.62, -0.32], [L2 * 0.62, -0.32], [-L2 * 0.62, 0.32], [L2 * 0.62, 0.32]]) { const w = new T.Group(); w.position.set(x, 0.17, z * (lux ? 1.08 : 1)); const t2 = mesh(new T.CylinderGeometry(lux ? 0.19 : 0.16, lux ? 0.19 : 0.16, 0.12, 18), dark); t2.rotation.x = Math.PI / 2; w.add(t2); const cap = mesh(new T.CylinderGeometry(0.08, 0.08, 0.13, 10), chrome); cap.rotation.x = Math.PI / 2; w.add(cap); wheels.push(w); g.add(w); }
+      for (const z of [-0.2, 0.2]) lampGlow(g, L2 + 0.08, 0.36, z);
+      const f = family(g, color, [[0.0, 0.22, -0.14, 0.78], [0.0, 0.22, 0.14, 0.74], [-L2 * 0.5, 0.24, -0.16, 0.52], [-L2 * 0.5, 0.24, 0.0, 0.52], [-L2 * 0.5, 0.24, 0.16, 0.52]], false);
+      g.scale.setScalar(1.15); return Object.assign({ g, wheels }, f);
     }
-    const shell = mesh(new T.CapsuleGeometry(0.15, 0.48, 6, 14), body, -0.08, 0.44, 0); shell.rotation.z = Math.PI / 2; shell.scale.set(1, 1, 0.95); g.add(shell);
-    const front = mesh(new T.CapsuleGeometry(0.12, 0.22, 6, 12), body, 0.36, 0.55, 0); front.rotation.z = -0.35; g.add(front);
-    const seat = mesh(new T.CapsuleGeometry(0.11, 0.4, 4, 10), dark, -0.14, 0.62, 0); seat.rotation.z = Math.PI / 2; g.add(seat);
-    const bar = mesh(new T.CylinderGeometry(0.022, 0.022, 0.56, 8), chrome, 0.44, 0.83, 0); bar.rotation.x = Math.PI / 2; g.add(bar);
-    for (const z of [-0.2, 0.2]) g.add(mesh(new T.SphereGeometry(0.035, 8, 6), chrome, 0.42, 0.98, z));
-    const lamp = mesh(new T.SphereGeometry(0.075, 14, 10), new T.MeshStandardMaterial({ color: '#fff6cf', emissive: '#ffe59a', emissiveIntensity: 1.4 }), 0.53, 0.7, 0); g.add(lamp);
-    const lg = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: '#ffe8a8', blending: T.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.7 })); lg.position.set(0.6, 0.7, 0); lg.scale.setScalar(0.6); g.add(lg);
-    const tail = mesh(new T.BoxGeometry(0.04, 0.06, 0.14), new T.MeshStandardMaterial({ color: '#ff3b30', emissive: '#ff2a1a', emissiveIntensity: 1 }), -0.47, 0.55, 0); g.add(tail);
-    const rider = person(color, 1, color); rider.position.set(0.02, 0.6, 0); g.add(rider);
-    const spouse = person('#f3e8d6', 0.95, null); spouse.position.set(-0.27, 0.6, 0); g.add(spouse);
-    const kids = [person('#ffd36b', 0.62, '#ffd36b'), person('#9fd6c3', 0.62, '#9fd6c3'), person('#ffb3c8', 0.62, '#ffb3c8')];
-    kids[0].position.set(0.24, 0.62, 0); kids[1].position.set(-0.48, 0.62, 0); kids[2].position.set(-0.12, 0.64, 0);
-    kids.forEach((k) => g.add(k));
-    const ring = new T.Mesh(new T.RingGeometry(0.62, 0.76, 40), new T.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, side: T.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03;
-    const holder = new T.Group(); holder.add(g); holder.add(ring);
-    g.scale.setScalar(1.35);
-    return { group: holder, body: g, wheels, spouse, kids, ring, tile: 0, drive: null, settle: null };
+    V.car = car(false); V.suv = car(true);
+    // City bus: the player rides by the window, family behind.
+    (function () {
+      const g = new T.Group(), wheels = [];
+      const win = (() => { const c = document.createElement('canvas'); c.width = 256; c.height = 64; const x = c.getContext('2d'); x.fillStyle = '#f2ead6'; x.fillRect(0, 0, 256, 64); x.fillStyle = color; x.fillRect(0, 44, 256, 12); x.fillStyle = '#2d4152'; for (let i = 0; i < 6; i++) x.fillRect(8 + i * 41, 8, 34, 28); const t = new T.CanvasTexture(x.canvas); t.encoding = T.sRGBEncoding; return t; })();
+      const side = new T.MeshStandardMaterial({ map: win, roughness: 0.5 }), plain = mat('#f2ead6');
+      g.add(mesh(new T.BoxGeometry(1.9, 0.72, 0.7), [plain, plain, plain, plain, side, side], 0, 0.56, 0));
+      g.add(mesh(new T.BoxGeometry(0.04, 0.4, 0.6), glass, 0.96, 0.68, 0));
+      for (const [x, z] of [[-0.6, -0.33], [0.6, -0.33], [-0.6, 0.33], [0.6, 0.33]]) { const w = new T.Group(); w.position.set(x, 0.18, z); const t2 = mesh(new T.CylinderGeometry(0.17, 0.17, 0.12, 16), dark); t2.rotation.x = Math.PI / 2; w.add(t2); wheels.push(w); g.add(w); }
+      const sign = (() => { const c = document.createElement('canvas'); c.width = 128; c.height = 32; const x = c.getContext('2d'); x.fillStyle = '#1d1d26'; x.fillRect(0, 0, 128, 32); x.fillStyle = '#ffcc33'; x.font = '700 22px sans-serif'; x.textAlign = 'center'; x.fillText('BUÝT 01', 64, 24); const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; return t; })();
+      const sg = mesh(new T.PlaneGeometry(0.5, 0.12), new T.MeshBasicMaterial({ map: sign }), 0.965, 0.84, 0); sg.rotation.y = Math.PI / 2; g.add(sg);
+      for (const z of [-0.22, 0.22]) lampGlow(g, 0.96, 0.32, z);
+      const f = family(g, color, [[0.55, 0.35, 0.18, 0.8], [0.2, 0.35, 0.18, 0.78], [-0.15, 0.35, 0.18, 0.55], [-0.45, 0.35, 0.18, 0.55], [-0.15, 0.35, -0.18, 0.55]], false);
+      g.scale.setScalar(0.95); V.bus = Object.assign({ g, wheels }, f);
+    })();
+    return V;
+  }
+  function makeBike(color) {
+    const V = vehicleModels(color), holder = new T.Group();
+    Object.values(V).forEach((v) => { v.g.visible = false; holder.add(v.g); });
+    const ring = new T.Mesh(new T.RingGeometry(0.72, 0.86, 40), new T.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, side: T.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; holder.add(ring);
+    const tok = { group: holder, V, ring, tile: 0, drive: null, settle: null, vehicle: null };
+    setVehicle(tok, 'bicycle');
+    return tok;
+  }
+  function setVehicle(tok, key) {
+    if (tok.vehicle === key || !tok.V[key]) return;
+    if (tok.vehicle) tok.V[tok.vehicle].g.visible = false;
+    const v = tok.V[key]; v.g.visible = true; tok.vehicle = key;
+    tok.body = v.g; tok.wheels = v.wheels; tok.spouse = v.spouse; tok.kids = v.kids;
   }
   let bikes = [];
   function buildBikes() {
@@ -118,7 +184,8 @@
       const target = slotPos(p.pos, grp.indexOf(i), grp.length);
       if (instant) { b.group.position.copy(target); faceAlong(b, p.pos); } else b.settle = target;
       b.tile = p.pos;
-      b.spouse.visible = p.married; b.kids.forEach((k, j) => (k.visible = j < p.kids));
+      setVehicle(b, p.vehicle || 'bicycle');
+      b.spouse.visible = p.married; b.kids.forEach((k, j) => (k.visible = k.userData.slot && j < p.kids));
       b.ring.visible = i === st.turn && st.phase !== 'over';
     });
   }
@@ -145,6 +212,7 @@
       b.group.rotation.set(0, yaw, 0); b.body.rotation.set(-turn * 6, 0, Math.asin(Math.max(-0.6, Math.min(0.6, tg.y))));
       b.wheels.forEach((w) => (w.rotation.z -= dt * 22));
       if (k >= 1) { b.drive = null; b.body.rotation.set(0, 0, 0); d.res(); }
+      if (b.vehicle === 'car' || b.vehicle === 'suv' || b.vehicle === 'bus') b.body.rotation.x *= 0.3;
     } else if (b.settle) {
       b.group.position.lerp(b.settle, Math.min(1, dt * 8)); if (b.group.position.distanceTo(b.settle) < 0.01) b.settle = null;
     }
@@ -184,7 +252,7 @@
   function banner(text, sub) {
     if (FAST) return; const el = document.createElement('div'); el.className = 'banner'; el.innerHTML = esc(text) + (sub ? `<small>${esc(sub)}</small>` : ''); document.body.appendChild(el); setTimeout(() => el.remove(), 1900);
   }
-  const snapshot = () => st.players.map((p) => ({ net: p.cash - p.loans * L.LOAN, loans: p.loans, salary: p.salary, love: p.love, know: p.know, health: p.health, comm: p.comm }));
+  const snapshot = () => st.players.map((p) => ({ net: p.cash - p.loans * L.LOAN, loans: p.loans, salary: p.salary, love: p.love, know: p.know, health: p.health, comm: p.comm, vehicle: p.vehicle }));
   function showDiff(before) {
     let good = false, bad = false;
     st.players.forEach((p, i) => {
@@ -193,9 +261,31 @@
       if (dn) { popup(i, (dn > 0 ? '+' : '−') + Math.abs(dn) + ' tr', dn > 0 ? 'good' : 'bad', d); d += 260; dn > 0 ? (good = true) : (bad = true); }
       L.ASPECTS.forEach((A) => { const v = p[A.key] - a[A.key]; if (v) { popup(i, (v > 0 ? '+' : '−') + Math.abs(v) + A.icon + ' ' + A.name, 'a-' + A.key, d); d += 260; if (v > 0) Sfx.star(); } });
       if (dsal) { popup(i, 'Lương ' + (dsal > 0 ? '+' : '−') + Math.abs(dsal), dsal > 0 ? 'good' : 'bad', d); d += 260; }
-      if (dl > 0) popup(i, 'Vay ' + dl * L.LOAN + ' tr', 'info', d);
+      if (dl > 0) { popup(i, 'Vay ' + dl * L.LOAN + ' tr', 'info', d); d += 260; }
+      if (p.vehicle !== a.vehicle) {
+        const order = L.VEHICLES.map((v) => v.key), up = order.indexOf(p.vehicle) > order.indexOf(a.vehicle), name = L.VEHICLES.find((v) => v.key === p.vehicle).name;
+        popup(i, (up ? 'Lên đời: ' : 'Đổi sang ') + name, 'info', d);
+        if (up && (p.vehicle === 'car' || p.vehicle === 'suv')) queueCut('car', i, { vehicle: p.vehicle });
+        else if (up && i === st.turn) banner('Lên đời: ' + name);
+        placeAll(false);
+      }
     });
     if (good) Sfx.coin(); else if (bad) Sfx.bad();
+  }
+
+  // ================= Cutscenes =================
+  const CUT_KEY = 'duongdoi.cuts';
+  let cutsOn = store.get(CUT_KEY) !== 'off', cutQueue = [], cutsSeen = [];
+  const cutBtn = $('cutBtn');
+  const showCutBtn = () => { cutBtn.textContent = 'Hoạt cảnh: ' + (cutsOn ? 'bật' : 'tắt'); cutBtn.setAttribute('aria-pressed', String(cutsOn)); };
+  showCutBtn(); cutBtn.onclick = () => { cutsOn = !cutsOn; store.set(CUT_KEY, cutsOn ? 'on' : 'off'); showCutBtn(); };
+  function queueCut(event, who, data) { cutsSeen.push(event); if (cutsOn && !FAST && window.DDCutscene) cutQueue.push({ event, who, data }); }
+  async function flushCuts() {
+    while (cutQueue.length) {
+      const c = cutQueue.shift();
+      busy = true; render();
+      try { await window.DDCutscene.play({ event: c.event, who: c.who, data: c.data, reduced, players: st.players.map((p) => ({ name: p.name, color: p.color, married: p.married, kids: p.kids })) }); } catch (e) { /* a vignette failing must not stop the game */ }
+    }
   }
 
   // ================= Camera =================
@@ -307,7 +397,8 @@
       if (p.life <= 0) { scene.remove(p.m); fx.splice(i, 1); }
     }
     for (let i = pulses.length - 1; i >= 0; i--) { const p = pulses[i]; p.t += dt; p.m.scale.setScalar(1 + p.t * 2.2); p.m.material.opacity = Math.max(0, 0.9 - p.t * 1.2); if (p.t > 0.8) { scene.remove(p.m); pulses.splice(i, 1); } }
-    if (!FAST || frames % 30 === 1) renderer.render(scene, camera);
+    const cutPlaying = window.DDCutscene && window.DDCutscene.playing;
+    if (!cutPlaying && (!FAST || frames % 30 === 1)) renderer.render(scene, camera);
     if (wSpin) {
       wSpin.t += dt; const k = Math.min(1, wSpin.t / wSpin.dur); const e = 1 - Math.pow(1 - k, 4);
       wPhi = wSpin.a + (wSpin.b - wSpin.a) * e; wheel.rotation.y = wPhi;
@@ -377,39 +468,56 @@
       if (r === 'step') showDiff(before);
       else if (r === 'landed' || r === 'choice') { if (!(st.choice && st.choice.kind === 'fork')) land(i, before); else showDiff(before); }
     }
-    placeAll(false); busy = false; render(); save();
+    placeAll(false); await flushCuts(); busy = false; render(); save();
   }
   function land(i, before) {
     const p = st.players[i], t = L.TILES[p.pos], pos = bikes[i].group.position.clone();
     pulse(p.pos, p.color); showDiff(before);
     if (t.type === 'payday') burst(pos, 'coin', 24);
-    if (t.type === 'baby') { burst(pos, 'confetti', 40); banner('Thêm thành viên!'); }
+    if (t.type === 'baby') { burst(pos, 'confetti', 40); banner('Thêm thành viên!'); queueCut('baby', i); }
+    if (st.phase === 'contest' && st.contest) { banner(st.contest.title, st.contest.kind === 'duel' ? '' : 'Mọi người cùng quay!'); Sfx.chime(); }
     if (t.type === 'stop') {
       if (t.stop === 'retire') { burst(pos, 'confetti', 110); banner('Nghỉ hưu!', 'Về đích thứ ' + p.retireOrder); Sfx.fanfare(); }
-      if (t.stop === 'grad') { burst(pos, 'confetti', 50); banner('Tốt nghiệp!'); }
+      if (t.stop === 'grad') { burst(pos, 'confetti', 50); queueCut('grad', i); }
     }
   }
   function afterSpinFor(kind, before, who) {
     showDiff(before);
     const pos = bikes[who].group.position.clone(), p = st.players[who];
-    if (kind === 'marry') { burst(pos, 'confetti', 100); banner('Trăm năm hạnh phúc!'); Sfx.fanfare(); placeAll(false); }
+    if (kind === 'marry') { burst(pos, 'confetti', 100); Sfx.fanfare(); placeAll(false); queueCut('marry', who); }
     if (kind === 'invest' && st.lastSpin >= 7) { burst(pos, 'coin', 30); banner('Trúng đậm!'); }
-    if (kind === 'startup' && st.lastSpin >= 6) { burst(pos, 'confetti', 60); banner('Khởi nghiệp thành công!'); Sfx.fanfare(); }
+    if (kind === 'startup' && st.lastSpin >= 6) { burst(pos, 'confetti', 60); Sfx.fanfare(); queueCut('startup', who); }
     if (kind === 'resale') { popup(who, `Bán nhà ${Math.round(p.house.price * (st.lastSpin <= 3 ? 0.8 : st.lastSpin <= 7 ? 1.2 : 1.6))} tr`, 'good'); Sfx.coin(); }
   }
   $('spinBtn').onclick = async () => {
-    if (busy || (st.phase !== 'spin' && st.phase !== 'spinFor')) return;
+    if (busy || !['spin', 'spinFor', 'contest'].includes(st.phase)) return;
     Sfx.ensure(); busy = true; render(); focusPlayer(st.turn);
     const forced = window.__forceSpin; window.__forceSpin = null;
     if (st.phase === 'spinFor') {
       const before = snapshot(), kind = st.spinFor.kind, who = st.turn;
       const v = L.spinFor(st, forced); await spinWheel(v);
-      busy = false; afterSpinFor(kind, before, who); render(); save(); return;
+      afterSpinFor(kind, before, who); await flushCuts(); busy = false; render(); save(); return;
+    }
+    if (st.phase === 'contest') {
+      const before = snapshot(), spinnerIdx = st.contest.order[st.contest.idx];
+      const v = L.spinContest(st, forced); await spinWheel(v);
+      popup(spinnerIdx, 'Quay ' + v, 'info');
+      if (st.phase !== 'contest') { // resolved
+        showDiff(before);
+        const c = st.lastContest; (c.result.winners || []).forEach((w) => { if (bikes[w]) burst(bikes[w].group.position.clone(), 'confetti', 40); });
+        Sfx.fanfare(); queueCut('contest', st.turn, { title: c.title, spins: c.spins, result: c.result, kind: c.kind });
+        await flushCuts();
+      } else handover(L.spinner(st), `${L.spinner(st).name} quay cho ${st.contest.title}`);
+      busy = false; render(); save(); return;
     }
     const v = L.spin(st, forced); render(); await spinWheel(v); await wait(250);
     await runMove();
   };
   $('repayBtn').onclick = () => { if (L.repay(st)) { popup(st.turn, 'Trả nợ', 'info'); render(); save(); } };
+  function handover(p, text) {
+    const h = $('handover'); h.textContent = text; h.style.borderColor = p.color; h.hidden = false;
+    clearTimeout(h._t); h._t = setTimeout(() => (h.hidden = true), FAST ? 0 : 1800);
+  }
   $('endTurnBtn').onclick = () => {
     if (busy || !L.endTurn(st)) return;
     placeAll(false); render(); save();
@@ -431,8 +539,12 @@
     if (kind === 'goal') { const g = L.GOALS.find((x) => x.key === st.players[who].goal); banner('Ước mơ: ' + g.name, g.hint); Sfx.chime(); }
     if (kind === 'job' || (kind === 'career' && st.players[who].salary !== before[who].salary)) { const c = L.careerOf(st.players[who].career); burst(pos, 'confetti', 40); banner(st.players[who].career, c && c.perk ? 'Thu phí dịch vụ: ' + L.PERKS[c.perk] : ''); }
     if (kind === 'retire') { burst(pos, 'confetti', 50); }
-    if (kind === 'house' && st.players[who].house && before[who].net !== st.players[who].cash - st.players[who].loans * L.LOAN) { burst(pos, 'confetti', 60); banner('Nhà mới!', st.players[who].house.name); Sfx.fanfare(); }
-    placeAll(false); render(); save();
+    if (kind === 'house' && st.players[who].house && before[who].net !== st.players[who].cash - st.players[who].loans * L.LOAN) { burst(pos, 'confetti', 60); Sfx.fanfare(); queueCut('house', who, { house: st.players[who].house.name }); }
+    if (kind === 'retire') queueCut('retire', who, { style: st.players[who].retireStyle });
+    if (kind === 'duel' && st.phase === 'contest') { banner(st.contest.title, 'Hai bên cùng quay'); Sfx.chime(); }
+    placeAll(false);
+    if (cutQueue.length) { busy = true; flushCuts().then(() => { busy = false; render(); save(); }); return; }
+    render(); save();
   }
 
   // ================= Panels =================
@@ -459,22 +571,25 @@
   function nextName() { let i = st.turn; for (let k = 0; k < st.players.length; k++) { i = (i + 1) % st.players.length; if (!st.players[i].retired) return st.players[i].name; } return ''; }
   function render() {
     if (!st) return;
-    const p = L.current(st), sf = st.phase === 'spinFor' && st.spinFor;
+    const sp = st.phase === 'contest' && st.contest ? L.spinner(st) : null;
+    const p = sp || L.current(st), sf = st.phase === 'spinFor' && st.spinFor;
     $('turnPanel').style.setProperty('--pc', p.color);
     $('roundLbl').textContent = `Vòng ${st.round} · ${W.REGIONS[W.regionOf(p.pos)].name}`;
     $('turnName').textContent = p.name;
     const goal = L.GOALS.find((x) => x.key === p.goal);
     $('turnMeta').textContent = `${p.career ? p.career + ' · ' + L.income(p) + ' tr/kỳ' : 'Chưa có việc'}${goal ? ' · Ước mơ: ' + goal.name : ''} · ô “${L.TILES[p.pos].label}”`;
     const spinBtn = $('spinBtn');
-    spinBtn.hidden = !['spin', 'moving', 'spinFor'].includes(st.phase);
-    spinBtn.disabled = busy || (st.phase !== 'spin' && st.phase !== 'spinFor');
-    spinBtn.classList.toggle('spin-for', !!sf && !busy);
-    spinBtn.textContent = st.phase === 'moving' ? `Đi ${st.lastSpin} bước…` : busy ? 'Đang quay…' : sf ? 'Quay!' : 'Quay số';
+    spinBtn.hidden = !['spin', 'moving', 'spinFor', 'contest'].includes(st.phase);
+    spinBtn.disabled = busy || !['spin', 'spinFor', 'contest'].includes(st.phase);
+    spinBtn.classList.toggle('spin-for', !!(sf || sp) && !busy);
+    spinBtn.textContent = st.phase === 'moving' ? `Đi ${st.lastSpin} bước…` : busy ? 'Đang quay…' : sp ? `${sp.name} quay!` : sf ? 'Quay!' : 'Quay số';
     $('repayBtn').hidden = !(st.phase === 'spin' && !busy && p.loans > 0 && p.cash >= L.LOAN_REPAY);
     $('endTurnBtn').hidden = st.phase !== 'done' || busy;
     const allRetired = st.players.every((q) => q.retired);
     $('endTurnBtn').textContent = allRetired ? (st.players.some((q) => q.house && q.resaleSpin == null) ? 'Tiếp tục: bán nhà' : 'Xem tổng kết') : `Chuyển lượt cho ${nextName()}`;
-    $('result').innerHTML = sf ? `<strong>${esc(sf.title)}</strong><br>${esc(sf.hint)}`
+    const cst = st.contest;
+    $('result').innerHTML = sp ? `<strong>${esc(cst.title)}</strong><br>${esc(cst.hint)}<br>${cst.order.map((i, k) => { const done = cst.spins[k]; const q = st.players[i]; return `<span class="cspin${k === cst.idx ? ' now' : ''}" style="--pc:${q.color}">${esc(q.name)}: ${done ? done.total + (done.bonus ? ` (${done.v}+${done.bonus})` : '') : k === cst.idx ? 'đang quay' : '…'}</span>`; }).join(' ')}`
+      : sf ? `<strong>${esc(sf.title)}</strong><br>${esc(sf.hint)}`
       : st.phase === 'spin' ? (busy ? 'Vòng quay đang chạy…' : `Đến lượt <strong>${esc(p.name)}</strong>. Bấm <strong>Quay số</strong>.`)
       : st.result ? `<strong>Quay ${st.lastSpin} · ${esc(L.TILES[p.pos].label)}</strong><br>${esc(st.result)}` : st.lastSpin ? `Quay được <strong>${st.lastSpin}</strong>.` : '';
     const ch = $('choices');
@@ -503,10 +618,12 @@
   // Test hook: read-only view of the game's own state and the 3D scene, used by selftest.cjs.
   window.__duongdoi = {
     get state() { return st; }, get busy() { return busy || !!wSpin || bikes.some((b) => b.drive); }, tiles: L.TILES,
-    view() { return { webgl: !!renderer.getContext(), frames, tiles: W.tileMeshes.length, tokens: bikes.length, tokenTile: bikes.map((b) => b.tile), passengers: bikes.map((b) => (b.spouse.visible ? 1 : 0) + b.kids.filter((k) => k.visible).length), region, quality: QUALITY }; },
+    view() { return { webgl: !!renderer.getContext(), frames, tiles: W.tileMeshes.length, tokens: bikes.length, tokenTile: bikes.map((b) => b.tile), passengers: bikes.map((b) => (b.spouse.visible ? 1 : 0) + b.kids.filter((k) => k.visible).length), vehicles: bikes.map((b) => b.vehicle), cuts: cutsSeen.slice(), region, quality: QUALITY }; },
   };
 
   // Debug/preview helper: look at a tile with that tile's atmosphere.
+  window.__dbgCut = (event, place, data) => window.DDCutscene.play({ event, place, data, who: 0, players: st ? st.players.map((p) => ({ name: p.name, color: p.color, married: true, kids: 2 })) : [{ name: 'An', color: '#e2483d', married: true, kids: 2 }, { name: 'Bình', color: '#e7b93c' }, { name: 'Chi', color: '#3fa7a0' }], duration: 60 });
+  window.__dbgVehicles = (keys) => { keys.forEach((k, i) => { if (st.players[i]) st.players[i].vehicle = k; }); st.players.forEach((p) => { p.married = true; p.kids = 2; p.pos = 2; }); placeAll(true); focusPlayer(0); };
   window.__dbgFocus = (tileId) => { viewMode = 'follow'; region = W.regionOf(tileId); const tgt = W.tilePos(tileId); flyTo(tgt, tgt.clone().add(FOLLOW_OFF), 0.01); };
 
   function boot(data) {

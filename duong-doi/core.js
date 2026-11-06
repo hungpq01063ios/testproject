@@ -60,7 +60,38 @@
     { key: 'balance', name: 'Cuộc đời cân bằng', hint: 'Thưởng cân bằng 70 điểm thay vì 20 (mọi khía cạnh ≥ 6)' },
   ];
 
+  // Vehicles follow net worth (with a little slack before stepping down).
+  const VEHICLES = [
+    { key: 'bus', name: 'Xe buýt', min: -1e9 },
+    { key: 'bicycle', name: 'Xe đạp', min: 0 },
+    { key: 'motorbike', name: 'Xe máy', min: 40 },
+    { key: 'car', name: 'Ô tô', min: 130 },
+    { key: 'suv', name: 'Xe sang', min: 260 },
+  ];
+
+  // Contests: everyone still playing spins; the highest total takes the pot. Careers in `bonus` add +2.
+  const CONTESTS = {
+    quiz: { name: 'Rung chuông vàng', fx: { know: 3 }, bonus: ['Giáo viên', 'Nhà khoa học', 'Nhà báo'] },
+    boat: { name: 'Đua thuyền', fx: { health: 2, comm: 1 }, bonus: ['Hướng dẫn viên du lịch', 'Công nhân nhà máy'], race: true },
+    karaoke: { name: 'Hội thi karaoke', fx: { comm: 3 }, bonus: ['Ca sĩ', 'YouTuber'] },
+    cooking: { name: 'Cuộc thi nấu phở', fx: { love: 2, comm: 1 }, bonus: ['Đầu bếp', 'Nông dân'] },
+    hackathon: { name: 'Cuộc thi khởi nghiệp sáng tạo', fx: { know: 2 }, bonus: ['Kỹ sư phần mềm', 'Kiến trúc sư', 'Nhà sáng lập'], extra: 20 },
+    cycling: { name: 'Đua xe đạp', fx: { health: 3 }, bonus: ['Shipper', 'Tài xế công nghệ'], race: true },
+  };
+  const CONTEST_FEE = 5;
+  // Duels: the lander picks an opponent, both spin, the higher total takes the stake.
+  const DUELS = {
+    chess: { name: 'Thách đấu cờ tướng', stake: 15, fx: { know: 1 }, bonus: ['Nhà khoa học', 'Giáo viên'] },
+    football: { name: 'Kèo bóng đá cuối tuần', stake: 10, fx: { health: 1 }, bonus: ['Shipper', 'Nông dân'] },
+    land: { name: 'Tranh chấp đất đai', stake: 25, fx: {}, bonus: ['Luật sư'], bonusValue: 3, loserFx: { love: -1 } },
+  };
+
   const EVENTS = [
+    { text: 'Mời cả nhóm đi ăn mừng', transfer: { kind: 'toEach', amount: 4 }, love: 1, comm: 1 },
+    { text: 'Bạn cũ trả món nợ năm xưa', transfer: { kind: 'fromRichest', amount: 10 } },
+    { text: 'Quỹ tương thân tương ái: người giàu nhất giúp người khó khăn nhất', transfer: { kind: 'richToPoor', amount: 15 }, comm: 1 },
+    { text: 'Hàng xóm làm vỡ kính nhà bạn, phải đền', transfer: { kind: 'fromNext', amount: 8 } },
+    { text: 'Cho bạn thân vay tiền chữa bệnh', transfer: { kind: 'toPoorest', amount: 10 }, comm: 2, love: 1 },
     { text: 'Trúng giải khuyến khích xổ số', cash: 10 },
     { text: 'Xe máy hỏng giữa trời mưa', cash: -5, tag: 'vehicle' },
     { text: 'Đi Đà Lạt cuối tuần', cash: -8, health: 1, love: 1, tag: 'travel' },
@@ -112,47 +143,49 @@
     const R = (amount, label, fx) => Object.assign({ type: 'raise', amount, label }, fx || {});
     const C = { type: 'career', label: 'Đổi nghề' };
     const br = (t, key, name, hint) => { t.branch = { key, name, hint }; };
+    const X = (key, label) => ({ type: 'contest', contest: key, label });
+    const D = (key, label) => ({ type: 'duel', duel: key, label });
 
     const start = add({ type: 'start', label: 'Xuất phát', x: 0, y: 1.1 });
 
     // Fork 1 (three ways): university, work right away, vocational school
-    const uni = seg([E, H('CLB sinh viên', { know: 2, comm: 1 }), E, M(5, 'Học bổng', { know: 1 }), E, H('Mùa hè xanh', { comm: 3, cash: -3 }), M(-5, 'Thi lại Giải tích', { tag: 'school' }), S('grad', 'Tốt nghiệp')], 1, 0, 8, 0);
+    const uni = seg([E, H('CLB sinh viên', { know: 2, comm: 1 }), E, M(5, 'Học bổng', { know: 1 }), X('quiz', 'Rung chuông vàng'), H('Mùa hè xanh', { comm: 3, cash: -3 }), M(-5, 'Thi lại Giải tích', { tag: 'school' }), S('grad', 'Tốt nghiệp')], 1, 0, 8, 0);
     br(uni[0], 'uni', 'Học đại học', 'Trả 50 tr học phí, mở nghề lương cao');
-    const work = seg([M(8, 'Lương thử việc'), E, H('Đá bóng cuối tuần', { health: 2 }), M(-4, 'Tiền thuê trọ', { tag: 'house' }), S('job', 'Nhận việc')], 1.4, 2.2, 8, 2.2);
+    const work = seg([M(8, 'Lương thử việc'), D('football', 'Kèo bóng đá cuối tuần'), H('Đá bóng cuối tuần', { health: 2 }), M(-4, 'Tiền thuê trọ', { tag: 'house' }), S('job', 'Nhận việc')], 1.4, 2.2, 8, 2.2);
     br(work[0], 'work', 'Đi làm ngay', 'Không tốn học phí, kiếm tiền sớm nhất');
-    const voc = seg([E, H('Thực tập ở xưởng', { know: 2 }), M(-4, 'Mua đồ nghề', { tag: 'shop' }), E, H('Thi tay nghề', { know: 1, comm: 1 }), S('trade', 'Ra nghề')], 1.2, -1.25, 8, -1.25);
+    const voc = seg([E, H('Thực tập ở xưởng', { know: 2 }), M(-4, 'Mua đồ nghề', { tag: 'shop' }), D('chess', 'Thách đấu cờ tướng'), H('Thi tay nghề', { know: 1, comm: 1 }), S('trade', 'Ra nghề')], 1.2, -1.25, 8, -1.25);
     br(voc[0], 'trade', 'Học nghề', 'Trả 20 tr, nghề kỹ thuật lương khá');
     link(start, uni[0]); link(start, work[0]); link(start, voc[0]); chain(uni); chain(work); chain(voc);
 
     const m1 = add(Object.assign({}, P, { x: 9.6, y: 0.6 }));
     link(uni[uni.length - 1], m1); link(work[work.length - 1], m1); link(voc[voc.length - 1], m1);
 
-    const s1 = seg([E, M(-6, 'Mua xe máy mới', { tag: 'vehicle' }), P, H('Phượt Hà Giang', { health: 2, love: 1, cash: -4, tag: 'travel' }), E, S('marry', 'Kết hôn'), M(-6, 'Đám cưới bạn thân', { love: 1, tag: 'wedding' }), P, E, H('Nuôi mèo', { love: 1, health: 1 }), T], 10, 3.3, 0, 3.3);
+    const s1 = seg([E, M(-6, 'Mua xe máy mới', { tag: 'vehicle' }), P, H('Phượt Hà Giang', { health: 2, love: 1, cash: -4, tag: 'travel' }), E, S('marry', 'Kết hôn'), M(-6, 'Đám cưới bạn thân', { love: 1, tag: 'wedding' }), P, X('boat', 'Đua thuyền sông Hoài'), H('Nuôi mèo', { love: 1, health: 1 }), T], 10, 3.3, 0, 3.3);
     link(m1, s1[0]); chain(s1);
-    const s2 = seg([P, H('Tình nguyện mùa lũ', { comm: 2, health: -1 }), R(5, 'Được tăng lương', { know: 1 }), M(-8, 'Sửa nhà', { tag: 'house' }), E, S('house', 'Mua nhà'), G(4, 'Tân gia'), P, E, I, E], 0, 4.4, 10, 4.4);
+    const s2 = seg([P, H('Tình nguyện mùa lũ', { comm: 2, health: -1 }), R(5, 'Được tăng lương', { know: 1 }), M(-8, 'Sửa nhà', { tag: 'house' }), D('land', 'Tranh chấp đất đai'), S('house', 'Mua nhà'), G(4, 'Tân gia'), P, E, I, X('karaoke', 'Hội thi karaoke Đà Lạt')], 0, 4.4, 10, 4.4);
     link(s1[s1.length - 1], s2[0]); chain(s2);
 
     // Fork 2: family or career
     const forkB = add({ type: 'fork', label: 'Ngã rẽ', x: 10, y: 5.5 });
     link(s2[s2.length - 1], forkB);
-    const fam = seg([B, H('Họp lớp', { love: 1, comm: 1, cash: -5 }), E, B, M(-12, 'Học phí trường quốc tế', { know: 1, tag: 'school' }), H('Du lịch Phú Quốc cả nhà', { love: 3, health: 1, cash: -6, tag: 'travel' }), B, E, P], 9, 6.5, 1, 6.5);
+    const fam = seg([B, H('Họp lớp', { love: 1, comm: 1, cash: -5 }), E, B, M(-12, 'Học phí trường quốc tế', { know: 1, tag: 'school' }), H('Du lịch Phú Quốc cả nhà', { love: 3, health: 1, cash: -6, tag: 'travel' }), B, X('cooking', 'Cuộc thi nấu phở'), P], 9, 6.5, 1, 6.5);
     br(fam[0], 'family', 'Đường gia đình', 'Thêm con cháu, nhiều ♥, tốn kém');
-    const car = seg([R(8, 'Thăng chức'), E, I, M(-6, 'Tăng ca liên tục', { health: -2 }), R(6, 'Chứng chỉ quốc tế', { know: 2 }), E, C, I, P], 9, 7.9, 1, 7.9);
+    const car = seg([R(8, 'Thăng chức'), E, I, M(-6, 'Tăng ca liên tục', { health: -2 }), R(6, 'Chứng chỉ quốc tế', { know: 2 }), X('hackathon', 'Cuộc thi khởi nghiệp'), C, I, P], 9, 7.9, 1, 7.9);
     br(car[0], 'career', 'Đường sự nghiệp', 'Tăng lương, đầu tư, đổi nghề, hao sức');
     link(forkB, fam[0]); link(forkB, car[0]); chain(fam); chain(car);
 
     const m2 = add({ type: 'happy', label: 'Ngày của gia đình', cash: 0, love: 2, x: 0, y: 7.2 });
     link(fam[fam.length - 1], m2); link(car[car.length - 1], m2);
 
-    const s3 = seg([P, E, B, M(-15, 'Viện phí người thân', { love: 1, tag: 'health' }), E, S('mid', 'Tuổi 40'), P, H('Học vẽ', { know: 1, health: 1, cash: -5 }), I, E, T], 0, 9.2, 10, 9.2);
+    const s3 = seg([P, E, B, M(-15, 'Viện phí người thân', { love: 1, tag: 'health' }), E, S('mid', 'Tuổi 40'), P, H('Học vẽ', { know: 1, health: 1, cash: -5 }), I, X('cycling', 'Đua xe đạp leo Bà Nà'), T], 0, 9.2, 10, 9.2);
     link(m2, s3[0]); chain(s3);
 
     // Fork 3: give back or grow wealth, then retire
     const forkD = add({ type: 'fork', label: 'Ngã rẽ', x: 10.5, y: 10.3 });
     link(s3[s3.length - 1], forkD);
-    const give = seg([H('Dạy học miễn phí', { comm: 3, know: 1 }), E, H('Hiến máu, hiến tạng', { comm: 2 }), P, H('Xây trường vùng cao', { comm: 4, cash: -15 }), E, H('Trồng rừng ngập mặn', { comm: 3, health: 1, cash: -5 }), H('Đón cháu nội', { love: 3 }), P], 9, 11.0, 1, 11.0);
+    const give = seg([H('Dạy học miễn phí', { comm: 3, know: 1 }), E, H('Hiến máu, hiến tạng', { comm: 2 }), P, H('Xây trường vùng cao', { comm: 4, cash: -15 }), D('chess', 'Thách đấu cờ tướng'), H('Trồng rừng ngập mặn', { comm: 3, health: 1, cash: -5 }), H('Đón cháu nội', { love: 3 }), P], 9, 11.0, 1, 11.0);
     br(give[0], 'give', 'Đường cống hiến', 'Nhiều ★ Cống hiến, ít tiền');
-    const rich = seg([I, E, M(20, 'Nhận cổ tức'), P, I, M(25, 'Bán đất ở quê'), E, M(-10, 'Chứng khoán lao dốc', { health: -1 }), P], 9, 12.4, 1, 12.4);
+    const rich = seg([I, E, M(20, 'Nhận cổ tức'), P, I, M(25, 'Bán đất ở quê'), D('land', 'Tranh chấp đất đai'), M(-10, 'Chứng khoán lao dốc', { health: -1 }), P], 9, 12.4, 1, 12.4);
     br(rich[0], 'rich', 'Đường làm giàu', 'Đầu tư, cổ tức, rủi ro cao');
     link(forkD, give[0]); link(forkD, rich[0]); chain(give); chain(rich);
     const retire = add({ type: 'stop', stop: 'retire', label: 'Nghỉ hưu', x: 0, y: 11.7 });
@@ -217,6 +250,91 @@
     if (c.perk) bits.push('Thu phí: ' + PERKS[c.perk]);
     return bits.join(' · ');
   }
+  const netWorth = (p) => p.cash + (p.house ? p.house.price : 0) - p.loans * LOAN_REPAY;
+  function vehicleFor(p) {
+    const net = netWorth(p), cur = VEHICLES.findIndex((v) => v.key === p.vehicle);
+    let k = 0; VEHICLES.forEach((v, i) => { if (net >= v.min) k = i; });
+    if (cur > k && net >= VEHICLES[cur].min - 20) k = cur; // slack before stepping down
+    return VEHICLES[k].key;
+  }
+  function updateVehicles(st) {
+    st.players.forEach((p) => {
+      const v = vehicleFor(p); if (v === p.vehicle) return;
+      const up = VEHICLES.findIndex((x) => x.key === v) > VEHICLES.findIndex((x) => x.key === p.vehicle);
+      if (p.vehicle) log(st, `${up ? 'lên đời' : 'chuyển sang'}: ${VEHICLES.find((x) => x.key === v).name}`, p);
+      p.vehicle = v;
+    });
+  }
+  const active = (st) => st.players.map((p, i) => i).filter((i) => !st.players[i].retired);
+  function applyTransfer(st, p, tr) {
+    const others = active(st).map((i) => st.players[i]).filter((o) => o !== p);
+    const byNet = (arr) => arr.slice().sort((a, b) => netWorth(b) - netWorth(a));
+    const move = (from, to, n) => { addCash(st, from, -n); addCash(st, to, n); return `${from.name} → ${to.name} ${n} tr`; };
+    if (!others.length) return '';
+    if (tr.kind === 'toEach') return others.map((o) => move(p, o, tr.amount)).join(', ');
+    if (tr.kind === 'fromRichest') return move(byNet(others)[0], p, tr.amount);
+    if (tr.kind === 'toPoorest') return move(p, byNet(others).pop(), tr.amount);
+    if (tr.kind === 'fromNext') { const i = st.players.indexOf(p); for (let k = 1; k < st.players.length; k++) { const o = st.players[(i + k) % st.players.length]; if (!o.retired && o !== p) return move(o, p, tr.amount); } return ''; }
+    if (tr.kind === 'richToPoor') { const all = byNet(active(st).map((i) => st.players[i])); const a = all[0], b = all[all.length - 1]; return a === b ? '' : move(a, b, tr.amount); }
+    return '';
+  }
+  function careerBonus(p, def) { return def.bonus && def.bonus.includes(p.career) ? (def.bonusValue || 2) : 0; }
+  function startContest(st, p, t) {
+    const c = CONTESTS[t.contest], order = [];
+    for (let k = 0; k < st.players.length; k++) { const i = (st.turn + k) % st.players.length; if (!st.players[i].retired) order.push(i); }
+    if (order.length < 2) { addAspects(p, c.fx); log(st, `${t.label}: không có đối thủ, tự luyện tập (${fxText(c.fx, 0)})`, p); return done(st, `${t.label}: không còn ai thi cùng, bạn tự luyện tập: ${fxText(c.fx, 0)}.`); }
+    let pot = 0; order.forEach((i) => { addCash(st, st.players[i], -CONTEST_FEE); pot += CONTEST_FEE; });
+    st.phase = 'contest'; st.choice = null;
+    st.contest = { kind: 'contest', key: t.contest, title: t.label, order, idx: 0, spins: [], pot, race: !!c.race,
+      hint: `Mọi người góp ${CONTEST_FEE} tr. Ai quay cao nhất nhận ${pot}${c.extra ? ' + ' + c.extra : ''} tr và ${fxText(c.fx, 0)}. Nghề ${c.bonus.join(', ')} được +2.` };
+    log(st, `mở ${t.label}: ${order.length} người góp quỹ ${pot} tr`, p);
+  }
+  function startDuel(st, p, key, oppIndex, label) {
+    const d = DUELS[key];
+    st.phase = 'contest'; st.choice = null;
+    st.contest = { kind: 'duel', key, title: label, order: [st.turn, oppIndex], idx: 0, spins: [], stake: d.stake,
+      hint: `Hai bên cùng quay, ai cao hơn lấy ${d.stake} tr của người kia${d.bonus.length ? `. Nghề ${d.bonus.join(', ')} được +${d.bonusValue || 2}` : ''}.` };
+    log(st, `thách ${st.players[oppIndex].name}: ${label}`, p);
+  }
+  function resolveContest(st) {
+    const c = st.contest, best = Math.max(...c.spins.map((s) => s.total));
+    const winners = c.spins.filter((s) => s.total === best).map((s) => s.i);
+    const P = st.players, lander = cur(st);
+    if (c.kind === 'contest') {
+      const def = CONTESTS[c.key], share = Math.floor((c.pot + (def.extra || 0)) / winners.length);
+      winners.forEach((i) => { addCash(st, P[i], share); addAspects(P[i], def.fx); });
+      const names = winners.map((i) => P[i].name).join(' & ');
+      log(st, `${c.title}: ${names} thắng (${best}), nhận ${share} tr, ${fxText(def.fx, 0)}`);
+      c.result = { winners, best, share };
+      done(st, `${c.title}: ${c.spins.map((s) => `${P[s.i].name} ${s.v}${s.bonus ? '+' + s.bonus : ''}`).join(' · ')}. ${names} thắng, nhận ${share} tr và ${fxText(def.fx, 0)}.`);
+    } else {
+      const def = DUELS[c.key], [a, b] = c.spins;
+      if (a.total === b.total) { c.result = { winners: [], best }; log(st, `${c.title}: hoà ${a.total}–${b.total}`); done(st, `${c.title}: hoà ${a.total}–${b.total}, không ai mất tiền.`); }
+      else {
+        const w = a.total > b.total ? a : b, l = w === a ? b : a;
+        addCash(st, P[l.i], -c.stake); addCash(st, P[w.i], c.stake); addAspects(P[w.i], def.fx); if (def.loserFx) addAspects(P[l.i], def.loserFx);
+        c.result = { winners: [w.i], best };
+        log(st, `${c.title}: ${P[w.i].name} thắng ${w.total}–${l.total}, lấy ${c.stake} tr của ${P[l.i].name}`);
+        done(st, `${c.title}: ${P[a.i].name} ${a.v}${a.bonus ? '+' + a.bonus : ''} · ${P[b.i].name} ${b.v}${b.bonus ? '+' + b.bonus : ''}. ${P[w.i].name} thắng, lấy ${c.stake} tr của ${P[l.i].name}.`);
+      }
+    }
+    st.lastContest = c; st.contest = null;
+    if (lander) { /* turn stays with the lander */ }
+  }
+  // Each participant presses the wheel in turn.
+  function spinContest(st, forced) {
+    if (st.phase !== 'contest' || !st.contest) return null;
+    const v = forced || roll(st); if (forced) st.rolls++;
+    st.playerRolls++; st.lastSpin = v;
+    const c = st.contest, i = c.order[c.idx], p = st.players[i];
+    const def = c.kind === 'contest' ? CONTESTS[c.key] : DUELS[c.key], bonus = careerBonus(p, def);
+    c.spins.push({ i, v, bonus, total: v + bonus }); c.idx++;
+    log(st, `quay ${v}${bonus ? ` (+${bonus} nghề)` : ''} trong ${c.title}`, p);
+    if (c.idx >= c.order.length) resolveContest(st);
+    return v;
+  }
+  const spinner = (st) => (st.phase === 'contest' && st.contest ? st.players[st.contest.order[st.contest.idx]] : cur(st));
+
   function setCareer(p, c) { p.career = c.name; p.salary = c.salary; p.perk = c.perk; }
   function payday(st, p, bonus) {
     const inc = income(p) + (bonus || 0); addCash(st, p, inc);
@@ -233,12 +351,13 @@
       lastSpin: null, moveLeft: 0, choice: null, result: '', retiredCount: 0,
       players: names.map((name, i) => ({
         name, color: COLORS[i % COLORS.length], pos: 0, cash: START_CASH, loans: 0,
-        love: 1, know: 1, health: 3, comm: 0, goal: null,
+        love: 1, know: 1, health: 3, comm: 0, goal: null, vehicle: null,
         career: null, salary: 0, perk: null, edu: 'none', married: false, single: false, kids: 0, house: null,
         retired: false, forkPick: null, branches: [], retireStyle: null,
       })),
-      log: [], events: [], final: null, spinFor: null, rolls: 0, playerRolls: 0,
+      log: [], events: [], final: null, spinFor: null, contest: null, lastContest: null, rolls: 0, playerRolls: 0,
     };
+    updateVehicles(st);
     log(st, `Ván mới với ${names.length} người chơi. ${names[0]} đi trước.`);
     askGoal(st);
     return st;
@@ -277,7 +396,7 @@
       log(st, `đi qua Ngày lương: ${money(r.inc)}${fxText(r.per, 0) ? ', ' + fxText(r.per, 0) : ''}`, p);
     }
     if (t.type === 'stop') st.moveLeft = 0;
-    if (st.moveLeft <= 0) { land(st, p, t); return st.phase === 'choice' || st.phase === 'spinFor' ? 'choice' : 'landed'; }
+    if (st.moveLeft <= 0) { land(st, p, t); return ['choice', 'spinFor', 'contest'].includes(st.phase) ? 'choice' : 'landed'; }
     return 'step';
   }
 
@@ -299,7 +418,8 @@
         let fee = null;
         if (cash < 0) fee = pay(st, p, -cash, e.tag); else addCash(st, p, cash);
         addAspects(p, e);
-        const fx = fxText(e, cash) || 'không đổi';
+        const moved = e.transfer ? applyTransfer(st, p, e.transfer) : '';
+        const fx = [fxText(e, cash), moved].filter(Boolean).join('; ') || 'không đổi';
         log(st, `${e.text} (${fx})`, p);
         return done(st, `${e.text}. ${fx}.${feeNote(fee)}`);
       }
@@ -343,6 +463,13 @@
         const offers = pick(st, CAREERS.filter((c) => ok.includes(c.edu) && c.name !== p.career), 3);
         return ask(st, 'career', 'Đổi nghề?', offers.map((c) => ({ label: c.name, hint: careerHint(c), value: c.name }))
           .concat([{ label: 'Giữ nghề hiện tại', hint: `${p.career || 'Chưa có nghề'} · ${income(p)} tr/kỳ`, value: null }]));
+      }
+      case 'contest': return startContest(st, p, t);
+      case 'duel': {
+        const d = DUELS[t.duel], opps = active(st).filter((i) => i !== st.turn);
+        if (!opps.length) return done(st, `${t.label}: không còn ai để thách đấu.`);
+        return ask(st, 'duel', `${t.label}: thách ai? (cược ${d.stake} tr)`, opps.map((i) => ({ label: `Thách ${st.players[i].name}`, hint: `${st.players[i].career || 'Chưa có việc'} · ${st.players[i].cash} tr${careerBonus(st.players[i], d) ? ` · được +${d.bonusValue || 2} nhờ nghề` : ''}`, value: i }))
+          .concat([{ label: 'Thôi, hoà khí là chính', hint: 'Không thách ai, không mất gì', value: -1 }]), { duel: t.duel, label: t.label });
       }
       case 'stop': return landStop(st, p, t);
       default: return done(st, t.label);
@@ -391,9 +518,13 @@
   function choose(st, index) {
     if (st.phase !== 'choice' || !st.choice) return false;
     const opt = st.choice.options[index]; if (!opt) return false;
-    const p = cur(st); const kind = st.choice.kind;
+    const p = cur(st); const kind = st.choice.kind, chosen = st.choice;
     st.choice = null;
     switch (kind) {
+      case 'duel': {
+        if (opt.value < 0) { done(st, 'Bạn chọn hoà khí, không thách ai.'); log(st, 'không thách đấu ai', p); return true; }
+        startDuel(st, p, chosen.duel, opt.value, chosen.label); return true;
+      }
       case 'goal': {
         const g = GOALS.find((x) => x.key === opt.value); p.goal = g.key;
         log(st, `chọn ước mơ: ${g.name}`, p);
@@ -537,9 +668,11 @@
     log(st, `Kết thúc! ${st.final[0].name} thắng với ${st.final[0].score} điểm đời.`);
   }
 
+  const track = (fn) => function (st) { const r = fn.apply(null, arguments); if (st && st.players) updateVehicles(st); return r; };
   const api = {
-    TILES, CAREERS, HOUSES, EVENTS, GOALS, ASPECTS, PERKS, EDU_NAME, COLORS, START_CASH, LOAN, LOAN_REPAY, RETIRE_BONUS, SCORE,
-    newGame, spin, spinFor, step, choose, repay, endTurn, current: cur, income, scoreOf, careerOf, fxText,
+    TILES, CAREERS, HOUSES, EVENTS, GOALS, ASPECTS, PERKS, EDU_NAME, COLORS, START_CASH, LOAN, LOAN_REPAY, RETIRE_BONUS, SCORE, VEHICLES, CONTESTS, DUELS, CONTEST_FEE,
+    newGame, spin: track(spin), spinFor: track(spinFor), spinContest: track(spinContest), step: track(step), choose: track(choose), repay: track(repay), endTurn: track(endTurn),
+    current: cur, spinner, income, scoreOf, careerOf, fxText, netWorth,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.LifeCore = api;

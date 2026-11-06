@@ -68,6 +68,17 @@ Thu phí: khi người chơi khác trả một khoản có nhãn dịch vụ c�
 | Nghỉ hưu | Về quê làm vườn · Ở phố gần con cháu · Du lịch vòng quanh thế giới · Lập quỹ học bổng |
 | Ô đầu tư / Ô đổi nghề | Góp 20 tr rồi tự quay · Đổi sang 1 trong 3 nghề |
 
+## Cuộc thi và thách đấu
+| Ô | Cách chơi | Nghề được cộng |
+|---|---|---|
+| Cuộc thi (6 ô) | Mọi người còn chơi góp 5 tr vào quỹ, lần lượt tự quay; cao nhất nhận cả quỹ và chỉ số; hoà thì chia | +2 cho nghề hợp (vd. Đầu bếp ở cuộc thi nấu phở) |
+| Thách đấu (5 ô) | Người dừng chọn đối thủ hoặc từ chối; hai bên quay, cao hơn lấy tiền cược 10–25 tr | Luật sư +3 ở tranh chấp đất đai |
+
+Lá sự kiện chuyển tiền: mời cả nhóm ăn mừng (trả 4 tr mỗi người), bạn cũ trả nợ (người giàu nhất trả 10 tr), quỹ tương thân (người giàu nhất cho người nghèo nhất 15 tr), hàng xóm đền (người kế tiếp trả 8 tr), cho bạn vay chữa bệnh (trả người nghèo nhất 10 tr).
+
+## Phương tiện
+Theo tài sản ròng (tiền + giá nhà − nợ): xe buýt dưới 0 · xe đạp từ 0 · xe máy từ 40 · ô tô từ 130 · xe sang từ 260 tr. Chỉ xuống hạng khi tụt quá ngưỡng 20 tr.
+
 ## Nhà
 | Nhà | Giá | Khía cạnh |
 |---|---|---|

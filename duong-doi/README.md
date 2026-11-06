@@ -19,7 +19,11 @@ Ván đang chơi được tự lưu trong trình duyệt. Mở lại trang và b
 - **Ước mơ**: đầu ván mỗi người chọn 1 trong 3 lá (Đại gia, Gia đình hạnh phúc, Học giả, Sống khoẻ sống lâu, Người truyền cảm hứng, Cuộc đời cân bằng); khía cạnh của ước mơ được nhân đôi điểm.
 - **22 nghề, 3 hệ** (phổ thông / học nghề / đại học): mỗi nghề có lương, chỉ số tăng mỗi kỳ lương và quyền **thu phí dịch vụ** khi người khác trả tiền cho dịch vụ đó. Ca sĩ và YouTuber có lương tăng theo ★.
 - **3 ngã rẽ**: Đại học / Học nghề / Đi làm ngay → Gia đình / Sự nghiệp → Cống hiến / Làm giàu. Cùng các lựa chọn: kết hôn hay độc thân, mua nhà, tuổi 40, cách sống khi nghỉ hưu.
-- **Mọi vòng quay do người chơi bấm**: đi đường, mừng cưới, đầu tư, khởi nghiệp, giá bán nhà.
+- **Cuộc thi** (ô cúp): mọi người góp 5 tr rồi lần lượt tự quay; cao nhất ăn cả quỹ, nghề hợp được +2 (Rung chuông vàng, Đua thuyền, Karaoke, Nấu phở, Khởi nghiệp sáng tạo, Đua xe đạp).
+- **Thách đấu** (ô VS): chọn đối thủ, hai bên cùng quay, người thắng lấy tiền cược (cờ tướng, kèo bóng đá, tranh chấp đất đai). Thêm các lá sự kiện chuyển tiền giữa người chơi.
+- **Phương tiện theo tài sản ròng**: xe buýt (đang nợ) → xe đạp → xe máy (40 tr) → ô tô (130 tr) → xe sang (260 tr).
+- **Hoạt cảnh**: tốt nghiệp, kết hôn, có con, mua nhà, tậu ô tô, khởi nghiệp thành công, nghỉ hưu và trao giải cuộc thi, diễn ở một trong 11 cảnh đẹp ba miền chọn ngẫu nhiên. Bấm "Bỏ qua" hoặc tắt bằng nút **Hoạt cảnh**.
+- **Mọi vòng quay do người chơi bấm**: đi đường, mừng cưới, đầu tư, khởi nghiệp, giá bán nhà, cuộc thi, thách đấu.
 - **Điểm Đời** = tài sản ròng ÷ 5 + điểm 4 khía cạnh + thưởng cân bằng.
 
 Chi tiết từng con số ở `MECHANICS.md`.
@@ -30,6 +34,7 @@ Chi tiết từng con số ở `MECHANICS.md`.
 |---|---|
 | `core.js` | Logic game thuần (không phụ thuộc DOM): bàn cờ 79 ô, nghề, nhà, sự kiện, lượt chơi, chấm điểm. RNG có seed nên ván chơi tái lập được |
 | `index.html` + `app.js` | **Bản 3D** (Three.js): giao diện, quân xe máy chở cả nhà chạy theo đường cong, vòng quay 3D, camera bám người chơi, pháo giấy, đồng xu, số tiền bay lên, âm thanh tổng hợp |
+| `cutscene.js` | Hoạt cảnh: sân khấu 3D riêng, 11 bối cảnh (Hồ Gươm, Hạ Long, Mù Cang Chải, Tràng An, Kinh thành Huế, Hội An, Mũi Né, Đà Lạt, Cái Răng, Phú Quốc, Bến Bạch Đằng) × 8 loại sự kiện |
 | `world.js` | Thế giới 3D dựng bằng code: đảo có địa hình, biển và sông hồ, đường lát đá uốn lượn, 7 vùng với công trình và ánh sáng riêng, cây cối, thuyền, chim, mây |
 | `2d.html` | Bản 2D nhẹ (bàn cờ SVG) cho máy yếu |
 | `vendor/` | Three.js r147 + OrbitControls (MIT), để chơi được khi không có mạng |
@@ -80,6 +85,9 @@ Script mở game trong Chromium (Playwright), thiết lập 3 người chơi b�
 | `retire` | Chơi hết ván tới khi mọi người nghỉ hưu và màn tổng kết hiện ra |
 | `life-aspects` | Điểm tổng kết đúng bằng tài sản + 4 khía cạnh + cân bằng |
 | `choices-and-careers` | Ván thử đi qua ít nhất 6 loại quyết định (ước mơ, ngã rẽ, nghề, kết hôn, nhà, tuổi 40, nghỉ hưu…) |
+| `contests` | Mỗi cuộc thi/thách đấu có đủ lượt quay của từng người tham gia và có kết quả |
+| `vehicles` | Phương tiện trên bàn cờ luôn khớp tài sản của người chơi; ván thử dùng ít nhất 2 loại |
+| `cutscenes` | Ván thử kích hoạt ít nhất 3 loại hoạt cảnh |
 | `no-errors` | Không có lỗi script trong trang |
 
 ## Quy trình làm

@@ -284,7 +284,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
   const U = 66, PAD = 46;
   const TX = (t) => PAD + t.x * U, TY = (t) => PAD + t.y * U;
   const TYPE_STYLE = {
-    start: ['var(--jade)', '►'], payday: ['#b9862b', '₫'], event: ['#8f2e25', '?'], happy: ['#b0566f', '★'],
+    start: ['var(--jade)', '►'], payday: ['#b9862b', '₫'], event: ['#8f2e25', '?'], happy: ['#b0566f', '★'], contest: ['#e0861e', '♛'], duel: ['#5b4bb0', 'VS'],
     baby: ['#3e8a8a', '✿'], tax: ['#4b3a35', '%'], invest: ['var(--plum)', '↗'], gift: ['#a8752a', '✉'],
     raise: ['#3f8a6c', '▲'], career: ['#5d6fa3', '⇄'], fork: ['#6b4a2f', 'Y'],
   };
@@ -388,10 +388,11 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
     busy = false; render(); save();
   }
   $('spinBtn').onclick = async () => {
-    if (busy || (st.phase !== 'spin' && st.phase !== 'spinFor')) return;
+    if (busy || !['spin', 'spinFor', 'contest'].includes(st.phase)) return;
     busy = true; render();
     const forced = window.__forceSpin; window.__forceSpin = null;
     if (st.phase === 'spinFor') { const v = L.spinFor(st, forced); await animateWheel(v); busy = false; render(); save(); return; }
+    if (st.phase === 'contest') { const v = L.spinContest(st, forced); await animateWheel(v); busy = false; render(); save(); return; }
     const v = L.spin(st, forced); await animateWheel(v); await wait(FAST ? 0 : 150);
     await runMove();
   };
@@ -435,14 +436,14 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
     $('roundLbl').textContent = `Vòng ${st.round}`;
     $('turnName').textContent = p.name;
     $('turnMeta').textContent = `${p.career ? p.career + ' · ' + p.salary + ' tr/kỳ' : 'Chưa có việc'} · đang ở ô “${L.TILES[p.pos].label}”`;
-    $('spinBtn').hidden = !['spin', 'moving', 'spinFor'].includes(st.phase);
-    $('spinBtn').disabled = busy || (st.phase !== 'spin' && st.phase !== 'spinFor');
-    $('spinBtn').textContent = st.phase === 'moving' ? `Đang đi ${st.lastSpin} bước…` : st.phase === 'spinFor' ? 'Quay!' : 'Quay số';
+    $('spinBtn').hidden = !['spin', 'moving', 'spinFor', 'contest'].includes(st.phase);
+    $('spinBtn').disabled = busy || !['spin', 'spinFor', 'contest'].includes(st.phase);
+    $('spinBtn').textContent = st.phase === 'moving' ? `Đang đi ${st.lastSpin} bước…` : st.phase === 'contest' ? `${L.spinner(st).name} quay!` : st.phase === 'spinFor' ? 'Quay!' : 'Quay số';
     $('repayBtn').hidden = !(st.phase === 'spin' && p.loans > 0 && p.cash >= L.LOAN_REPAY);
     $('endTurnBtn').hidden = st.phase !== 'done';
     const next = st.players.length > 1 ? nextName() : '';
     $('endTurnBtn').textContent = st.players.every((q) => q.retired) ? 'Xem tổng kết' : `Chuyển lượt cho ${next}`;
-    $('result').innerHTML = st.phase === 'spinFor' && st.spinFor ? `<strong>${esc(st.spinFor.title)}</strong><br>${esc(st.spinFor.hint)}` : st.phase === 'spin' ? `Đến lượt <strong>${esc(p.name)}</strong>. Bấm <strong>Quay số</strong>.`
+    $('result').innerHTML = st.phase === 'contest' && st.contest ? `<strong>${esc(st.contest.title)}</strong><br>${esc(st.contest.hint)}<br>Đến lượt <strong>${esc(L.spinner(st).name)}</strong> quay.` : st.phase === 'spinFor' && st.spinFor ? `<strong>${esc(st.spinFor.title)}</strong><br>${esc(st.spinFor.hint)}` : st.phase === 'spin' ? `Đến lượt <strong>${esc(p.name)}</strong>. Bấm <strong>Quay số</strong>.`
       : st.result ? `<strong>${st.lastSpin ? 'Quay ' + st.lastSpin + ' · ' : ''}</strong>${esc(st.result)}` : st.lastSpin ? `Quay được <strong>${st.lastSpin}</strong>.` : '';
     const ch = $('choices');
     if (st.phase === 'choice' && st.choice) {

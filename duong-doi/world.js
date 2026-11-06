@@ -286,7 +286,7 @@
     // ---------- Tiles ----------
     const STYLE = {
       start: ['#3f9b83', '►'], payday: ['#d39f2a', '₫'], event: ['#b23a2e', '?'], happy: ['#cf5f82', '★'], baby: ['#2f9a9a', '✿'], tax: ['#62504a', '%'],
-      invest: ['#8b5aa8', '↗'], gift: ['#c88a2c', '✉'], raise: ['#3b8f6c', '▲'], career: ['#5a6fb0', '⇄'], fork: ['#8a5a32', 'Y'],
+      invest: ['#8b5aa8', '↗'], gift: ['#c88a2c', '✉'], raise: ['#3b8f6c', '▲'], career: ['#5a6fb0', '⇄'], fork: ['#8a5a32', 'Y'], contest: ['#e0861e', 'TROPHY'], duel: ['#5b4bb0', 'VS'],
     };
     const ASP_LOOK = { love: ['#d9577a', '♥'], know: ['#3f7fc4', '◆'], health: ['#3f9a62', '✚'], comm: ['#c9971f', '★'] };
     const mainAspect = (t) => ['love', 'know', 'health', 'comm'].reduce((b, k) => ((t[k] || 0) > (t[b] || 0) ? k : b), 'love');
@@ -298,7 +298,12 @@
         const gr = g.createRadialGradient(110, 100, 10, 128, 128, 128); gr.addColorStop(0, new T.Color(color).lerp(new T.Color('#ffffff'), 0.25).getStyle()); gr.addColorStop(1, color);
         g.fillStyle = gr; g.beginPath(); g.arc(128, 128, 128, 0, 7); g.fill();
         g.strokeStyle = 'rgba(255,236,180,.95)'; g.lineWidth = 10; g.beginPath(); g.arc(128, 128, 104, 0, 7); g.stroke();
-        g.fillStyle = '#fff8ea'; g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 8; g.shadowOffsetY = 4; g.font = '800 118px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(glyph, 128, 136);
+        g.fillStyle = '#fff8ea'; g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 8; g.shadowOffsetY = 4;
+        if (glyph === 'TROPHY') { // cup, handles, stem, base
+          g.beginPath(); g.moveTo(84, 70); g.lineTo(172, 70); g.quadraticCurveTo(170, 140, 128, 150); g.quadraticCurveTo(86, 140, 84, 70); g.fill();
+          g.lineWidth = 12; g.strokeStyle = '#fff8ea'; g.beginPath(); g.arc(80, 98, 20, Math.PI * 0.5, Math.PI * 1.5); g.stroke(); g.beginPath(); g.arc(176, 98, 20, -Math.PI * 0.5, Math.PI * 0.5); g.stroke();
+          g.fillRect(118, 148, 20, 26); g.fillRect(94, 174, 68, 16);
+        } else { g.font = (glyph === 'VS' ? '800 92px ' : '800 118px ') + FONT; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(glyph, 128, 136); }
       }));
     }
     const rimGeo = new T.LatheGeometry([new T.Vector2(0.0, 0), new T.Vector2(0.78, 0), new T.Vector2(0.84, 0.05), new T.Vector2(0.86, 0.14), new T.Vector2(0.82, 0.2), new T.Vector2(0.0, 0.2)], 48);

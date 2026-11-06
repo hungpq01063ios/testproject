@@ -103,7 +103,7 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
     if (shot) { await page.click('#endTurnBtn'); await idle(); }
 
     // ---- full game: keep clicking whatever the game offers until everyone retires ----
-    let actions = 0, choicesMade = 0; const spinFors = {}, kinds = {};
+    let actions = 0, choicesMade = 0, contestSpins = 0, vehicleMismatch = 0; const spinFors = {}, kinds = {}, contests = [], vehiclesSeen = new Set();
     while (actions < 3000) {
       const st = await S();
       if (st.phase === 'over') break;
@@ -112,10 +112,16 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
       if (st.phase === 'choice') { const n = st.choice.options.length; kinds[st.choice.kind] = (kinds[st.choice.kind] || 0) + 1; await page.click(`[data-choice="${actions % n}"]`); choicesMade++; }
       else if (st.phase === 'spin') await page.click('#spinBtn');
       else if (st.phase === 'spinFor') { spinFors[st.spinFor.kind] = (spinFors[st.spinFor.kind] || 0) + 1; await page.click('#spinBtn'); }
+      else if (st.phase === 'contest') { await page.click('#spinBtn'); contestSpins++; }
       else if (st.phase === 'done') await page.click('#endTurnBtn');
       await idle();
+      const after = await page.evaluate(() => { const s = window.__duongdoi.state; return { lc: s.lastContest, veh: s.players.map((p) => p.vehicle), view: window.__duongdoi.view().vehicles }; });
+      if (after.lc && (!contests.length || JSON.stringify(contests[contests.length - 1]) !== JSON.stringify(after.lc))) contests.push(after.lc);
+      after.veh.forEach((v) => vehiclesSeen.add(v));
+      if (JSON.stringify(after.veh) !== JSON.stringify(after.view)) vehicleMismatch++;
     }
     const end = await S();
+    if (end.phase !== 'over') console.log('DEBUG stuck', actions, end.phase, JSON.stringify(end.contest || end.choice || end.spinFor), end.log.slice(0, 4).map((e) => e.who + ' ' + e.text).join(' | '));
     const overVisible = await page.isVisible('#gameover');
     const winner = await page.textContent('#winnerTitle');
     add('retire', end.phase === 'over' && end.players.every((p) => p.retired) && overVisible && end.final.length === 3,
@@ -129,6 +135,11 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
     add('life-aspects', scoresAdd, end.final.map((f) => `${f.name}: tài sản ${f.assetPts} + ♥${f.aspects.love} ◆${f.aspects.know} ✚${f.aspects.health} ★${f.aspects.comm} + cân bằng ${f.balance} = ${f.score} (ước mơ ${f.goal})`).join('; '));
     const fees = end.log.filter((e) => /thu phí/.test(e.text)).length;
     add('choices-and-careers', Object.keys(kinds).length >= 6, `decision kinds met: ${Object.entries(kinds).map(([k, n]) => `${k}×${n}`).join(', ')}; careers ${end.players.map((p) => p.career).join(', ')}; branches ${end.players.map((p) => p.branches.join('>')).join(' | ')}; service fees collected ${fees}× (in the last 80 log lines)`);
+    const fair = contests.every((c) => c.spins.length === c.order.length && new Set(c.spins.map((x) => x.i)).size === c.order.length);
+    add('contests', contests.length > 0 && fair, `${contests.length} contests/duels, ${contestSpins} participant spins: ${contests.map((c) => `${c.title} [${c.spins.map((x) => x.total).join('/')}] → ${c.result.winners.length ? c.result.winners.join('&') : 'hoà'}`).join('; ')}`);
+    add('vehicles', vehicleMismatch === 0 && vehiclesSeen.size >= 2, `tokens matched each player's vehicle after every action; vehicles used: ${[...vehiclesSeen].join(', ')}`);
+    const cuts = (await page.evaluate(() => window.__duongdoi.view().cuts));
+    add('cutscenes', new Set(cuts).size >= 3, `vignettes triggered: ${Object.entries(cuts.reduce((m, k) => ((m[k] = (m[k] || 0) + 1), m), {})).map(([k, n]) => `${k}×${n}`).join(', ')}`);
     add('no-errors', errors.length === 0, errors.length ? errors.join(' | ') : 'no script errors in the page');
   } catch (e) {
     add('run', false, String(e && e.stack || e));
