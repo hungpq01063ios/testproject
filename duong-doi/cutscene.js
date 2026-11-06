@@ -60,7 +60,8 @@
   // ---------- places (stage at the origin, radius ~3 kept free) ----------
   const PLACES = [
     { key: 'hoguom', name: 'Hồ Gươm', area: 'Hà Nội · Miền Bắc', sky: ['#7fb6e6', '#f6dcc0'], sun: ['#fff0d2', 1.2, 0.7], build(s) {
-      s.add(water('#3b8fb0')); s.add(disc('#7fb257', 4.2));
+      s.add(water('#3b8fb0')); s.add(disc('#7fb257', 4.2)); tufts(s, 1.2, 4.1, '#5f9a45', 260);
+      for (let i = 0; i < 8; i++) { const f = figure({ color: ['#e2483d', '#3fa7a0', '#ffd36b', '#8c7ae6'][i % 4], scale: 0.8, hat: i % 3 ? null : 'nonla' }); const a = i / 8 * TAU; f.position.set(Math.cos(a) * 3.6, 0, Math.sin(a) * 3.6 - 0.5); f.rotation.y = -a; s.add(f); }
       const tr = new T.Group(); tr.position.set(-5, 0, -7); s.add(tr); tr.add(mesh(new T.CylinderGeometry(0.9, 1.1, 0.4, 16), mat('#6f9a4c'), 0, 0.1, 0));
       [[1, 0.7], [0.8, 0.6], [0.6, 0.5]].reduce((y, [w, h]) => { tr.add(mesh(new T.BoxGeometry(w, h, w * 0.7), mat('#e9dcc0'), 0, y + h / 2, 0)); return y + h; }, 0.3);
       const pts = []; for (let i = 0; i <= 20; i++) { const u = i / 20; pts.push(new T.Vector3(3 + u * 4, 0.3 + Math.sin(u * Math.PI) * 1.2, -4 - u * 2)); }
@@ -73,7 +74,7 @@
       const b = boat(true); b.position.set(5, 0, -3); b.rotation.y = 0.6; s.add(b); s.userData.boat = b;
     } },
     { key: 'sapa', name: 'Ruộng bậc thang Mù Cang Chải', area: 'Yên Bái · Tây Bắc', sky: ['#4f9be0', '#dcefd8'], sun: ['#fff6e4', 1.3, 0.9], build(s) {
-      s.add(ground('#8cc25a')); s.add(disc('#9ccf64', 4));
+      s.add(ground('#8cc25a')); s.add(disc('#9ccf64', 4)); tufts(s, 1.2, 4, '#6fae45', 240);
       for (let k = 0; k < 8; k++) { // stepped terraces as open rings behind the stage
         const r0 = 12 + k * 1.7, y = (k + 1) * 0.6, a0 = Math.PI * 0.55, len = Math.PI * 1.9;
         const top = mesh(new T.RingGeometry(r0, r0 + 1.7, 64, 1, a0, len), mat(k % 3 === 0 ? '#9fd0b2' : k % 2 ? '#a9d15f' : '#93c454', { side: T.DoubleSide }), 0, y, 0); top.rotation.x = -Math.PI / 2; s.add(top);
@@ -84,13 +85,13 @@
       h.add(mesh(new T.BoxGeometry(1.1, 0.5, 0.8), mat('#8a5a34'), 0, 0.75, 0)); const r = roof(1.2, 0.9, 0.55, '#c9a865'); r.position.y = 1.0; h.add(r);
     } },
     { key: 'trangan', name: 'Tràng An', area: 'Ninh Bình · Miền Bắc', sky: ['#8cb8dc', '#eaf0e4'], sun: ['#fff3dc', 1.1, 0.7], build(s) {
-      s.add(water('#3f8f88')); s.add(disc('#7fb257', 3.8, 0.2));
+      s.add(water('#3f8f88')); s.add(disc('#7fb257', 3.8, 0.2)); tufts(s, 1.2, 3.7, '#5f9a45', 200);
       for (let i = 0; i < 10; i++) { const a = i / 10 * TAU, R = 13 + (i % 2) * 4; s.add(karst(Math.cos(a) * R, Math.sin(a) * R - 2, 4 + (i % 3) * 1.5, 1.8)); }
       for (let i = 0; i < 3; i++) { const b = boat(false); b.scale.setScalar(0.6); b.position.set(4 + i * 1.4, 0, -2 - i); b.rotation.y = 0.8; s.add(b); }
       const t = new T.Group(); t.position.set(-6, 0, -6); s.add(t); t.add(mesh(new T.BoxGeometry(1.6, 0.8, 1), mat('#d8c7a5'), 0, 0.4, 0)); const r = roof(1.8, 1.2, 0.6, '#7a3b26'); r.position.y = 0.8; t.add(r);
     } },
     { key: 'hue', name: 'Kinh thành Huế', area: 'Thừa Thiên Huế · Miền Trung', sky: ['#7fb2e0', '#f5e1bf'], sun: ['#ffe6bf', 1.2, 0.6], build(s) {
-      s.add(ground('#b9b08f')); s.add(disc('#cfc2a0', 4));
+      s.add(ground('#b9b08f')); s.add(disc('#cfc2a0', 4)); for (let i = 0; i < 6; i++) { const t2 = A.tree(i % 2 ? 'round' : 'areca', 1); t2.position.set(-9 + i * 3.6, 0, -3.5); s.add(t2); }
       const g = new T.Group(); g.position.set(0, 0, -7); s.add(g);
       g.add(mesh(new T.BoxGeometry(12, 2, 2.2), mat('#a8533a'), 0, 1, 0));
       for (let i = -2; i <= 2; i++) g.add(mesh(new T.BoxGeometry(0.9, 1.3, 0.1), mat('#3a2418'), i * 2, 0.65, 1.11));
@@ -102,7 +103,7 @@
     } },
     { key: 'hoian', name: 'Phố cổ Hội An', area: 'Quảng Nam · Miền Trung', sky: ['#4a5fa8', '#ffb877'], sun: ['#ffb070', 1.0, 0.25], lanterns: true, build(s) {
       s.add(ground('#c8b986')); const river = water('#2f6f8f', 30); river.position.set(0, 0.02, 34); s.add(river); s.add(disc('#d8c49a', 4, 0.05));
-      for (let i = -5; i <= 5; i++) { const h = 1.4 + (i % 2) * 0.4, x = i * 1.7; s.add(mesh(new T.BoxGeometry(1.6, h, 1.4), mat(['#f2c14e', '#f4cf6a', '#eab64a'][(i + 6) % 3]), x, h / 2, -6)); const rf = roof(1.7, 1.5, 0.45, '#7a3b26'); rf.position.set(x, h, -6); s.add(rf); lantern(s, ['#ff4a3a', '#ffcc33', '#d65cff'][(i + 6) % 3], x, h * 0.6, -5.2, 0.9); }
+      for (let i = -5; i <= 5; i++) { const h = 1.4 + (i % 2) * 0.4, x = i * 1.7; const w = A.boxWalls(1.6, h, 1.4, A.wallTex(['#f2c14e', '#f4cf6a', '#eab64a'][(i + 6) % 3], { cols: 2, rows: i % 2 ? 2 : 1, shutter: '#3f6f5a', door: true }), '#e2b84a'); w.position.set(x, h / 2, -6); s.add(w); const rf = A.roofVN(1.7, 1.5, 0.45, '#7a3b26'); rf.position.set(x, h, -6); s.add(rf); lantern(s, ['#ff4a3a', '#ffcc33', '#d65cff'][(i + 6) % 3], x, h * 0.6, -5.2, 0.9); }
       for (let i = 0; i < 14; i++) lantern(s, ['#ff4a3a', '#ffcc33', '#ff7a2a'][i % 3], -9 + i * 1.4, 2.8 - Math.sin(i / 13 * Math.PI) * 0.6, -3.5, 0.7);
       for (let i = 0; i < 4; i++) { const b = boat(false); b.scale.setScalar(0.55); b.position.set(-6 + i * 4, 0, 8); s.add(b); lantern(s, '#ffcc33', -6 + i * 4, 0.5, 8, 0.6); }
     } },
@@ -112,7 +113,7 @@
       for (let i = 0; i < 4; i++) s.add(tree('palm', 6 + i * 1.5, 3 - i * 2.5, 0.9));
     } },
     { key: 'dalat', name: 'Hồ Xuân Hương', area: 'Đà Lạt · Tây Nguyên', sky: ['#8fb3cf', '#eef2f3'], sun: ['#f3f6ff', 1.0, 0.6], fog: true, build(s) {
-      s.add(ground('#5e9a4e')); const w = water('#4f8fa8', 6); w.position.set(-3, 0.02, -8); s.add(w); s.add(disc('#79ad47', 4));
+      s.add(ground('#5e9a4e')); const w = water('#4f8fa8', 6); w.position.set(-3, 0.02, -8); s.add(w); s.add(disc('#79ad47', 4)); tufts(s, 1, 12, '#4f8c45', 600);
       for (let i = 0; i < 26; i++) { const a = rnd() * TAU, R = 6 + rnd() * 12; s.add(tree('pine', Math.cos(a) * R, Math.sin(a) * R - 4, 0.9 + rnd() * 0.7)); }
       for (let i = 0; i < 60; i++) s.add(mesh(new T.SphereGeometry(0.1, 6, 4), mat(['#ff6fa0', '#ffd34d', '#b77bff', '#ffffff'][i % 4]), 3 + rnd() * 3, 0.1, 2 + rnd() * 3));
       const v = new T.Group(); v.position.set(6, 0, -6); s.add(v); v.add(mesh(new T.BoxGeometry(1.8, 1.2, 1.2), mat('#f3e2bd'), 0, 0.6, 0)); const vr = mesh(new T.ConeGeometry(1.4, 1.0, 4), mat('#9c3f2a'), 0, 1.7, 0); vr.rotation.y = Math.PI / 4; v.add(vr);
@@ -135,43 +136,28 @@
     } },
   ];
 
-  // ---------- people ----------
-  const skin = () => mat('#f1c9a0');
-  function figure(o) {
-    o = o || {}; const g = new T.Group(), s = o.scale || 1, shirt = o.color || '#c0392b';
-    if (o.dress) { const sk = mesh(new T.ConeGeometry(0.28 * s, 0.62 * s, 16, 1, true), mat(shirt, { side: T.DoubleSide }), 0, 0.31 * s, 0); g.add(sk); g.add(mesh(new T.CapsuleGeometry(0.11 * s, 0.22 * s, 4, 8), mat(shirt), 0, 0.72 * s, 0)); }
-    else { g.add(mesh(new T.CapsuleGeometry(0.07 * s, 0.28 * s, 4, 8), mat(o.pants || '#2b2b33'), -0.07 * s, 0.22 * s, 0)); g.add(mesh(new T.CapsuleGeometry(0.07 * s, 0.28 * s, 4, 8), mat(o.pants || '#2b2b33'), 0.07 * s, 0.22 * s, 0)); g.add(mesh(new T.CapsuleGeometry(0.15 * s, 0.26 * s, 4, 10), mat(shirt), 0, 0.68 * s, 0)); }
-    const head = mesh(new T.SphereGeometry(0.15 * s, 16, 12), skin(), 0, 1.05 * s, 0); g.add(head);
-    const hair = mesh(new T.SphereGeometry(0.16 * s, 16, 10, 0, TAU, 0, Math.PI * 0.55), mat(o.old ? '#d9d9d9' : '#2a1d17'), 0, 1.08 * s, -0.01); g.add(hair);
-    if (o.hat === 'khan') g.add(mesh(new T.CylinderGeometry(0.17 * s, 0.17 * s, 0.09 * s, 16), mat('#d6302a'), 0, 1.2 * s, 0));
-    if (o.hat === 'cap') { g.add(mesh(new T.BoxGeometry(0.42 * s, 0.03 * s, 0.42 * s), mat('#1d1d26'), 0, 1.25 * s, 0)); g.add(mesh(new T.CylinderGeometry(0.12 * s, 0.14 * s, 0.1 * s, 12), mat('#1d1d26'), 0, 1.2 * s, 0)); }
-    if (o.hat === 'nonla') g.add(mesh(new T.ConeGeometry(0.32 * s, 0.18 * s, 20), mat('#e9d08a'), 0, 1.25 * s, 0));
-    const armL = new T.Group(), armR = new T.Group(); armL.position.set(-0.19 * s, 0.86 * s, 0); armR.position.set(0.19 * s, 0.86 * s, 0);
-    armL.add(mesh(new T.CapsuleGeometry(0.045 * s, 0.3 * s, 3, 6), mat(shirt), 0, -0.18 * s, 0)); armR.add(mesh(new T.CapsuleGeometry(0.045 * s, 0.3 * s, 3, 6), mat(shirt), 0, -0.18 * s, 0));
-    g.add(armL, armR); g.userData.arms = [armL, armR];
+  // ---------- people, houses and vehicles come from art.js ----------
+  const A = window.DDArt;
+  const skin = () => A.mat('#f1c9a0');
+  const figure = (o) => A.figure(o);
+  const wave = A.pose.wave, cheer = A.pose.cheer, hop = A.pose.hop;
+  const carModel = (color) => A.vehicle('car', color);
+  function house(key, color) {
+    const g = A.house(key || 'garden', color), sz = g.userData.size || 4;
+    const bow = new T.Group(); bow.position.set(0, 0.9, sz * 0.42); g.add(bow);
+    bow.add(mesh(new T.TorusGeometry(0.22, 0.07, 8, 16), mat('#d6302a'), -0.22, 0.05, 0)); bow.add(mesh(new T.TorusGeometry(0.22, 0.07, 8, 16), mat('#d6302a'), 0.22, 0.05, 0));
+    g.userData.size = sz; return g;
+  }
+  function trophy() {
+    const g = new T.Group(), gold = mat('#f2c443', { metalness: 0.9, roughness: 0.2 });
+    g.add(mesh(new T.LatheGeometry([new T.Vector2(0, 0), new T.Vector2(0.16, 0), new T.Vector2(0.16, 0.05), new T.Vector2(0.05, 0.08), new T.Vector2(0.04, 0.22), new T.Vector2(0.08, 0.26), new T.Vector2(0.2, 0.34), new T.Vector2(0.22, 0.56), new T.Vector2(0.0, 0.56)], 24), gold));
+    for (const x of [-0.22, 0.22]) { const h = mesh(new T.TorusGeometry(0.08, 0.02, 6, 14), gold, x, 0.44, 0); h.rotation.y = Math.PI / 2; g.add(h); }
     return g;
   }
-  const wave = (f, t, ph) => { const [l, r] = f.userData.arms; r.rotation.z = 2.4 + Math.sin(t * 8 + (ph || 0)) * 0.5; l.rotation.z = -0.2; };
-  const cheer = (f, t, ph) => { const [l, r] = f.userData.arms; l.rotation.z = -2.6 - Math.sin(t * 9 + (ph || 0)) * 0.3; r.rotation.z = 2.6 + Math.sin(t * 9 + (ph || 0)) * 0.3; };
-  const hop = (f, t, ph, base) => { f.position.y = (base || 0) + Math.abs(Math.sin(t * 6 + (ph || 0))) * 0.25; };
-
-  function carModel(color) {
-    const g = new T.Group(), sh = new T.Shape();
-    sh.moveTo(-1.1, 0.25); sh.lineTo(1.1, 0.25); sh.quadraticCurveTo(1.25, 0.3, 1.2, 0.6); sh.lineTo(0.55, 0.68); sh.lineTo(0.25, 1.05); sh.lineTo(-0.7, 1.05); sh.lineTo(-1.05, 0.68); sh.quadraticCurveTo(-1.2, 0.6, -1.1, 0.25);
-    const geo = new T.ExtrudeGeometry(sh, { depth: 0.9, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.06, bevelSegments: 3 }); geo.translate(0, 0, -0.45);
-    g.add(mesh(geo, mat(color, { metalness: 0.5, roughness: 0.25 })));
-    for (const z of [-0.5, 0.5]) { const w = mesh(new T.BoxGeometry(1.0, 0.3, 0.02), mat('#1d2a38', { metalness: 0.6, roughness: 0.1 }), -0.2, 0.82, z); g.add(w); }
-    for (const [x, z] of [[-0.7, -0.5], [0.7, -0.5], [-0.7, 0.5], [0.7, 0.5]]) { const w = mesh(new T.CylinderGeometry(0.24, 0.24, 0.18, 18), mat('#1f1c1c'), x, 0.24, z); w.rotation.x = Math.PI / 2; g.add(w); }
-    return g;
-  }
-  function house(color) {
-    const g = new T.Group(); g.add(mesh(new T.BoxGeometry(2.4, 1.6, 1.8), mat('#f4e2bd'), 0, 0.8, 0));
-    const r = roof(2.6, 2.0, 0.9, color || '#9c3f2a'); r.position.y = 1.6; g.add(r);
-    g.add(mesh(new T.BoxGeometry(0.55, 0.9, 0.05), mat('#6e4326'), 0, 0.45, 0.91));
-    for (const x of [-0.75, 0.75]) g.add(mesh(new T.BoxGeometry(0.45, 0.4, 0.05), new T.MeshStandardMaterial({ color: '#ffe8a8', emissive: '#ffcc66', emissiveIntensity: 0.4 }), x, 0.95, 0.91));
-    const bow = new T.Group(); bow.position.set(0, 1.35, 0.95); g.add(bow);
-    bow.add(mesh(new T.BoxGeometry(2.5, 0.12, 0.04), mat('#d6302a'), 0, 0, 0)); bow.add(mesh(new T.TorusGeometry(0.18, 0.06, 8, 16), mat('#d6302a'), -0.18, 0.05, 0.02)); bow.add(mesh(new T.TorusGeometry(0.18, 0.06, 8, 16), mat('#d6302a'), 0.18, 0.05, 0.02));
-    return g;
+  function tufts(s, r0, r1, color, n) { // instanced grass tufts on a ring of ground
+    const geo = new T.ConeGeometry(0.05, 0.28, 4), m = new T.InstancedMesh(geo, mat(color || '#5f9a45'), n), d = new T.Object3D();
+    for (let i = 0; i < n; i++) { const a = Math.random() * TAU, r = r0 + Math.random() * (r1 - r0); d.position.set(Math.cos(a) * r, 0.12, Math.sin(a) * r); d.rotation.set((Math.random() - 0.5) * 0.4, Math.random() * TAU, (Math.random() - 0.5) * 0.4); d.scale.setScalar(0.6 + Math.random() * 0.8); d.updateMatrix(); m.setMatrixAt(i, d.matrix); }
+    m.castShadow = false; m.receiveShadow = true; s.add(m);
   }
 
   // ---------- events ----------
@@ -198,10 +184,10 @@
       return { actors: g, title: 'Chào thành viên mới', sub: ctx.name + ' có thêm một em bé', update(t) { a.rotation.y = 0.6; b.rotation.y = -0.6; baby.position.y = Math.sin(t * 3) * 0.03; balloons.forEach((bl, i) => { bl.position.y = 1.3 + Math.max(0, t - 1.2) * (0.6 + i * 0.1); bl.position.x += Math.sin(t * 2 + i) * 0.002; }); wave(a, t, 0); wave(b, t, 1); }, bursts: [[1.5, 'confetti', 50]] };
     },
     house(ctx) {
-      const g = new T.Group(), h = house(); h.position.z = -1.2; g.add(h);
+      const key = A.HOUSE_KEYS[ctx.data.house] || 'garden', g = new T.Group(), h = house(key, ctx.color), sz = h.userData.size; h.position.z = -sz * 0.45; g.add(h);
       const fam = [figure({ color: ctx.color })]; if (ctx.married) fam.push(figure({ color: '#f3e8d6', dress: true })); for (let i = 0; i < Math.min(ctx.kids, 3); i++) fam.push(figure({ color: ['#ffd36b', '#9fd6c3', '#ffb3c8'][i], scale: 0.62 }));
-      fam.forEach((f, i) => { f.position.set(-0.9 + i * 0.6, 0, 0.9); g.add(f); });
-      return { actors: g, title: 'Tân gia', sub: ctx.name + ' mua ' + (ctx.data && ctx.data.house ? ctx.data.house : 'nhà mới'), update(t) { fam.forEach((f, i) => { hop(f, t, i); cheer(f, t, i); }); }, bursts: [[1.6, 'confetti', 80]] };
+      fam.forEach((f, i) => { f.position.set(-0.9 + i * 0.6, 0, 0.9 + sz * 0.15); g.add(f); });
+      return { actors: g, cam: { R: 0.75 + sz * 0.12, H: 0.8 + sz * 0.12, look: 0.6 + sz * 0.12 }, title: { garden: 'Về quê dựng nhà', apartment: 'Có căn hộ đầu tiên', townhouse: 'Tân gia nhà phố', villa: 'Tậu biệt thự ven sông' }[key], sub: ctx.name + ' mua ' + (ctx.data && ctx.data.house ? ctx.data.house : 'nhà mới'), update(t) { fam.forEach((f, i) => { hop(f, t, i); cheer(f, t, i); }); }, bursts: [[1.6, 'confetti', 80]] };
     },
     car(ctx) {
       const g = new T.Group(), c = carModel(ctx.color); c.position.z = -0.2; g.add(c);
@@ -248,31 +234,80 @@
         cols.forEach((o, k) => { const e = Math.min(1, Math.max(0, (t - 0.3 - k * 0.15) / 1.2)), h = o.hgt * (1 - Math.pow(1 - e, 3)); o.col.scale.y = Math.max(0.01, h); o.col.position.y = h / 2; o.f.position.y = h; o.sp.position.set(o.col.position.x, h + 1.55, 0); if (o.crown) o.crown.position.set(o.col.position.x, h + 1.35, 0); if (o.win && e >= 1) { cheer(o.f, t, k); hop(o.f, t, k, h); } });
       }, bursts: [[1.9, 'confetti', 90]] };
     },
+    // One player's life in review: house, vehicle, family and the numbers that made the score.
+    recap(ctx) {
+      const d = ctx.data, g = new T.Group();
+      let sz = 0;
+      if (d.houseKey) { const h = A.house(d.houseKey, d.color); sz = h.userData.size; const k = Math.min(1, 4.2 / sz); h.scale.setScalar(k); h.position.set(-0.6, 0, -sz * k * 0.5 - 1.0); g.add(h); }
+      else { const t = A.tree('round', 1.2); t.position.set(-1.6, 0, -2); g.add(t); }
+      if (d.vehicle) { const v = A.vehicle(d.vehicle, d.color); v.position.set(2.4, 0, -0.2); v.rotation.y = -0.6; g.add(v); }
+      const fam = [figure({ color: d.color, old: true })]; if (d.married) fam.push(figure({ color: '#f3e8d6', dress: true, old: true }));
+      for (let i = 0; i < Math.min(d.kids, 3); i++) fam.push(figure({ color: ['#ffd36b', '#9fd6c3', '#ffb3c8'][i], scale: 0.92, dress: i === 1 }));
+      fam.forEach((f, i) => { f.position.set(-0.9 + i * 0.62, 0, 0.9); g.add(f); });
+      const medal = mesh(new T.CylinderGeometry(0.16, 0.16, 0.03, 20), mat(d.rank === 1 ? '#f2c443' : d.rank === 2 ? '#cfd4da' : d.rank === 3 ? '#c98a4a' : '#8a7f72', { metalness: 0.8, roughness: 0.25 }), 0, 0, 0); medal.rotation.x = Math.PI / 2; fam[0].add(medal); medal.position.set(0, 0.72, 0.17);
+      return { actors: g, cam: { R: 1.1, H: 1.05, look: 1.1 }, dur: 5.6, title: `Hạng ${d.rank} · ${d.name}`, sub: [d.career || 'Chưa có nghề', d.goalName ? 'Ước mơ: ' + d.goalName : '', d.retireStyle || ''].filter(Boolean).join(' · '), stats: d,
+        update(t) { fam.forEach((f, i) => { if (i === 0 || t > 1.5) wave(f, t, i); }); if (d.rank === 1) fam.forEach((f, i) => hop(f, t, i)); }, bursts: d.rank === 1 ? [[2.4, 'confetti', 80]] : [] };
+    },
+    // The winner on the top step, everyone else around, fireworks overhead.
+    finale(ctx) {
+      const g = new T.Group(), ranked = ctx.data.ranking, steps = [], n = ranked.length;
+      const order = [1, 0, 2, 3, 4, 5].filter((k) => k < n);
+      order.forEach((k, slot) => {
+        const r = ranked[k], x = [0, -1.5, 1.5, -3, 3, -4.4][slot], h = [1.2, 0.8, 0.5, 0.25, 0.25, 0.25][k];
+        const col = mesh(new T.BoxGeometry(1.3, h, 1.1), mat(k === 0 ? '#e7bf5a' : k === 1 ? '#cfd4da' : k === 2 ? '#c98a4a' : '#8a7f72', { metalness: k < 3 ? 0.55 : 0, roughness: 0.3 }), x, h / 2, 0); g.add(col);
+        const num = A.canvasTex(64, 64, (c) => { c.fillStyle = 'rgba(0,0,0,0)'; c.fillRect(0, 0, 64, 64); c.fillStyle = '#1a1110'; c.font = '800 44px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(k + 1), 32, 34); });
+        const plate = mesh(new T.PlaneGeometry(0.5, 0.5), new T.MeshBasicMaterial({ map: num, transparent: true }), x, h / 2, 0.56); g.add(plate);
+        const f = figure({ color: r.color, old: true }); f.position.set(x, h, 0); g.add(f);
+        steps.push({ f, h, k });
+      });
+      const cup = trophy(); cup.scale.setScalar(1.3); g.add(cup);
+      const carpet = mesh(new T.BoxGeometry(1.6, 0.02, 5), mat('#b8322a'), 0, 0.01, 3); g.add(carpet);
+      for (let i = 0; i < 12; i++) { const a = Math.PI * (0.1 + i / 11 * 0.8); lantern(g, ['#ff4a3a', '#ffcc33', '#ff7a2a'][i % 3], Math.cos(a) * 6, 2.6 + Math.sin(i) * 0.2, -Math.sin(a) * 4 - 1, 0.9); }
+      const w = ranked[0];
+      return { actors: g, place: 'finale', cam: { R: 1.15, H: 1.15, look: 1.6 }, dur: 9, fireworks: true, petals: true, title: `Chúc mừng ${w.name}!`, sub: `Cuộc đời viên mãn nhất · ${w.score} Điểm Đời${w.goalName ? ' · Ước mơ ' + w.goalName : ''}`, board: ranked,
+        update(t) { steps.forEach((s2) => { if (s2.k === 0) { cheer(s2.f, t, 0); hop(s2.f, t, 0, s2.h); } else if (t > 2) wave(s2.f, t, s2.k); }); const top = steps.find((s2) => s2.k === 0); cup.position.set(top.f.position.x, top.f.position.y + 1.55 + Math.sin(t * 6) * 0.05, 0.05); cup.rotation.y = t * 1.2; }, bursts: [[1.0, 'confetti', 140], [4.0, 'confetti', 120]] };
+    },
   };
+  // Night stage used by the finale.
+  const FINALE_PLACE = { key: 'finale', name: 'Lễ tổng kết bên Hồ Gươm', area: 'Đêm hội cuộc đời', sky: ['#0b1430', '#4a2f63'], sun: ['#ffd9a8', 0.55, 0.5], night: true, build(s) {
+    s.add(water('#132a44')); s.add(disc('#3a2a24', 5.5, 0.12));
+    const tr = new T.Group(); tr.position.set(-7, 0, -10); s.add(tr); [[1, 0.7], [0.8, 0.6], [0.6, 0.5]].reduce((y, [w, h]) => { tr.add(mesh(new T.BoxGeometry(w, h, w * 0.7), new T.MeshStandardMaterial({ color: '#e9dcc0', emissive: '#ffcf7a', emissiveIntensity: 0.35 }), 0, y + h / 2, 0)); return y + h; }, 0.2);
+    for (let i = 0; i < 24; i++) lantern(s, ['#ff4a3a', '#ffcc33', '#ff7a2a'][i % 3], -16 + i * 1.4, 0.4, -12 + Math.sin(i) * 0.4, 0.6);
+  } };
 
   // ---------- player ----------
   let renderer = null, overlay = null, cv = null, titleEl = null, subEl = null, placeEl = null, playing = null, lastPlace = null;
   function ensure() {
     if (overlay) return;
     overlay = document.createElement('div'); overlay.className = 'cut'; overlay.hidden = true;
-    overlay.innerHTML = '<canvas></canvas><div class="cut-cap"><div class="cut-place"></div><div class="cut-title"></div><div class="cut-sub"></div></div><button class="cut-skip" type="button">Bỏ qua ›</button>';
+    overlay.innerHTML = '<canvas></canvas><div class="cut-cap"><div class="cut-place"></div><div class="cut-title"></div><div class="cut-sub"></div></div><div class="cut-stats" hidden></div><div class="cut-btns"><button class="cut-all" type="button" hidden>Xem bảng điểm</button><button class="cut-skip" type="button">Bỏ qua ›</button></div>';
     document.body.appendChild(overlay);
     cv = overlay.querySelector('canvas'); titleEl = overlay.querySelector('.cut-title'); subEl = overlay.querySelector('.cut-sub'); placeEl = overlay.querySelector('.cut-place');
     overlay.querySelector('.cut-skip').onclick = (e) => { e.stopPropagation(); if (playing) playing.stop(); };
+    overlay.querySelector('.cut-all').onclick = (e) => { e.stopPropagation(); if (playing) { playing.all = true; playing.stop(); } };
     overlay.addEventListener('click', () => { if (playing && playing.t > 1.2) playing.stop(); });
     renderer = new T.WebGLRenderer({ canvas: cv, antialias: true });
     renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping;
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
   }
   function skyTex(top, bottom) { return canvasTex(4, 256, (g) => { const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, top); gr.addColorStop(1, bottom); g.fillStyle = gr; g.fillRect(0, 0, 4, 256); }); }
-  function dispose(o) { o.traverse((m) => { if (m.geometry) m.geometry.dispose(); if (m.material) [].concat(m.material).forEach((x) => { if (x.map) x.map.dispose(); x.dispose(); }); }); }
+  function dispose(o) { o.traverse((m) => { if (m.geometry) m.geometry.dispose(); if (m.material) [].concat(m.material).forEach((x) => { if (x.userData && x.userData.shared) return; if (x.map && !(x.map.userData && x.map.userData.shared)) x.map.dispose(); x.dispose(); }); }); }
+  const ASP = [['love', '♥', 'Gia đình', '#ff8fab'], ['know', '◆', 'Tri thức', '#7fc2ff'], ['health', '✚', 'Sức khoẻ', '#8fe0b2'], ['comm', '★', 'Cống hiến', '#ffd36b']];
+  function statsHTML(d) {
+    return `<div class="cs-rank">Hạng ${d.rank}/${d.total}</div><div class="cs-name" style="color:${d.color}">${d.name}</div>
+      <div class="cs-row"><span>Tài sản ròng</span><b data-count="${d.net}">0</b><i>tr</i></div>
+      ${ASP.map(([k, ic, nm, c]) => `<div class="cs-asp"><span style="color:${c}">${ic} ${nm}${d.goalKey === k ? ' · ước mơ' : ''}</span><div class="cs-bar"><div data-bar="${Math.min(1, d.aspects[k] / 30)}" style="background:${c}"></div></div><b data-count="${d.aspects[k]}">0</b></div>`).join('')}
+      <div class="cs-row"><span>Thưởng cân bằng</span><b data-count="${d.balance}">0</b><i></i></div>
+      <div class="cs-total"><span>Điểm Đời</span><b data-count="${d.score}">0</b></div>`;
+  }
+  function boardHTML(list) { return `<div class="cs-rank">Bảng vàng</div>${list.map((r, k) => `<div class="cs-lead"><span>${k + 1}</span><b style="color:${r.color}">${r.name}</b><em data-count="${r.score}">0</em></div>`).join('')}`; }
 
   function play(opts) {
     if (!EVENTS[opts.event]) return Promise.resolve();
     if (opts.skip) return Promise.resolve({ event: opts.event, place: null, skipped: true });
     ensure();
     rnd = opts.random || Math.random;
-    const places = PLACES.filter((p) => p.key !== lastPlace), place = opts.place ? PLACES.find((p) => p.key === opts.place) : pickOne(places);
+    const places = PLACES.filter((p) => p.key !== lastPlace), place = opts.place === 'finale' ? FINALE_PLACE : opts.place ? PLACES.find((p) => p.key === opts.place) || pickOne(places) : pickOne(places);
     lastPlace = place.key;
     const scene = new T.Scene(); scene.background = skyTex(place.sky[0], place.sky[1]);
     scene.fog = new T.Fog(new T.Color(place.sky[1]), place.fog ? 14 : 30, place.fog ? 45 : 90);
@@ -290,11 +325,24 @@
     if (ev.petals) for (let i = 0; i < 70; i++) { const m = new T.Mesh(confGeo, cm[5]); m.position.set((Math.random() - 0.5) * 8, 2 + Math.random() * 4, (Math.random() - 0.5) * 6); scene.add(m); parts.push({ m, v: new T.Vector3(0, -0.6, 0), r: 2, petal: true }); }
 
     titleEl.textContent = ev.title; subEl.textContent = ev.sub; placeEl.textContent = place.name + ' · ' + place.area;
+    const statsEl = overlay.querySelector('.cut-stats');
+    statsEl.hidden = !(ev.stats || ev.board); statsEl.innerHTML = ev.stats ? statsHTML(ev.stats) : ev.board ? boardHTML(ev.board) : '';
+    const counters = [...statsEl.querySelectorAll('[data-count]')], bars = [...statsEl.querySelectorAll('[data-bar]')];
+    overlay.querySelector('.cut-all').hidden = !opts.sequence;
+    // fireworks
+    const fw = [];
+    function firework() {
+      const n = 110, P = new Float32Array(n * 3), V = [], c = new T.Color().setHSL(Math.random(), 0.9, 0.62), at = new T.Vector3((Math.random() - 0.5) * 14, 6 + Math.random() * 4, -6 - Math.random() * 6);
+      for (let i = 0; i < n; i++) { P.set([at.x, at.y, at.z], i * 3); const v = new T.Vector3().randomDirection().multiplyScalar(2.4 + Math.random() * 1.4); V.push(v); }
+      const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(P, 3));
+      const pts = new T.Points(geo, new T.PointsMaterial({ color: c, size: 0.35, map: glow, transparent: true, depthWrite: false, blending: T.AdditiveBlending })); scene.add(pts); fw.push({ pts, V, life: 0 });
+    }
     overlay.hidden = false; overlay.classList.remove('out'); void overlay.offsetWidth; overlay.classList.add('in');
     const camera = new T.PerspectiveCamera(42, 1, 0.1, 200);
     const resize = () => { const w = overlay.clientWidth, h = overlay.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
     resize(); window.addEventListener('resize', resize);
-    const dur = opts.reduced ? 2.2 : opts.duration || 5.2, a0 = -0.5 + Math.random() * 0.3;
+    const dur = opts.reduced ? 2.4 : opts.duration || ev.dur || 5.2, a0 = -0.5 + Math.random() * 0.3, cam = Object.assign({ R: 1, H: 1, look: 1 }, ev.cam || {});
+    let nextFw = 0.4;
     const pendingBursts = (ev.bursts || []).slice();
     return new Promise((res) => {
       let last = performance.now();
@@ -303,8 +351,12 @@
       function frame(now) {
         const dt = Math.min(0.05, (now - last) / 1000); last = now; state.t += dt; const t = state.t;
         const k = Math.min(1, t / dur), e = k * k * (3 - 2 * k);
-        const ang = a0 + e * 0.9, R = 9.5 - e * 3.2, H = 3.6 - e * 1.2;
-        camera.position.set(Math.sin(ang) * R, H, Math.cos(ang) * R); camera.lookAt(0, 1.0, 0);
+        const ang = a0 + e * 0.9, R = (9.5 - e * 3.2) * cam.R, H = (3.6 - e * 1.2) * cam.H;
+        camera.position.set(Math.sin(ang) * R, H, Math.cos(ang) * R); camera.lookAt(0, cam.look, 0);
+        const ce = Math.min(1, Math.max(0, (t - 0.8) / 1.8)), cv2 = 1 - Math.pow(1 - ce, 3);
+        counters.forEach((el) => { el.textContent = Math.round(+el.dataset.count * cv2); }); bars.forEach((el) => { el.style.width = (+el.dataset.bar * cv2 * 100).toFixed(1) + '%'; });
+        if (ev.fireworks && t > nextFw) { firework(); nextFw = t + 0.35 + Math.random() * 0.4; }
+        for (let i = fw.length - 1; i >= 0; i--) { const f = fw[i]; f.life += dt; const p = f.pts.geometry.attributes.position; for (let k = 0; k < p.count; k++) { f.V[k].y -= 2.2 * dt; f.V[k].multiplyScalar(1 - dt * 0.9); p.setXYZ(k, p.getX(k) + f.V[k].x * dt, p.getY(k) + f.V[k].y * dt, p.getZ(k) + f.V[k].z * dt); } p.needsUpdate = true; f.pts.material.opacity = Math.max(0, 1 - f.life / 1.8); if (f.life > 1.8) { scene.remove(f.pts); f.pts.geometry.dispose(); f.pts.material.dispose(); fw.splice(i, 1); } }
         ev.update(t);
         if (set.userData.boat) set.userData.boat.position.x = 5 - t * 0.4;
         while (pendingBursts.length && t >= pendingBursts[0][0]) { const [, kind, n] = pendingBursts.shift(); burst(kind, opts.reduced ? Math.min(n, 15) : n); }
@@ -312,7 +364,7 @@
         renderer.render(scene, camera);
         if (t >= dur || state.done) {
           overlay.classList.remove('in'); overlay.classList.add('out');
-          setTimeout(() => { overlay.hidden = true; window.removeEventListener('resize', resize); dispose(scene); playing = null; res({ event: opts.event, place: place.key, skipped: !!state.done }); }, 350);
+          setTimeout(() => { overlay.hidden = true; window.removeEventListener('resize', resize); dispose(scene); playing = null; res({ event: opts.event, place: place.key, skipped: !!state.done, skippedAll: !!state.all }); }, 350);
           return;
         }
         requestAnimationFrame(frame);

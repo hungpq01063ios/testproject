@@ -141,23 +141,9 @@
   const puffTex = canvasTex(128, 128, (g, w) => { for (let i = 0; i < 9; i++) { const x = 30 + Math.random() * 68, y = 40 + Math.random() * 48, r = 20 + Math.random() * 26; const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, w); } });
 
   // Vietnamese hip roof with upturned corners.
-  function roofVN(w, d, h, color, curl) {
-    curl = curl == null ? 0.22 : curl;
-    const r = Math.max(0.02, (w - d) / 2) * 0.9, ov = 0.12;
-    const W = w / 2 + ov, D = d / 2 + ov;
-    const pts = [[-W, curl, -D], [0, -0.02, -D], [W, curl, -D], [W, -0.02, 0], [W, curl, D], [0, -0.02, D], [-W, curl, D], [-W, -0.02, 0], [-r, h, 0], [r, h, 0]];
-    const idx = [0, 1, 8, 1, 9, 8, 1, 2, 9, 2, 3, 9, 3, 4, 9, 4, 5, 9, 5, 8, 9, 5, 6, 8, 6, 7, 8, 7, 0, 8];
-    const g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(pts.flat(), 3)); g.setIndex(idx); g.computeVertexNormals();
-    const grp = new T.Group(); const m = mesh(g, mat(color, { side: T.DoubleSide, roughness: 0.7 })); grp.add(m);
-    for (const [x, z] of [[-W, -D], [W, -D], [W, D], [-W, D]]) { const tip = mesh(new T.ConeGeometry(0.035, 0.22, 6), mat(color), x * 1.04, curl + 0.08, z * 1.04); tip.rotation.z = -Math.sign(x) * 0.6; tip.rotation.x = Math.sign(z) * 0.6; grp.add(tip); }
-    const ridge = mesh(new T.CylinderGeometry(0.035, 0.035, 2 * r + 0.18, 8), mat('#5a2a1c'), 0, h + 0.02, 0); ridge.rotation.z = Math.PI / 2; grp.add(ridge);
-    return grp;
-  }
-  function gable(w, h, d, color) {
-    const s = new T.Shape(); s.moveTo(-d / 2, 0); s.lineTo(0, h); s.lineTo(d / 2, 0); s.lineTo(-d / 2, 0);
-    const g = new T.ExtrudeGeometry(s, { depth: w, bevelEnabled: false }); g.translate(0, 0, -w / 2); g.rotateY(Math.PI / 2);
-    return mesh(g, mat(color));
-  }
+  // Tiled roofs and gables come from art.js so the board and the vignettes share one look.
+  const roofVN = (w, d, h, color, curl) => window.DDArt.roofVN(w, d, h, color, curl);
+  const gable = (w, h, d, color) => window.DDArt.gable(w, h, d, color);
   function sign(text, w) {
     const tex = canvasTex(512, 128, (g, cw, ch) => {
       g.fillStyle = '#7a2418'; roundRect(g, 4, 4, cw - 8, ch - 8, 26); g.fill();
@@ -472,9 +458,10 @@
     const hoianZ = (rowZ(2.2) + rowZ(3.3)) / 2;
     function shophouse(x, z, rot) {
       const g = new T.Group(); const w = 0.75 + rnd() * 0.25, h = 0.65 + rnd() * 0.3;
-      g.add(mesh(new T.BoxGeometry(w, h, 0.7), mat(['#f2c14e', '#f4cf6a', '#eab64a', '#f6d77d'][rnd() * 4 | 0]), 0, h / 2, 0));
+      const wc = ['#f2c14e', '#f4cf6a', '#eab64a', '#f6d77d'][rnd() * 4 | 0], two = h > 0.82;
+      const body = window.DDArt.boxWalls(w, h, 0.7, window.DDArt.wallTex(wc, { cols: 2, rows: two ? 2 : 1, shutter: ['#3f6f5a', '#2f5a7a', '#7a3b26'][rnd() * 3 | 0], door: true }), wc); body.position.y = h / 2; g.add(body);
+      if (two) { const rl = window.DDArt.railing(w * 0.9, '#5a3a26', 6); rl.position.set(0, h * 0.5, 0.42); rl.scale.y = 0.6; g.add(rl); }
       const r = gable(w + 0.1, 0.28, 0.86, '#7a3b26'); r.position.y = h; g.add(r);
-      g.add(mesh(new T.BoxGeometry(w * 0.7, h * 0.5, 0.03), darkWood, 0, h * 0.28, 0.36, false));
       g.add(mesh(new T.BoxGeometry(w + 0.05, 0.05, 0.25), mat('#7a3b26'), 0, h * 0.62, 0.45));
       lantern(['#ff4a3a', '#ffcc33', '#ff7a2a', '#d65cff'][rnd() * 4 | 0], 0, h * 0.5, 0.52, g, 0.7);
       g.position.set(x, terrainH(x, z), z); g.rotation.y = rot || 0; add(g); reserve(x, z, 0.5);
@@ -609,11 +596,62 @@
     (function () { const x = -5, z0 = 28.2; for (let i = 0; i < 9; i++) { const z = z0 + i * 0.4; add(mesh(new T.BoxGeometry(0.6, 0.05, 0.36), mat('#8a6a46'), x, 0.42, z)); add(mesh(new T.CylinderGeometry(0.04, 0.04, 0.9, 6), wood, x - 0.27, 0.0, z)); add(mesh(new T.CylinderGeometry(0.04, 0.04, 0.9, 6), wood, x + 0.27, 0.0, z)); } })();
 
     // ---------- Instanced vegetation everywhere else ----------
+    // ---------- Your houses: one lot per player west of Bà Nà ----------
+    const lots = [], LOT_Z = (rowZ(9.2) + rowZ(11.0)) / 2 - 0.2;
+    [-13.4, -10.6, -7.8, -5.0, -2.2, -16.1].forEach((x, i) => {
+      const z = LOT_Z + (i % 2 ? 0.25 : -0.25), y = terrainH(x, z), g = new T.Group(); g.position.set(x, y, z); add(g); reserve(x, z, 1.35);
+      const pad = mesh(new T.BoxGeometry(2.3, 0.08, 2.3), mat('#c9b48e'), 0, 0.02, 0); g.add(pad);
+      for (const [fx, fz, fw, fd] of [[0, -1.15, 2.3, 0.05], [-1.15, 0, 0.05, 2.3], [1.15, 0, 0.05, 2.3], [-0.75, 1.15, 0.8, 0.05], [0.75, 1.15, 0.8, 0.05]]) g.add(mesh(new T.BoxGeometry(fw, 0.18, fd), mat('#f2ead6'), fx, 0.1, fz));
+      const pole = mesh(new T.CylinderGeometry(0.02, 0.02, 1.1, 6), mat('#cccccc', { metalness: 0.7 }), 1.0, 0.55, 1.0); g.add(pole);
+      const flag = mesh(new T.PlaneGeometry(0.42, 0.26), new T.MeshStandardMaterial({ color: '#ffffff', side: T.DoubleSide }), 1.21, 0.96, 1.0, false); g.add(flag);
+      const lot = { g, flag, pole, key: null, model: null, grow: 1 }; pole.visible = flag.visible = false; lots.push(lot);
+      animated.push({ update(dt, t) { flag.rotation.y = Math.sin(t * 3 + i) * 0.3; if (lot.model && lot.grow < 1) { lot.grow = Math.min(1, lot.grow + dt * 1.2); const e = 1 - Math.pow(1 - lot.grow, 3); lot.model.scale.setScalar(lot.fit * (0.05 + 0.95 * e)); } } });
+    });
+    (function () { const s2 = sign('KHU NHÀ CỦA BẠN', 2.2); s2.position.set(-8.4, terrainH(-8.4, LOT_Z) + 2.6, LOT_Z - 1.4); add(s2); })();
+    function setHouses(list) { // list[i] = { key, color } | null
+      lots.forEach((lot, i) => {
+        const h = list[i]; lot.pole.visible = lot.flag.visible = !!(list.length > i);
+        if (list.length > i && list[i] !== undefined) lot.flag.material.color.set((h && h.color) || (list[i] && list[i].color) || '#ffffff');
+        const key = h && h.key; if (key === lot.key) return;
+        if (lot.model) { lot.g.remove(lot.model); lot.model = null; }
+        lot.key = key; if (!key) return;
+        const m = window.DDArt.house(key, h.color); lot.fit = Math.min(0.55, 2.1 / m.userData.size); m.scale.setScalar(lot.fit * 0.05); m.position.y = 0.06; lot.g.add(m); lot.model = m; lot.grow = h.instant ? 1 : 0;
+        if (h.instant) m.scale.setScalar(lot.fit);
+      });
+    }
+
+    // ---------- Street lamps along the road ----------
+    const lampSpots = [];
+    Object.keys(curves).forEach((k, ci) => {
+      const c = curves[k], len = c.getLength(); if (len < 2) return;
+      const [a, b] = k.split('-').map(Number); if (lift(L.TILES[a]) > 0 || lift(L.TILES[b]) > 0) return;
+      const p = c.getPointAt(0.5), t2 = c.getTangentAt(0.5), side = (ci % 2 ? 1 : -1) * (ROAD_W / 2 + 0.35);
+      const x = p.x - t2.z * side, z = p.z + t2.x * side; if (waterDepth(x, z) > 0.1 || !isFree(x, z, 0.2)) return;
+      lampSpots.push([x, terrainH(x, z), z]); reserve(x, z, 0.25);
+    });
+    (function () {
+      const n = lampSpots.length, poleI = new T.InstancedMesh(new T.CylinderGeometry(0.025, 0.035, 1.1, 6), mat('#3a3a3a', { metalness: 0.6 }), n), armI = new T.InstancedMesh(new T.BoxGeometry(0.28, 0.025, 0.025), mat('#3a3a3a', { metalness: 0.6 }), n);
+      const headM = new T.MeshStandardMaterial({ color: '#fff3c4', emissive: '#ffd27a', emissiveIntensity: 0.5 }); windowMats.push(headM);
+      const headI = new T.InstancedMesh(new T.SphereGeometry(0.06, 8, 6), headM, n), d = new T.Object3D();
+      lampSpots.forEach(([x, y, z], i) => { d.position.set(x, y + 0.55, z); d.rotation.set(0, 0, 0); d.updateMatrix(); poleI.setMatrixAt(i, d.matrix); d.position.set(x + 0.12, y + 1.1, z); d.updateMatrix(); armI.setMatrixAt(i, d.matrix); d.position.set(x + 0.25, y + 1.06, z); d.updateMatrix(); headI.setMatrixAt(i, d.matrix); });
+      [poleI, armI].forEach((m) => { m.castShadow = true; add(m); }); add(headI);
+    })();
+
+    // ---------- Villagers going about their day ----------
+    const folk = [], FOLK_SPOTS = [[LAKE.x - 4, LAKE.z - LAKE.rz - 0.5, 'nonla'], [LAKE.x + 1, LAKE.z + LAKE.rz + 0.55, null], [LAKE.x - 1, LAKE.z - LAKE.rz - 0.55, null], [-6, hoianZ + 0.6, 'nonla'], [6.5, hoianZ + 0.6, null], [-10, hoianZ + 0.55, null], [2.5, hoianZ + 0.6, 'nonla'], [-9, SAPA.z0 + 1.2, 'nonla'], [-5, SAPA.z0 + 2.0, 'nonla'], [-3, (CITY.z0 + CITY.z1) / 2, null], [6, (CITY.z0 + CITY.z1) / 2 + 0.3, null], [-8, rowZ(12.4) + 2.4, 'nonla'], [2, rowZ(12.4) + 2.6, null], [8, rowZ(11.0) + 1.6, null], [-3, rowZ(4.4) - 1.6, null], [9, rowZ(4.4) - 1.7, 'nonla']];
+    FOLK_SPOTS.slice(0, quality === 'low' ? 6 : FOLK_SPOTS.length).forEach(([x, z, hat], i) => {
+      if (terrainH(x, z) < 0.25 || roadInfo(x, z).d < 1.05) return;
+      const f = window.DDArt.figure({ color: ['#e2483d', '#3fa7a0', '#f2c14e', '#8c7ae6', '#f6ecdb', '#5a9fd4'][i % 6], dress: i % 3 === 1, hat, scale: 0.42 });
+      add(f); reserve(x, z, 0.5); const ph = rnd() * 6, dir = rnd() * Math.PI;
+      folk.push(f);
+      animated.push({ update(dt, t) { const k = Math.sin(t * 0.35 + ph); const px = x + Math.cos(dir) * k * 0.7, pz = z + Math.sin(dir) * k * 0.7; f.position.set(px, terrainH(px, pz), pz); f.rotation.y = -dir + (Math.cos(t * 0.35 + ph) > 0 ? Math.PI / 2 : -Math.PI / 2); window.DDArt.pose.walk(f, t, ph); } });
+    });
+
     const KINDS = {
-      round: { trunk: [new T.CylinderGeometry(0.06, 0.09, 0.55, 6), mat('#6b4a2f')], crown: [new T.IcosahedronGeometry(0.42, 1), new T.MeshStandardMaterial({ roughness: 0.8, flatShading: true })], cy: 0.75, colors: ['#3f8a2e', '#4f9a35', '#2f7428', '#5aa23c'] },
-      pine: { trunk: [new T.CylinderGeometry(0.05, 0.07, 0.35, 6), mat('#5a3d27')], crown: [new T.ConeGeometry(0.36, 1.1, 8), new T.MeshStandardMaterial({ roughness: 0.85, flatShading: true })], cy: 0.85, colors: ['#2f6b3a', '#336f3c', '#2b5f36'] },
-      blossom: { trunk: [new T.CylinderGeometry(0.05, 0.08, 0.5, 6), mat('#5e3f2c')], crown: [new T.IcosahedronGeometry(0.38, 1), new T.MeshStandardMaterial({ roughness: 0.7, flatShading: true })], cy: 0.7, colors: ['#f4a6c1', '#f7bfd3', '#ee93b3'] },
-      flame: { trunk: [new T.CylinderGeometry(0.06, 0.09, 0.6, 6), mat('#5e3f2c')], crown: [new T.IcosahedronGeometry(0.46, 1), new T.MeshStandardMaterial({ roughness: 0.7, flatShading: true })], cy: 0.78, colors: ['#e0482f', '#ef5a33', '#d63d29'], flat: 0.65 },
+      round: { trunk: [new T.CylinderGeometry(0.06, 0.09, 0.55, 6), mat('#6b4a2f')], crown: [new T.IcosahedronGeometry(0.42, 1), new T.MeshStandardMaterial({ roughness: 0.8, flatShading: true })], cy: 0.75, colors: ['#3f8a2e', '#4f9a35', '#2f7428', '#5aa23c'], extra: [[0.26, -0.08, 0.1, 0.68], [-0.22, 0.02, -0.14, 0.62], [0.02, 0.3, -0.02, 0.6]] },
+      pine: { trunk: [new T.CylinderGeometry(0.05, 0.07, 0.35, 6), mat('#5a3d27')], crown: [new T.ConeGeometry(0.4, 0.8, 8), new T.MeshStandardMaterial({ roughness: 0.85, flatShading: true })], cy: 0.68, colors: ['#2f6b3a', '#336f3c', '#2b5f36'], extra: [[0, 0.34, 0, 0.78], [0, 0.62, 0, 0.55]] },
+      blossom: { trunk: [new T.CylinderGeometry(0.05, 0.08, 0.5, 6), mat('#5e3f2c')], crown: [new T.IcosahedronGeometry(0.38, 1), new T.MeshStandardMaterial({ roughness: 0.7, flatShading: true })], cy: 0.7, colors: ['#f4a6c1', '#f7bfd3', '#ee93b3'], extra: [[0.24, -0.06, 0.08, 0.7], [-0.2, 0.04, -0.12, 0.66]] },
+      flame: { trunk: [new T.CylinderGeometry(0.06, 0.09, 0.6, 6), mat('#5e3f2c')], crown: [new T.IcosahedronGeometry(0.46, 1), new T.MeshStandardMaterial({ roughness: 0.7, flatShading: true })], cy: 0.78, colors: ['#e0482f', '#ef5a33', '#d63d29'], flat: 0.65, extra: [[0.3, -0.04, 0.1, 0.7], [-0.28, 0.0, -0.08, 0.66]] },
       bush: { trunk: null, crown: [new T.IcosahedronGeometry(0.22, 1), new T.MeshStandardMaterial({ roughness: 0.9, flatShading: true })], cy: 0.14, colors: ['#5c9a45', '#6aaa4f', '#4b8a3d'] },
       flower: { trunk: null, crown: [new T.SphereGeometry(0.07, 6, 4), new T.MeshStandardMaterial({ roughness: 0.6 })], cy: 0.07, colors: ['#ff6fa0', '#ffd34d', '#b77bff', '#ffffff', '#ff8a3d'] },
     };
@@ -640,14 +678,39 @@
       const list = plan[k], K = KINDS[k]; if (!list.length) return;
       const crown = new T.InstancedMesh(K.crown[0], K.crown[1], list.length); crown.castShadow = k !== 'flower'; crown.receiveShadow = true;
       const trunk = K.trunk ? new T.InstancedMesh(K.trunk[0], K.trunk[1], list.length) : null; if (trunk) { trunk.castShadow = true; trunk.receiveShadow = true; }
+      const extras = (K.extra || []).map(() => { const m = new T.InstancedMesh(K.crown[0], K.crown[1], list.length); m.castShadow = true; m.receiveShadow = true; return m; });
       list.forEach(([x, z, s], i) => {
         const y = terrainH(x, z); q.setFromAxisAngle(new T.Vector3(0, 1, 0), rnd() * 6.28);
         if (trunk) { m4.compose(ps.set(x, y + 0.27 * s, z), q, sc.set(s, s, s)); trunk.setMatrixAt(i, m4); }
         m4.compose(ps.set(x, y + K.cy * s, z), q, sc.set(s, s * (K.flat || 1), s)); crown.setMatrixAt(i, m4);
-        crown.setColorAt(i, cc.set(K.colors[(rnd() * K.colors.length) | 0]).offsetHSL(0, 0, (rnd() - 0.5) * 0.06));
+        cc.set(K.colors[(rnd() * K.colors.length) | 0]).offsetHSL(0, 0, (rnd() - 0.5) * 0.06); crown.setColorAt(i, cc);
+        (K.extra || []).forEach(([dx, dy, dz, k], e) => {
+          const off = new T.Vector3(dx, dy, dz).multiplyScalar(s).applyQuaternion(q);
+          m4.compose(ps.set(x + off.x, y + K.cy * s + off.y, z + off.z), q, sc.set(s * k, s * k * (K.flat || 1), s * k)); extras[e].setMatrixAt(i, m4);
+          extras[e].setColorAt(i, cc.clone().offsetHSL(0, 0, (e % 2 ? 0.05 : -0.04)));
+        });
       });
-      add(crown); if (trunk) add(trunk);
+      add(crown); if (trunk) add(trunk); extras.forEach(add);
     });
+
+    // ---------- Ground cover: grass tufts and stones ----------
+    (function () {
+      const NT = quality === 'low' ? 900 : 2600, tuft = new T.InstancedMesh(new T.ConeGeometry(0.045, 0.24, 4), new T.MeshStandardMaterial({ roughness: 1 }), NT), d = new T.Object3D(); let n = 0;
+      for (let tries2 = 0; n < NT && tries2 < NT * 5; tries2++) {
+        const x = (rnd() - 0.5) * 44, z = (rnd() - 0.5) * 58 + ISL.zc, h = terrainH(x, z);
+        if (h < 0.35 || h > 3 || island(x, z) < 0.98 || roadInfo(x, z).d < 1.1 || !isFree(x, z, 0.05)) continue;
+        if (z > CITY.z0 - 0.3 && z < CITY.z1 + 0.3) continue;
+        for (let k = 0; k < 3 && n < NT; k++, n++) { d.position.set(x + (rnd() - 0.5) * 0.12, h + 0.1, z + (rnd() - 0.5) * 0.12); d.rotation.set((rnd() - 0.5) * 0.5, rnd() * 6, (rnd() - 0.5) * 0.5); d.scale.setScalar(0.7 + rnd() * 0.7); d.updateMatrix(); tuft.setMatrixAt(n, d.matrix); tuft.setColorAt(n, cc.set(rnd() < 0.5 ? '#5f9a3a' : '#79b04a').offsetHSL(0, 0, (rnd() - 0.5) * 0.08)); }
+      }
+      tuft.count = n; tuft.receiveShadow = true; add(tuft);
+      const NR = quality === 'low' ? 60 : 180, rock = new T.InstancedMesh(new T.DodecahedronGeometry(0.16, 0), new T.MeshStandardMaterial({ color: '#9a978a', roughness: 0.95, flatShading: true }), NR); let m = 0;
+      for (let tries2 = 0; m < NR && tries2 < NR * 8; tries2++) {
+        const x = (rnd() - 0.5) * 46, z = (rnd() - 0.5) * 60 + ISL.zc, h = terrainH(x, z);
+        if (h < 0.05 || roadInfo(x, z).d < 1.2 || !isFree(x, z, 0.1)) continue;
+        d.position.set(x, h + 0.03, z); d.rotation.set(rnd() * 3, rnd() * 3, rnd() * 3); const k = 0.5 + rnd() * 1.4; d.scale.set(k, k * 0.6, k * (0.7 + rnd() * 0.5)); d.updateMatrix(); rock.setMatrixAt(m++, d.matrix);
+      }
+      rock.count = m; rock.castShadow = true; rock.receiveShadow = true; add(rock);
+    })();
 
     // ---------- Sky life: clouds, birds, petals, fireflies ----------
     const clouds = [];
@@ -716,7 +779,7 @@
     return {
       tilePos: (id) => tilePos[id].clone(), topOf, curve: (a, b) => curves[a + '-' + b], tangent: (id) => tangents[id].clone(),
       regionOf: (id) => regionOf(L.TILES[id]), REGIONS, pickables, tileMeshes, update, heightAt: terrainH,
-      setQuality(qv) { sun.castShadow = qv !== 'low'; },
+      setQuality(qv) { sun.castShadow = qv !== 'low'; }, setHouses, lotPos: (i) => (lots[i] ? lots[i].g.position.clone() : null),
     };
   }
 

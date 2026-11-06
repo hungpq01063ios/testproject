@@ -61,10 +61,13 @@
   // ================= Motorbike carrying the family =================
   const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.3, 'rgba(255,255,255,.5)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new T.CanvasTexture(c); })();
   const skin = mat('#f1c9a0', { roughness: 0.7 });
+  const eyeM = mat('#1a1410', { roughness: 0.3 }), hairM = mat('#2a1d17');
   function person(shirt, s, helmetColor) {
     const g = new T.Group();
     g.add(mesh(new T.CapsuleGeometry(0.11 * s, 0.2 * s, 4, 10), mat(shirt), 0, 0.2 * s, 0));
     g.add(mesh(new T.SphereGeometry(0.105 * s, 16, 12), skin, 0.01, 0.47 * s, 0));
+    for (const z of [-0.035, 0.035]) g.add(mesh(new T.SphereGeometry(0.016 * s, 6, 4), eyeM, 0.105 * s, 0.48 * s, z * s));
+    g.add(mesh(new T.SphereGeometry(0.11 * s, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.45), hairM, -0.01 * s, 0.49 * s, 0));
     if (helmetColor) { const h = mesh(new T.SphereGeometry(0.125 * s, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), mat(helmetColor, { roughness: 0.3 }), 0.01, 0.48 * s, 0); g.add(h); }
     else { const hat = mesh(new T.ConeGeometry(0.2 * s, 0.11 * s, 18), mat('#e9d08a', { roughness: 0.8 }), 0.01, 0.6 * s, 0); g.add(hat); } // nón lá
     const arm = mesh(new T.CapsuleGeometry(0.035 * s, 0.22 * s, 3, 6), mat(shirt), 0.12 * s, 0.25 * s, 0.12 * s); arm.rotation.z = -1.0; g.add(arm);
@@ -273,6 +276,8 @@
     if (good) Sfx.coin(); else if (bad) Sfx.bad();
   }
 
+  function syncHouses(instant) { W.setHouses(st.players.map((p) => ({ key: p.house ? window.DDArt.HOUSE_KEYS[p.house.name] : null, color: p.color, instant }))); }
+
   // ================= Cutscenes =================
   const CUT_KEY = 'duongdoi.cuts';
   let cutsOn = store.get(CUT_KEY) !== 'off', cutQueue = [], cutsSeen = [];
@@ -448,7 +453,7 @@
   function startGame(state) {
     st = state; busy = false; overDismissed = false; overShown = false;
     $('setup').hidden = true; $('newGameBtn').hidden = false; panels.forEach((p) => ($(p).hidden = false));
-    controls.autoRotate = false; resize(); buildBikes(); region = null; enterRegion(st.players[st.turn].pos, false); render(); save();
+    controls.autoRotate = false; resize(); buildBikes(); syncHouses(true); region = null; enterRegion(st.players[st.turn].pos, false); render(); save();
     viewMode = 'follow'; $('viewBtn').textContent = 'Toàn cảnh'; focusPlayer(st.turn);
   }
 
@@ -539,7 +544,7 @@
     if (kind === 'goal') { const g = L.GOALS.find((x) => x.key === st.players[who].goal); banner('Ước mơ: ' + g.name, g.hint); Sfx.chime(); }
     if (kind === 'job' || (kind === 'career' && st.players[who].salary !== before[who].salary)) { const c = L.careerOf(st.players[who].career); burst(pos, 'confetti', 40); banner(st.players[who].career, c && c.perk ? 'Thu phí dịch vụ: ' + L.PERKS[c.perk] : ''); }
     if (kind === 'retire') { burst(pos, 'confetti', 50); }
-    if (kind === 'house' && st.players[who].house && before[who].net !== st.players[who].cash - st.players[who].loans * L.LOAN) { burst(pos, 'confetti', 60); Sfx.fanfare(); queueCut('house', who, { house: st.players[who].house.name }); }
+    if (kind === 'house' && st.players[who].house && before[who].net !== st.players[who].cash - st.players[who].loans * L.LOAN) { burst(pos, 'confetti', 60); Sfx.fanfare(); queueCut('house', who, { house: st.players[who].house.name }); syncHouses(false); }
     if (kind === 'retire') queueCut('retire', who, { style: st.players[who].retireStyle });
     if (kind === 'duel' && st.phase === 'contest') { banner(st.contest.title, 'Hai bên cùng quay'); Sfx.chime(); }
     placeAll(false);
@@ -603,16 +608,37 @@
     $('log').innerHTML = st.log.slice(0, 40).map((e) => `<li>${e.who ? `<b style="color:${e.color}">${esc(e.who)}</b> ` : ''}${esc(e.text)}</li>`).join('');
     if (st.phase === 'over') renderOver();
   }
-  let overShown = false;
+  let overShown = false, finalePlaying = false;
+  const GOAL_PLACE = { rich: 'bachdang', love: 'hoian', know: 'hue', health: 'dalat', comm: 'halong', balance: 'phuquoc' };
+  async function playFinale() {
+    if (!window.DDCutscene || FAST) return;
+    finalePlaying = true; busy = true; $('overOverlay').hidden = true; render();
+    const f = st.final, idxOf = (row) => st.players.findIndex((q) => q.color === row.color);
+    const players = st.players.map((p) => ({ name: p.name, color: p.color, married: p.married, kids: p.kids }));
+    let all = false;
+    try {
+      for (let r = f.length - 1; r >= 0 && !all; r--) {
+        const row = f[r], i = idxOf(row), p = st.players[i], g = L.GOALS.find((x) => x.key === p.goal);
+        const data = { rank: r + 1, total: f.length, name: p.name, color: p.color, career: p.career, goalKey: p.goal, goalName: g ? g.name : '', married: p.married, kids: p.kids,
+          houseKey: p.house ? window.DDArt.HOUSE_KEYS[p.house.name] : null, vehicle: p.vehicle, net: Math.max(0, row.net), aspects: { love: p.love, know: p.know, health: p.health, comm: p.comm }, balance: row.balance, score: row.score, retireStyle: p.retireStyle };
+        if (r === 0) Sfx.fanfare(); else Sfx.chime();
+        const res = await window.DDCutscene.play({ event: 'recap', place: GOAL_PLACE[p.goal], who: i, players, data, sequence: true, reduced });
+        if (res && res.skippedAll) all = true;
+      }
+      if (!all) { Sfx.fanfare(); await window.DDCutscene.play({ event: 'finale', place: 'finale', who: idxOf(f[0]), players, sequence: true, reduced, data: { ranking: f.map((row) => { const g = L.GOALS.find((x) => x.key === row.goal); return { name: row.name, color: row.color, score: row.score, goalName: g ? g.name : '' }; }) } }); }
+    } catch (e) { /* the summary table still shows */ }
+    finalePlaying = false; busy = false; overDismissed = false; render();
+  }
+  $('replayBtn').onclick = () => playFinale();
   function renderOver() {
     const f = st.final;
     $('winnerTitle').textContent = `${f[0].name} có cuộc đời viên mãn nhất!`;
     $('finalTable').querySelector('tbody').innerHTML = f.map((r, i) => { const g = L.GOALS.find((x) => x.key === r.goal); return `<tr><td class="num">${i + 1}</td><td><div class="pname"><i style="background:${r.color}"></i>${esc(r.name)}</div><div class="job">${esc(g ? g.name : '')}</div></td>
       <td class="r num" title="Tiền ${r.cash} + bán nhà ${r.resale} − nợ ${r.debt}">${r.assetPts}<div class="job">${r.net} tr</div></td>${L.ASPECTS.map((A) => `<td class="r num a-${A.key}${r.goal === A.key ? ' is-goal' : ''}">${r.aspects[A.key]}<div class="job">${r[A.key]}${A.icon}</div></td>`).join('')}<td class="r num">${r.balance || '–'}</td><td class="r num"><b>${r.score}</b></td></tr>`; }).join('');
-    $('overOverlay').hidden = overDismissed;
+    $('overOverlay').hidden = overDismissed || finalePlaying;
     $('spinBtn').hidden = true; $('endTurnBtn').hidden = true;
     $('result').innerHTML = `Ván đã kết thúc. <strong>${esc(f[0].name)}</strong> thắng với ${f[0].score} Điểm Đời.`;
-    if (!overShown) { overShown = true; const w = st.players.findIndex((p) => p.name === f[0].name); if (bikes[w]) burst(bikes[w].group.position.clone(), 'confetti', 120); Sfx.fanfare(); }
+    if (!overShown) { overShown = true; const w = st.players.findIndex((p) => p.color === f[0].color); if (bikes[w]) burst(bikes[w].group.position.clone(), 'confetti', 120); if (cutsOn && !FAST) setTimeout(playFinale, 50); else Sfx.fanfare(); }
   }
 
   // Test hook: read-only view of the game's own state and the 3D scene, used by selftest.cjs.
@@ -624,6 +650,8 @@
   // Debug/preview helper: look at a tile with that tile's atmosphere.
   window.__dbgCut = (event, place, data) => window.DDCutscene.play({ event, place, data, who: 0, players: st ? st.players.map((p) => ({ name: p.name, color: p.color, married: true, kids: 2 })) : [{ name: 'An', color: '#e2483d', married: true, kids: 2 }, { name: 'Bình', color: '#e7b93c' }, { name: 'Chi', color: '#3fa7a0' }], duration: 60 });
   window.__dbgVehicles = (keys) => { keys.forEach((k, i) => { if (st.players[i]) st.players[i].vehicle = k; }); st.players.forEach((p) => { p.married = true; p.kids = 2; p.pos = 2; }); placeAll(true); focusPlayer(0); };
+  window.__dbgHouses = (names) => { names.forEach((n, i) => { if (st.players[i]) st.players[i].house = n ? { name: n, price: 100 } : null; }); syncHouses(true); };
+  window.__dbgLook = (i, dist) => { const p = W.lotPos(i); viewMode = 'follow'; region = 'bana'; flyTo(p, p.clone().add(new T.Vector3(0, dist || 6, dist || 6)), 0.01); };
   window.__dbgFocus = (tileId) => { viewMode = 'follow'; region = W.regionOf(tileId); const tgt = W.tilePos(tileId); flyTo(tgt, tgt.clone().add(FOLLOW_OFF), 0.01); };
 
   function boot(data) {

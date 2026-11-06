@@ -23,6 +23,8 @@ Ván đang chơi được tự lưu trong trình duyệt. Mở lại trang và b
 - **Thách đấu** (ô VS): chọn đối thủ, hai bên cùng quay, người thắng lấy tiền cược (cờ tướng, kèo bóng đá, tranh chấp đất đai). Thêm các lá sự kiện chuyển tiền giữa người chơi.
 - **Phương tiện theo tài sản ròng**: xe buýt (đang nợ) → xe đạp → xe máy (40 tr) → ô tô (130 tr) → xe sang (260 tr).
 - **Hoạt cảnh**: tốt nghiệp, kết hôn, có con, mua nhà, tậu ô tô, khởi nghiệp thành công, nghỉ hưu và trao giải cuộc thi, diễn ở một trong 11 cảnh đẹp ba miền chọn ngẫu nhiên. Bấm "Bỏ qua" hoặc tắt bằng nút **Hoạt cảnh**.
+- **Nhà theo đúng loại đã mua**: nhà vườn ở quê, căn hộ chung cư, nhà phố 4 tầng, biệt thự ven sông; hiện ở **Khu nhà của bạn** trên sa bàn (lô đất cắm cờ màu người chơi) và trong hoạt cảnh.
+- **Lễ tổng kết**: mỗi người một cảnh hồi tưởng (từ hạng chót lên hạng nhất) với nhà, xe, gia đình và bảng chỉ số chạy số; kết thúc bằng pháo hoa, bục vinh quang và cúp cho người thắng; sau đó là bảng điểm, có nút xem lại.
 - **Mọi vòng quay do người chơi bấm**: đi đường, mừng cưới, đầu tư, khởi nghiệp, giá bán nhà, cuộc thi, thách đấu.
 - **Điểm Đời** = tài sản ròng ÷ 5 + điểm 4 khía cạnh + thưởng cân bằng.
 
@@ -34,6 +36,7 @@ Chi tiết từng con số ở `MECHANICS.md`.
 |---|---|
 | `core.js` | Logic game thuần (không phụ thuộc DOM): bàn cờ 79 ô, nghề, nhà, sự kiện, lượt chơi, chấm điểm. RNG có seed nên ván chơi tái lập được |
 | `index.html` + `app.js` | **Bản 3D** (Three.js): giao diện, quân xe máy chở cả nhà chạy theo đường cong, vòng quay 3D, camera bám người chơi, pháo giấy, đồng xu, số tiền bay lên, âm thanh tổng hợp |
+| `art.js` | Đồ hoạ dùng chung: texture mái ngói và mặt tiền, nhân vật chi tiết (mắt, tóc, áo dài, nón lá), cây nhiều tầng tán, 4 kiểu nhà, phương tiện |
 | `cutscene.js` | Hoạt cảnh: sân khấu 3D riêng, 11 bối cảnh (Hồ Gươm, Hạ Long, Mù Cang Chải, Tràng An, Kinh thành Huế, Hội An, Mũi Né, Đà Lạt, Cái Răng, Phú Quốc, Bến Bạch Đằng) × 8 loại sự kiện |
 | `world.js` | Thế giới 3D dựng bằng code: đảo có địa hình, biển và sông hồ, đường lát đá uốn lượn, 7 vùng với công trình và ánh sáng riêng, cây cối, thuyền, chim, mây |
 | `2d.html` | Bản 2D nhẹ (bàn cờ SVG) cho máy yếu |
