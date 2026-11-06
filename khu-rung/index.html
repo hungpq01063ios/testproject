@@ -151,6 +151,8 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
 .mini-ctrl .big { min-width: 96px; min-height: 64px; font-size: 1.6rem; touch-action: manipulation; user-select: none; }
 .mini-ctrl .mc-act { min-width: 220px; background: var(--berry); box-shadow: 0 6px 0 #c94a6a; }
 .mini-bar { height: 12px; border-radius: 99px; background: #e8eef5; overflow: hidden; } .mini-bar div { height: 100%; background: linear-gradient(90deg, var(--sun), var(--berry)); transition: width .1s linear; }
+/* in play the progress panel takes the top centre, so the buttons line up down the left edge where they stay clickable */
+@media (min-width: 901px) { body.playing .topbar { flex-direction: column; align-items: flex-start; z-index: 6; } body.playing .brand { display: none; } body.playing .topbar .chip { padding: 7px 11px; font-size: .85rem; } }
 @media (max-width: 900px) { .zones { grid-template-columns: repeat(3, minmax(0, 1fr)); } .mrow { grid-template-columns: 1fr auto; } .mrow .meter { grid-column: 1 / -1; } }
 @media (max-width: 900px) {
   body { overflow: auto; }
@@ -160,6 +162,16 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
   #meters { order: 1; } #turnPanel { order: 2; } #friends { order: 3; }
   .brand { font-size: 1.5rem; }
 }
+.overlay.sc { z-index: 40; }
+.sc-sheet { max-width: 560px; max-height: 90vh; overflow: auto; }
+.sc-sheet h3 { margin: 14px 0 6px; font-size: 1rem; }
+.sc-list, .sc-tips { padding-left: 0; list-style: none; margin: 8px 0; display: grid; gap: 4px; font-size: .92rem; }
+.sc-tips { padding-left: 18px; list-style: disc; }
+.sc-list .ok { color: #23734a; } .sc-list .no { color: #b3392f; font-weight: 700; }
+.sc-voices { display: grid; gap: 6px; font-size: .92rem; } .sc-voices small { opacity: .65; }
+.sc-log { background: #f2f6fb; border-radius: 10px; padding: 8px; font-size: .78rem; white-space: pre-wrap; min-height: 1.2em; margin: 10px 0; }
+.sc-link { text-align: center; margin: 10px 0 0; }
+details { margin: 6px 0; font-size: .92rem; } summary { cursor: pointer; font-weight: 700; }
 @media (prefers-reduced-motion: reduce) { .pop, .banner, .badge { animation-duration: .01s; } .bar div { transition: none; } }
 </style>
 
@@ -171,6 +183,7 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
       <button class="chip" id="soundBtn" aria-pressed="true">Âm thanh</button>
       <button class="chip" id="voiceBtn" aria-pressed="true">Đọc to</button>
       <button class="chip" id="newBtn" hidden>Ván mới</button>
+      <button class="chip" id="checkBtn" type="button" title="Kiểm tra âm thanh" aria-label="Kiểm tra âm thanh">🔧</button>
     </div>
   </div>
   <section class="panel" id="meters" hidden>
@@ -195,6 +208,7 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
     <div class="animals" id="animalCards"></div>
     <div class="friends-row"><span class="lbl">Các bạn nhỏ đang chờ được tìm thấy:</span><div id="friendsRow"></div></div>
     <div class="row"><button class="big" id="startBtn" disabled>Vào rừng thôi!</button><button class="big sun" id="resumeBtn" hidden>Chơi tiếp ván cũ</button></div>
+    <p class="sc-link"><button class="chip" id="checkBtn2" type="button">🔧 Không nghe thấy giọng đọc? Kiểm tra âm thanh</button></p>
   </div>
 </div>
 
@@ -209,6 +223,29 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
 </div>
 <div class="handover" id="handover" hidden></div>
 <div class="cine" id="cine" hidden><div class="cine-bar top"></div><div class="cine-bar bottom"></div><div class="cine-cap" id="cineCap"><h2 id="cineTitle"></h2><p id="cineText"></p></div><button class="chip cine-skip" id="cineSkip" type="button">Bỏ qua ›</button></div>
+<div class="overlay sc" id="soundCheck" hidden>
+  <div class="sheet sc-sheet" role="dialog" aria-label="Kiểm tra âm thanh">
+    <h2>Kiểm tra âm thanh</h2>
+    <ul id="scList" class="sc-list"></ul>
+    <div class="row"><button class="big" id="scBeep" type="button">Phát tiếng “ting”</button><button class="big sun" id="scSay" type="button">Đọc thử</button></div>
+    <h3>Giọng đọc tiếng Việt</h3>
+    <div id="scVoices" class="sc-voices"></div>
+    <pre id="scLog" class="sc-log"></pre>
+    <details><summary>Nghe được “ting” mà không nghe giọng đọc?</summary><ul class="sc-tips">
+      <li>Chọn giọng khác ở trên rồi bấm <b>Đọc thử</b> (giọng “trên máy” không cần mạng).</li>
+      <li>Giọng “trực tuyến” của Edge cần Internet; mạng công ty/VPN có thể chặn. Thử tắt VPN.</li>
+      <li>Đóng hẳn Edge (cả biểu tượng dưới khay hệ thống) rồi mở lại — bộ đọc của Edge đôi khi bị treo sau thời gian dài.</li>
+      <li>Thử trang khác: dán <code>speechSynthesis.speak(new SpeechSynthesisUtterance('xin chào'))</code> vào Console (F12).</li>
+      <li>Muốn có giọng không cần mạng: Windows Settings → Time &amp; language → Language → thêm Tiếng Việt, tải gói “Text-to-speech”.</li>
+    </ul></details>
+    <details><summary>Không nghe cả tiếng “ting”?</summary><ul class="sc-tips">
+      <li>Chuột phải vào tab → <b>Unmute site</b> (Bật tiếng trang); xem biểu tượng loa trên tab.</li>
+      <li>Windows: chuột phải biểu tượng loa → Volume mixer → kiểm tra Microsoft Edge không bị tắt/nhỏ.</li>
+      <li>Kiểm tra thiết bị phát (tai nghe Bluetooth có thể vừa kết nối/ngắt).</li>
+    </ul></details>
+    <div class="row"><button class="big" id="scClose" type="button">Đóng</button></div>
+  </div>
+</div>
 <div id="fxLayer"></div>
 
 <script src="vendor/three.min.js"></script>

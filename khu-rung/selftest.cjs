@@ -82,13 +82,15 @@ const { chromium } = require('playwright');
         let voices = mode === 'edge' ? EN.slice() : [], lastCancel = -1e9;
         const synth = { getVoices: () => voices, speaking: false, onvoiceschanged: null,
           speak(u) { if (mode === 'edge' && performance.now() - lastCancel < 100) return; // Chromium drops it
+            if (mode === 'offline' && /Online/.test(u.voice && u.voice.name)) { window.__errs = (window.__errs || 0) + 1; setTimeout(() => u.onerror && u.onerror({ error: 'network' }), 60); return; } // online voice, no connection
             said.push((!u.voice || !/^vi/.test(u.voice.lang) ? '[wrong voice] ' : '') + u.text);
             synth.speaking = true; synth.cur = u; setTimeout(() => { if (synth.cur !== u) return; synth.speaking = false; u.onend && u.onend(); }, 300 + u.text.length * 15); },
           cancel() { if (synth.speaking && synth.cur) cut.push(synth.cur.text); synth.speaking = false; synth.cur = null; lastCancel = performance.now(); } };
         if (mode === 'edge') synth.resume = () => {};
         Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
         window.SpeechSynthesisUtterance = function (t) { this.text = t; };
-        if (mode === 'edge') { setTimeout(() => synth.onvoiceschanged && synth.onvoiceschanged(), 300); setTimeout(() => voices.push(VI), 1500); } // Vietnamese arrives without an event
+        if (mode === 'offline') voices = [Object.assign({ localService: false }, VI), { lang: 'vi-VN', name: 'Microsoft An - Vietnamese (Vietnam)', localService: true }];
+        else if (mode === 'edge') { setTimeout(() => synth.onvoiceschanged && synth.onvoiceschanged(), 300); setTimeout(() => voices.push(VI), 1500); } // Vietnamese arrives without an event
         else setTimeout(() => { voices = [VI]; synth.onvoiceschanged && synth.onvoiceschanged(); }, 1200);
         const AC = window.AudioContext; window.AudioContext = function () { const c = new AC(); const o = c.createOscillator.bind(c); c.createOscillator = () => { window.__tones++; return o(); }; return c; };
       }, mode);
@@ -96,11 +98,15 @@ const { chromium } = require('playwright');
       await pg.click('.acard[data-animal="bear"]'); await pg.click('#startBtn');
       await pg.waitForFunction(() => window.__forest.view().cuts.includes('intro') && !window.__forest.busy, null, { timeout: 180000 });
       await pg.waitForTimeout(2500);
-      const h = await pg.evaluate(() => ({ said: window.__said, cut: window.__cut, tones: window.__tones })); await pg.close(); return h;
+      const h = await pg.evaluate(() => ({ said: window.__said, cut: window.__cut, tones: window.__tones, errs: window.__errs || 0, v: window.__voice() }));
+      if (mode === 'offline') { await pg.click('#checkBtn'); await pg.waitForTimeout(300); h.panel = await pg.evaluate(() => ({ open: !document.getElementById('soundCheck').hidden, voices: document.querySelectorAll('#scVoices input').length, text: document.getElementById('scList').textContent })); }
+      await pg.close(); return h;
     }
-    for (const mode of ['edge', 'chrome']) {
+    for (const mode of ['edge', 'chrome', 'offline']) {
       const h = await listen(mode), order = story.map((k) => h.said.findIndex((x) => x.startsWith(k)));
       const ok = order.every((x, i) => x >= 0 && (i === 0 || x > order[i - 1])) && !h.cut.some((x) => story.some((k) => x.startsWith(k))) && !h.said.some((x) => x.startsWith('[wrong')) && h.said.some((x) => x.startsWith('Đến lượt')) && h.tones >= 8;
+      if (mode === 'offline') { const okp = ok && h.errs >= 1 && h.v.voice === 'Microsoft An - Vietnamese (Vietnam)' && h.panel && h.panel.open && h.panel.voices === 2;
+        add('voice-fallback', okp, `online Vietnamese voice fails with "network" (${h.errs}×) → switched to local "${h.v.voice}"; heard ${h.said.length} lines, story in order: ${ok}; sound-check panel open=${h.panel && h.panel.open}, lists ${h.panel && h.panel.voices} voices: "${h.panel && h.panel.text.slice(0, 140)}…"`); continue; }
       add(`voice-${mode}`, ok, `${mode === 'edge' ? 'English voices first, Vietnamese added 1.5 s later without an event, speak() right after cancel() dropped' : 'voice list empty for 1.2 s, no resume()'}: heard ${h.said.length} lines (${h.said.slice(0, 5).map((x) => '"' + x.slice(0, 22) + '…"').join(', ')}); story lines cut: ${h.cut.filter((x) => story.some((k) => x.startsWith(k))).length}; tune notes ${h.tones}`);
     }
   } catch (e) { add('run', false, String(e && e.stack || e)); }

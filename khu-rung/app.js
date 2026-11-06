@@ -36,34 +36,84 @@
   // Chrome and Edge fill the voice list a moment after the page opens, which used to swallow the opening narration.
   const Voice = {
     on: store.get('khurung.voice') !== 'off', voice: null, queue: [], speaking: false, cur: null, lastCancel: 0,
+    bad: new Set(), lastError: '', log: [], spoken: 0,
+    note(m) { this.log.push(new Date().toLocaleTimeString() + ' ' + m); if (this.log.length > 12) this.log.shift(); if (this.onlog) this.onlog(); },
+    all() { try { return speechSynthesis.getVoices() || []; } catch (e) { return []; } },
+    vi() { return this.all().filter((x) => /^vi(-|_|$)/i.test(x.lang) || /vietnam|tiếng việt|hoaimy|namminh/i.test(x.name)); },
     // Edge lists the device's own voices first and adds its online Vietnamese voices later, so look again every time
-    // until a Vietnamese voice turns up instead of deciding once.
-    pick() { try { const v = speechSynthesis.getVoices() || []; this.voice = v.find((x) => /^vi(-|_|$)/i.test(x.lang)) || v.find((x) => /vietnam|tiếng việt|hoaimy|namminh/i.test(x.name)) || null; } catch (e) { this.voice = null; } return this.voice; },
+    // until a Vietnamese voice turns up instead of deciding once. A voice that failed (an online voice with no
+    // connection, for instance) is skipped, and a voice chosen in the sound check wins when it is available.
+    pick() {
+      const vi = this.vi(), want = store.get('khurung.voiceName'), ok = vi.filter((x) => !this.bad.has(x.name));
+      this.voice = ok.find((x) => x.name === want) || ok.find((x) => !x.localService) || ok[0] || null;
+      if (!this.voice && vi.length && this.bad.size) { this.bad.clear(); this.voice = vi[0]; } // every voice failed once: try them all again
+      return this.voice;
+    },
     say(text, opts) {
       if (!this.on || FAST || !window.speechSynthesis || !text) return Promise.resolve();
       if (opts && opts.interrupt) this.stop();
-      return new Promise((res) => { this.queue.push({ text, res, born: performance.now() }); while (this.queue.length > 3) this.queue.shift().res(); this.pump(); });
+      return new Promise((res) => { this.queue.push({ text, res, born: performance.now(), tries: 0 }); while (this.queue.length > 3) this.queue.shift().res(); this.pump(); });
     },
     stop() { this.queue.splice(0).forEach((q) => q.res()); if (this.speaking) { try { speechSynthesis.cancel(); } catch (e) {} this.lastCancel = performance.now(); } if (this.cur) { const c = this.cur; this.cur = null; c.done(); } this.speaking = false; },
     pump() {
       if (this.speaking || !this.queue.length) return;
-      if (!this.voice) this.pick();
+      this.pick();
       if (!this.voice) { // wait up to 5 s for the voice list (per sentence, so a late list still gets used)
         const q = this.queue[0]; if (performance.now() - q.born < 5000) { clearTimeout(this.retry); this.retry = setTimeout(() => this.pump(), 250); return; }
-        this.queue.shift().res(); return this.pump();
+        this.lastError = 'không có giọng tiếng Việt'; this.note('Bỏ qua câu: máy chưa có giọng tiếng Việt'); this.queue.shift().res(); return this.pump();
       }
       const wait = 160 - (performance.now() - this.lastCancel); // Chromium drops a speak() that follows cancel() too closely
       if (wait > 0) { clearTimeout(this.retry); this.retry = setTimeout(() => this.pump(), wait); return; }
-      const q = this.queue.shift(), u = new SpeechSynthesisUtterance(q.text); u.voice = this.voice; u.lang = this.voice.lang || 'vi-VN'; u.rate = 0.95; u.pitch = 1.1;
-      let done = false; const fin = () => { if (done) return; done = true; clearTimeout(guard); if (this.cur && this.cur.u === u) this.cur = null; this.speaking = false; q.res(); this.pump(); };
-      const guard = setTimeout(fin, 2500 + q.text.length * 120); // some voices never fire onend
-      u.onend = fin; u.onerror = fin;
+      const q = this.queue.shift(), v = this.voice, u = new SpeechSynthesisUtterance(q.text); u.voice = v; u.lang = v.lang || 'vi-VN'; u.rate = 0.95; u.pitch = 1.1;
+      let done = false, started = false; const fin = () => { if (done) return; done = true; clearTimeout(guard); if (this.cur && this.cur.u === u) this.cur = null; this.speaking = false; q.res(); this.pump(); };
+      const guard = setTimeout(() => { if (!started) { this.lastError = 'giọng "' + v.name + '" không phản hồi'; this.note('Không phản hồi: ' + v.name); } fin(); }, 2500 + q.text.length * 120); // some voices never fire onend
+      u.onstart = () => { started = true; this.spoken++; this.lastError = ''; };
+      u.onend = fin;
+      u.onerror = (e) => {
+        const why = (e && e.error) || 'error';
+        if (why === 'interrupted' || why === 'canceled') return fin();
+        this.lastError = why + ' (' + v.name + ')'; this.note('Lỗi "' + why + '" với giọng ' + v.name);
+        if (done) return; done = true; clearTimeout(guard); if (this.cur && this.cur.u === u) this.cur = null; this.speaking = false;
+        this.bad.add(v.name); // e.g. an online voice with no connection: try the next Vietnamese voice once
+        if (q.tries < 2 && this.vi().some((x) => !this.bad.has(x.name))) { q.tries++; this.queue.unshift(q); } else q.res();
+        this.pump();
+      };
       this.speaking = true; this.cur = { u, done: fin }; // keep a reference so the utterance is not garbage-collected mid-sentence
       try { if (typeof speechSynthesis.resume === 'function') speechSynthesis.resume(); } catch (e) { /* not every browser has it */ }
-      try { speechSynthesis.speak(u); } catch (e) { fin(); }
+      try { speechSynthesis.speak(u); } catch (e) { this.lastError = String(e && e.message || e); fin(); }
     },
   };
   try { speechSynthesis.addEventListener ? speechSynthesis.addEventListener('voiceschanged', () => { Voice.pick(); Voice.pump(); }) : (speechSynthesis.onvoiceschanged = () => { Voice.pick(); Voice.pump(); }); Voice.pick(); } catch (e) {}
+
+  // Sound check: shows exactly what the browser offers, so a silent voice can be traced to the tab, the device or the voice.
+  function soundCheck() {
+    const box = $('soundCheck'); box.hidden = false; Sfx.ensure();
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const render = () => {
+      const has = !!window.speechSynthesis, all = Voice.all(), vi = Voice.vi(), cur = Voice.pick(), ctx = Sfx.ctx;
+      const row = (ok, t) => `<li class="${ok ? 'ok' : 'no'}">${ok ? '✔' : '✖'} ${t}</li>`;
+      $('scList').innerHTML = [
+        row(Sfx.on && ctx && ctx.state === 'running', `Âm thanh hiệu ứng: ${Sfx.on ? 'bật' : 'đang tắt'} · ${ctx ? ctx.state : 'chưa khởi động'}`),
+        row(Voice.on, `Nút “Đọc to”: ${Voice.on ? 'đang bật' : 'đang TẮT — bấm nút Đọc to để bật'}`),
+        row(has, has ? 'Trình duyệt có hỗ trợ đọc to' : 'Trình duyệt không hỗ trợ đọc to'),
+        row(all.length > 0, `Số giọng đọc trình duyệt cung cấp: ${all.length}`),
+        row(vi.length > 0, vi.length ? `Giọng tiếng Việt: ${vi.length}` : 'Không thấy giọng tiếng Việt (Edge cần mạng để có giọng “Online”)'),
+        row(!Voice.lastError, Voice.lastError ? 'Lỗi gần nhất: ' + esc(Voice.lastError) : `Đã đọc thành công ${Voice.spoken} câu`),
+      ].join('');
+      $('scVoices').innerHTML = vi.length ? vi.map((x) => `<label><input type="radio" name="scv" value="${esc(x.name)}" ${cur && cur.name === x.name ? 'checked' : ''}> ${esc(x.name)} <small>${x.localService ? 'trên máy' : 'trực tuyến'}${Voice.bad.has(x.name) ? ' · vừa lỗi' : ''}</small></label>`).join('') : '<p class="sc-hint">Chưa có giọng tiếng Việt nào.</p>';
+      $('scVoices').querySelectorAll('input').forEach((r) => { r.onchange = () => { store.set('khurung.voiceName', r.value); Voice.bad.delete(r.value); render(); }; });
+      $('scLog').textContent = Voice.log.slice(-6).join('\n');
+    };
+    Voice.onlog = render; render();
+    $('scBeep').onclick = () => { Sfx.ensure(); const was = Sfx.on; Sfx.on = true; Sfx.good(); Sfx.on = was; setTimeout(render, 200); };
+    $('scSay').onclick = () => {
+      if (!window.speechSynthesis) return; Voice.bad.clear(); const was = Voice.on; Voice.on = true; Voice.note('Đọc thử…');
+      Voice.say('Xin chào các bạn nhỏ! Khu rừng đang chờ chúng mình.', { interrupt: true }).then(() => { Voice.on = was; Voice.note(Voice.lastError ? 'Đọc thử không thành công' : 'Đọc thử xong'); });
+    };
+    $('scClose').onclick = () => { box.hidden = true; Voice.onlog = null; };
+    clearInterval(soundCheck.t); soundCheck.t = setInterval(() => { if (box.hidden) clearInterval(soundCheck.t); else render(); }, 1500);
+  }
+  $('checkBtn').onclick = soundCheck; $('checkBtn2').onclick = soundCheck;
   const toggle = (btn, obj, key) => { btn.setAttribute('aria-pressed', String(obj.on)); btn.onclick = () => { obj.on = !obj.on; btn.setAttribute('aria-pressed', String(obj.on)); if (key) store.set(key, obj.on ? 'on' : 'off'); if (!obj.on && obj.stop) obj.stop(); }; };
   toggle($('soundBtn'), Sfx); toggle($('voiceBtn'), Voice, 'khurung.voice');
 
@@ -271,10 +321,10 @@
   $('newBtn').onclick = () => showSetup();
   $('againBtn').onclick = () => start(F.newGame(st.players.map((p) => ({ animal: p.animal, name: p.name }))), false);
   $('pickBtn').onclick = () => showSetup();
-  function showSetup() { $('setup').hidden = false; $('endOverlay').hidden = true; ['meters', 'turnPanel', 'friends'].forEach((id) => ($(id).hidden = true)); $('newBtn').hidden = true; W.reset(); tokens.forEach((t) => scene.remove(t.g)); tokens = []; renderSetup(); resize(); }
+  function showSetup() { $('setup').hidden = false; $('endOverlay').hidden = true; ['meters', 'turnPanel', 'friends'].forEach((id) => ($(id).hidden = true)); $('newBtn').hidden = true; document.body.classList.remove('playing'); W.reset(); tokens.forEach((t) => scene.remove(t.g)); tokens = []; renderSetup(); resize(); }
   async function start(state, intro) {
     st = state; busy = false; W.reset(); W.ending(null); stormSeenLevel = Math.floor((st.storm / st.stormMax) / 0.5);
-    $('setup').hidden = true; $('endOverlay').hidden = true; ['meters', 'turnPanel', 'friends'].forEach((id) => ($(id).hidden = false)); $('newBtn').hidden = false;
+    $('setup').hidden = true; $('endOverlay').hidden = true; ['meters', 'turnPanel', 'friends'].forEach((id) => ($(id).hidden = false)); $('newBtn').hidden = false; document.body.classList.add('playing');
     resize(); buildTokens(); syncWorld(true); render(); save();
     if (intro) await introCinema();
     announceTurn();
@@ -387,7 +437,7 @@
   window.__forest = { get state() { return st; }, get busy() { return busy || !!dieAnim || tokens.some((t) => t.hop) || cineOn; }, view() { return { webgl: !!renderer.getContext(), frames, tokens: tokens.map((t) => t.g.userData.kind), tokenTile: st ? st.players.map((p) => p.pos) : [], cuts: cutsSeen.slice(), quality: QUALITY }; } };
   window.__forestMiniBot = (kind) => MINI.play(kind, { bot: true, friendImg: FRIEND_IMG.douc, face: THUMB.bear });
   window.__banner = (t) => banner(t);
-  window.__voice = () => ({ on: Voice.on, voice: Voice.voice && Voice.voice.name, waiting: Voice.queue.length, speaking: Voice.speaking });
+  window.__voice = () => ({ on: Voice.on, voice: Voice.voice && Voice.voice.name, waiting: Voice.queue.length, speaking: Voice.speaking, spoken: Voice.spoken, lastError: Voice.lastError, bad: [...Voice.bad], vietnamese: Voice.vi().map((x) => x.name + (x.localService ? ' (máy)' : ' (online)')), allVoices: Voice.all().length, log: Voice.log.slice() });
   window.__bridgeClear = () => W.bridgeClearance();
   window.__bannerQueue = () => ({ waiting: bannerQ.length, shown: document.querySelectorAll('.banner').length });
   window.__forestDbg = { zone(k, trees, rescued, restored) { Object.assign(st.zones[k], { trees, rescued, restored }); syncWorld(false); render(); }, time(i) { st.round = i + 1; W.setTime(i); render(); }, look(k) { focus = null; const z = zonePose(k, true); return flyTo(z.target, z.pos, 0.01); }, home() { focus = null; return flyTo(HOME_T, HOME_P, 0.01); } };

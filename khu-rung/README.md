@@ -59,6 +59,7 @@ Gấu dọn 2 đống rác · Thỏ được nhảy thêm 2 ô · Sóc nhặt th
 ## Dành cho người lớn
 - Không tiền, không nợ, không loại người chơi. Độ khó tự chỉnh theo số người chơi (xem `MECHANICS.md`).
 - **Âm thanh** và **Đọc to** (giọng tiếng Việt của máy, nếu có) bật/tắt ở góc trên. Ván lưu tự động.
+- **🔧 Kiểm tra âm thanh** (góc trên, hoặc nút ở màn chọn bạn): xem trình duyệt có những giọng tiếng Việt nào, chọn giọng, phát thử “ting” và đọc thử, kèm lỗi gần nhất và mẹo xử lý. Nếu một giọng báo lỗi (ví dụ giọng “Online” của Edge khi mất mạng), game tự chuyển sang giọng tiếng Việt khác.
 - Ván 1 bé khoảng 20 lượt; 3–4 bé khoảng 11–12 vòng (20–30 phút), mỗi ván 7–9 trò chơi nhỏ.
 
 ## Cấu trúc
@@ -74,6 +75,6 @@ Gấu dọn 2 đống rác · Thỏ được nhảy thêm 2 ô · Sóc nhặt th
 ```bash
 node selftest.cjs --self-test checks/self-test.json
 ```
-Các bước: mini-games (bot chơi cả 11 trò), bridges-clear (cầu không che ô), setup, fork, move, act, hud, render-3d, zones, rescue-can-fail, storm-clock, cinematics, finish, player-rolls, no-errors, one-message-at-a-time (thông báo hiện lần lượt), voice-edge, voice-chrome (lời dẫn mở đầu đọc đủ khi giọng đọc tải theo kiểu Edge và kiểu Chrome).
+Các bước: mini-games (bot chơi cả 11 trò), bridges-clear (cầu không che ô), setup, fork, move, act, hud, render-3d, zones, rescue-can-fail, storm-clock, cinematics, finish, player-rolls, no-errors, one-message-at-a-time (thông báo hiện lần lượt), voice-edge, voice-chrome (lời dẫn mở đầu đọc đủ khi giọng đọc tải theo kiểu Edge và kiểu Chrome), voice-fallback (giọng online lỗi mạng → tự chuyển sang giọng trên máy; bảng kiểm tra âm thanh mở được).
 
 Ý tưởng game thiếu nhi khác được lưu ở `../docs/y-tuong-game-thieu-nhi.md`.
