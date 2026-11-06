@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "values": [
+    {
+      "name": "trees to plant with 1 player",
+      "value": 3,
+      "unit": "trees",
+      "group": "goal",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "trees to plant with 2 players",
+      "value": 5,
+      "unit": "trees",
+      "group": "goal",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "trees to plant with 3 players",
+      "value": 7,
+      "unit": "trees",
+      "group": "goal",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "trees to plant with 4 players",
+      "value": 10,
+      "unit": "trees",
+      "group": "goal",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "trees to plant with 5 players",
+      "value": 12,
+      "unit": "trees",
+      "group": "goal",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "trees to plant with 6 players",
+      "value": 14,
+      "unit": "trees",
+      "group": "goal",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps until it arrives",
+      "value": 16,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm per round",
+      "value": 1,
+      "unit": "step",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "extra step when litter piles reach",
+      "value": 4,
+      "unit": "piles",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "dark cloud tile",
+      "value": 1,
+      "unit": "step",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "seeds or water per tile",
+      "value": 2,
+      "unit": "",
+      "group": "items",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "starting seeds/water (solo 2)",
+      "value": 1,
+      "unit": "",
+      "group": "items",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "trees planted per visit (max)",
+      "value": 2,
+      "unit": "",
+      "group": "items",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "tiles",
+      "value": 24,
+      "unit": "",
+      "group": "board",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "dice",
+      "value": "1-6",
+      "unit": "",
+      "group": "board",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Gấu",
+      "value": "Dọn 2 đống rác một lúc",
+      "unit": "",
+      "group": "animals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thỏ",
+      "value": "Được nhảy thêm 2 ô",
+      "unit": "",
+      "group": "animals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Sóc",
+      "value": "Nhặt được 2 hạt giống",
+      "unit": "",
+      "group": "animals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Rùa",
+      "value": "Lấy được 2 giọt nước ở suối",
+      "unit": "",
+      "group": "animals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Cò",
+      "value": "Xua mây đen bay đi",
+      "unit": "",
+      "group": "animals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Voi",
+      "value": "Phun nước cho cả nhóm",
+      "unit": "",
+      "group": "animals",
+      "estimated": true,
+      "source": ""
+    }
+  ]
+}

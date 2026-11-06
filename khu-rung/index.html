@@ -1,0 +1,167 @@
+<title>Khu Rừng Chung Tay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;800&display=swap">
+<style>
+/* Layout: full-screen forest with chunky panels: goal meters on top, the turn card on the right, the animal row at the bottom-left; on phones the forest sits on top and panels stack. One bright daytime look for children. */
+:root {
+  --sky: #e6f6ff;
+  --leaf: #3fbf6f;
+  --leaf-deep: #23935a;
+  --sun: #ffcf3f;
+  --berry: #ff6f91;
+  --water: #3fa7e6;
+  --storm: #6a6f8a;
+  --wood: #b5763c;
+  --ink: #233049;
+  --card: #fffdf6;
+  --muted: #5d6b82;
+  --font-display: "Baloo 2", "Nunito", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--sky); color: var(--ink); font-family: var(--font-body); font-size: 16px; overflow: hidden; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 4px solid var(--sun); outline-offset: 2px; }
+h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wrap: balance; }
+.num { font-variant-numeric: tabular-nums; }
+
+#app { position: fixed; inset: 0; }
+#stage { position: absolute; inset: 0; }
+#scene { width: 100%; height: 100%; display: block; touch-action: none; }
+
+.panel { position: absolute; background: var(--card); border: 4px solid #fff; border-radius: 26px; box-shadow: 0 8px 0 rgba(35, 48, 73, .12), 0 16px 30px rgba(35, 48, 73, .18); }
+.topbar { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(16px + env(safe-area-inset-left, 0px)); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; color: var(--leaf-deep); text-shadow: 0 3px 0 #fff, 0 6px 14px rgba(35,48,73,.2); margin-right: 6px; }
+.chip { background: #fff; border: 0; border-radius: 999px; padding: 8px 14px; font-weight: 800; font-size: .9rem; box-shadow: 0 4px 0 rgba(35,48,73,.12); }
+.chip[aria-pressed="false"] { opacity: .6; }
+
+#meters { top: calc(12px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); padding: 10px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: min(560px, calc(100% - 32px)); }
+.meter { display: grid; grid-template-columns: 44px 1fr; gap: 8px; align-items: center; }
+.meter img { width: 44px; height: 44px; }
+.meter .lbl { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; line-height: 1; }
+.meter .lbl small { font-family: var(--font-body); font-size: .75rem; color: var(--muted); font-weight: 800; }
+.bar { height: 16px; border-radius: 99px; background: #e8eef5; overflow: hidden; margin-top: 4px; box-shadow: inset 0 2px 0 rgba(0,0,0,.06); }
+.bar div { height: 100%; border-radius: 99px; transition: width .6s cubic-bezier(.3,1.4,.5,1); }
+#treeBar { background: linear-gradient(90deg, #7ed957, var(--leaf)); }
+#stormBar { background: linear-gradient(90deg, #a7aec4, var(--storm)); }
+
+#turnPanel { right: calc(16px + env(safe-area-inset-right, 0px)); top: calc(96px + env(safe-area-inset-top, 0px)); width: 330px; padding: 16px; display: grid; gap: 12px; border-color: var(--pc, #fff); }
+.who { display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: center; }
+.who img { width: 76px; height: 76px; border-radius: 22px; background: #eaf7e6; }
+.who h2 { font-size: 1.8rem; }
+.who p { margin: 2px 0 0; color: var(--muted); font-weight: 800; font-size: .9rem; }
+.dice-row { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; }
+#dice { width: 120px; height: 120px; display: block; }
+.big { border: 0; border-radius: 22px; padding: 16px 18px; font-family: var(--font-display); font-weight: 800; font-size: 1.35rem; line-height: 1.1; color: #fff; background: var(--leaf); box-shadow: 0 6px 0 var(--leaf-deep); transition: transform .1s; }
+.big:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--leaf-deep); }
+.big:disabled { opacity: .5; cursor: not-allowed; }
+.big.sun { background: var(--sun); color: var(--ink); box-shadow: 0 6px 0 #d9a51a; }
+.result { font-weight: 800; font-size: 1.05rem; min-height: 1.4em; }
+.choices { display: grid; gap: 10px; }
+.choice-title { font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; }
+.choice-btn { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center; text-align: left; background: #fff; border: 4px solid var(--cc, #e5ecf3); border-radius: 20px; padding: 8px 12px; font-weight: 800; font-size: 1.05rem; box-shadow: 0 4px 0 rgba(35,48,73,.1); }
+.choice-btn img { width: 44px; height: 44px; }
+.choice-btn:hover { transform: translateY(-2px); }
+
+#friends { left: calc(16px + env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 10px; display: flex; gap: 10px; flex-wrap: wrap; max-width: calc(100% - 380px); }
+.fcard { display: grid; grid-template-columns: 54px auto; gap: 8px; align-items: center; background: #fff; border-radius: 20px; padding: 6px 12px 6px 6px; border: 4px solid transparent; }
+.fcard.active { border-color: var(--pc); box-shadow: 0 0 0 4px rgba(255, 207, 63, .5); }
+.fcard img.face { width: 54px; height: 54px; border-radius: 16px; background: #eaf7e6; }
+.fcard b { font-family: var(--font-display); font-size: 1.1rem; display: block; line-height: 1; }
+.items { display: flex; gap: 8px; margin-top: 4px; }
+.items span { display: inline-flex; align-items: center; gap: 2px; font-weight: 800; font-size: 1rem; }
+.items img { width: 24px; height: 24px; }
+
+.pop { position: fixed; z-index: 12; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; color: #fff; text-shadow: 0 3px 0 rgba(35,48,73,.45); pointer-events: none; animation: popup 1.6s ease-out forwards; }
+.pop img { width: 40px; height: 40px; filter: drop-shadow(0 3px 0 rgba(35,48,73,.3)); }
+@keyframes popup { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.5); } 15% { opacity: 1; transform: translate(-50%, -70%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -260%) scale(1); } }
+.banner { position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 13; font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 7vw, 4rem); color: #fff; text-shadow: 0 5px 0 var(--leaf-deep), 0 10px 26px rgba(35,48,73,.35); pointer-events: none; animation: bannerin 1.9s ease-out forwards; white-space: nowrap; }
+.banner.dark { text-shadow: 0 5px 0 #4a4f66, 0 10px 26px rgba(35,48,73,.35); }
+@keyframes bannerin { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.3) rotate(-6deg); } 20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) rotate(2deg); } 32% { transform: translate(-50%, -50%) scale(1) rotate(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -64%); } }
+
+.overlay { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(230, 246, 255, .55); backdrop-filter: blur(3px); padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sheet { background: var(--card); border: 5px solid #fff; border-radius: 30px; padding: 22px clamp(16px, 4vw, 30px); width: 100%; max-width: 760px; max-height: 100%; overflow: auto; display: grid; gap: 16px; box-shadow: 0 10px 0 rgba(35,48,73,.12), 0 24px 50px rgba(35,48,73,.25); }
+.sheet h1 { font-size: clamp(2.2rem, 6vw, 3.2rem); color: var(--leaf-deep); }
+.sheet p.lead { margin: 0; color: var(--muted); font-weight: 800; font-size: 1.05rem; max-width: 56ch; }
+.animals { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.acard { position: relative; display: grid; gap: 4px; justify-items: center; text-align: center; background: #fff; border: 5px solid #eef3f7; border-radius: 24px; padding: 10px 8px 12px; }
+.acard img { width: 104px; height: 104px; }
+.acard b { font-family: var(--font-display); font-size: 1.4rem; line-height: 1; }
+.acard small { color: var(--muted); font-weight: 800; font-size: .82rem; line-height: 1.2; }
+.acard[aria-pressed="true"] { border-color: var(--pc); background: #fffbe6; }
+.acard .order { position: absolute; top: 6px; left: 8px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #fff; background: var(--pc); }
+.acard input { width: 100%; min-width: 0; border: 3px solid #eef3f7; border-radius: 12px; padding: 4px 8px; font: inherit; font-weight: 800; text-align: center; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.badge { display: grid; justify-items: center; gap: 4px; text-align: center; background: #fff; border-radius: 22px; padding: 10px; border: 5px solid var(--pc); animation: drop .7s cubic-bezier(.3,1.5,.5,1) both; }
+.badge img { width: 84px; height: 84px; }
+.badge b { font-family: var(--font-display); font-size: 1.2rem; }
+.badge .medal { font-family: var(--font-display); font-weight: 800; color: #fff; background: var(--sun); border-radius: 999px; padding: 2px 12px; text-shadow: 0 2px 0 #c98a1a; }
+.badge small { color: var(--muted); font-weight: 800; }
+@keyframes drop { from { opacity: 0; transform: translateY(-30px) scale(.8); } to { opacity: 1; transform: none; } }
+.handover { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 14; background: #fff; border: 4px solid var(--pc, var(--sun)); border-radius: 999px; padding: 10px 22px; font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; box-shadow: 0 6px 0 rgba(35,48,73,.15); }
+
+@media (max-width: 900px) {
+  body { overflow: auto; }
+  #app { position: static; display: flex; flex-direction: column; gap: 12px; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+  #stage { position: relative; height: 52vh; min-height: 300px; }
+  .panel { position: static; width: auto !important; max-width: none !important; transform: none !important; margin-left: max(16px, env(safe-area-inset-left, 0px)); margin-right: max(16px, env(safe-area-inset-right, 0px)); }
+  #meters { order: 1; } #turnPanel { order: 2; } #friends { order: 3; }
+  .brand { font-size: 1.5rem; }
+}
+@media (prefers-reduced-motion: reduce) { .pop, .banner, .badge { animation-duration: .01s; } .bar div { transition: none; } }
+</style>
+
+<div id="app">
+  <div id="stage">
+    <canvas id="scene" aria-label="Khu rừng 3D"></canvas>
+    <div class="topbar">
+      <span class="brand">Khu Rừng Chung Tay</span>
+      <button class="chip" id="soundBtn" aria-pressed="true">Âm thanh</button>
+      <button class="chip" id="voiceBtn" aria-pressed="true">Đọc to</button>
+      <button class="chip" id="newBtn" hidden>Ván mới</button>
+    </div>
+  </div>
+  <section class="panel" id="meters" hidden>
+    <div class="meter"><img id="treeIcon" alt=""><div><div class="lbl"><span id="treeTxt" class="num">0/10</span> <small>cây đã trồng</small></div><div class="bar"><div id="treeBar" style="width:0%"></div></div></div></div>
+    <div class="meter"><img id="stormIcon" alt=""><div><div class="lbl"><span id="stormTxt" class="num">0/16</span> <small>mùa bão tới gần</small></div><div class="bar"><div id="stormBar" style="width:0%"></div></div></div></div>
+  </section>
+  <aside class="panel" id="turnPanel" hidden aria-live="polite">
+    <div class="who"><img id="whoImg" alt=""><div><h2 id="whoName">—</h2><p id="whoPower"></p></div></div>
+    <div class="dice-row"><canvas id="dice" aria-label="Xúc xắc"></canvas><div style="display:grid;gap:10px"><button class="big" id="rollBtn">Tung xúc xắc</button><button class="big sun" id="nextBtn" hidden>Xong lượt</button></div></div>
+    <div class="result" id="result"></div>
+    <div class="choices" id="choices"></div>
+  </aside>
+  <section class="panel" id="friends" hidden></section>
+</div>
+
+<div class="overlay" id="setup">
+  <div class="sheet">
+    <h1>Khu Rừng Chung Tay</h1>
+    <p class="lead">Chọn các bạn thú sẽ cùng chơi. Cả nhóm gieo hạt, tưới nước, trồng cây và nhặt rác để khu rừng xanh lại trước khi mùa bão tới!</p>
+    <div class="animals" id="animalCards"></div>
+    <div class="row"><button class="big" id="startBtn" disabled>Vào rừng thôi!</button><button class="big sun" id="resumeBtn" hidden>Chơi tiếp ván cũ</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="endOverlay" hidden>
+  <div class="sheet" id="endSheet">
+    <h1 id="endTitle">—</h1>
+    <p class="lead" id="endLead"></p>
+    <div class="badges" id="badges"></div>
+    <div class="row"><button class="big" id="againBtn">Chơi lại</button><button class="big sun" id="pickBtn">Chọn bạn khác</button></div>
+  </div>
+</div>
+<div class="handover" id="handover" hidden></div>
+<div id="fxLayer"></div>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script src="core.js"></script>
+<script src="world.js"></script>
+<script src="app.js"></script>
