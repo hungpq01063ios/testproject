@@ -74,6 +74,6 @@ Gấu dọn 2 đống rác · Thỏ được nhảy thêm 2 ô · Sóc nhặt th
 ```bash
 node selftest.cjs --self-test checks/self-test.json
 ```
-Các bước: mini-games (bot chơi cả 11 trò), bridges-clear (cầu không che ô), setup, fork, move, act, hud, render-3d, zones, rescue-can-fail, storm-clock, cinematics, finish, player-rolls, no-errors, one-message-at-a-time (thông báo hiện lần lượt).
+Các bước: mini-games (bot chơi cả 11 trò), bridges-clear (cầu không che ô), setup, fork, move, act, hud, render-3d, zones, rescue-can-fail, storm-clock, cinematics, finish, player-rolls, no-errors, one-message-at-a-time (thông báo hiện lần lượt), voice-intro (lời dẫn mở đầu đọc đủ dù giọng đọc tải trễ).
 
 Ý tưởng game thiếu nhi khác được lưu ở `../docs/y-tuong-game-thieu-nhi.md`.

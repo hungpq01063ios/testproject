@@ -71,6 +71,27 @@ const { chromium } = require('playwright');
     let maxShown = 0; for (let i = 0; i < 14; i++) { await p2.waitForTimeout(400); maxShown = Math.max(maxShown, (await p2.evaluate(() => window.__bannerQueue())).shown); }
     const left = await p2.evaluate(() => window.__bannerQueue()); await p2.close();
     add('one-message-at-a-time', maxShown === 1 && left.waiting === 0, `3 banners fired at once: at most ${maxShown} on screen at any moment, ${left.waiting} still waiting after 5.6 s`);
+    // voice: the browser's voice list arrives late (as in Chrome); the opening story must still be read in full, in order
+    const p3 = await browser.newPage({ viewport: { width: 1200, height: 800 } }); await p3.route(/fonts\./, (r) => r.abort());
+    await p3.addInitScript(() => {
+      const said = [], cancelled = []; let voices = []; window.__said = said; window.__cancelled = cancelled; window.__tones = 0;
+      const synth = { getVoices: () => voices, speaking: false, onvoiceschanged: null,
+        speak(u) { said.push(u.text); synth.speaking = true; setTimeout(() => { synth.speaking = false; u.onend && u.onend(); }, 400 + u.text.length * 20); },
+        cancel() { if (synth.speaking) cancelled.push(said[said.length - 1]); synth.speaking = false; } };
+      Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
+      window.SpeechSynthesisUtterance = function (t) { this.text = t; };
+      setTimeout(() => { voices = [{ lang: 'vi-VN', name: 'Linh' }]; synth.onvoiceschanged && synth.onvoiceschanged(); }, 1200);
+      const AC = window.AudioContext; window.AudioContext = function () { const c = new AC(); const o = c.createOscillator.bind(c); c.createOscillator = () => { window.__tones++; return o(); }; return c; };
+    });
+    await p3.goto(pathToFileURL(path.join(__dirname, 'index.html')).href + '?seed=3&q=low'); await p3.waitForFunction(() => window.__forest, null, { timeout: 120000 });
+    await p3.click('.acard[data-animal="bear"]'); await p3.click('#startBtn');
+    await p3.waitForFunction(() => window.__forest.view().cuts.includes('intro') && !window.__forest.busy, null, { timeout: 180000 });
+    const heard = await p3.evaluate(() => ({ said: window.__said, cancelled: window.__cancelled, tones: window.__tones }));
+    await p3.close();
+    const story = ['Ngày xửa ngày xưa', 'Nhưng rồi cơn bão', 'Cây Mẹ nhờ các bạn', 'Cùng nhau, mình làm được'];
+    const order = story.map((k) => heard.said.findIndex((x) => x.startsWith(k)));
+    add('voice-intro', order.every((x, i) => x >= 0 && (i === 0 || x > order[i - 1])) && heard.cancelled.filter((x) => story.some((k) => x && x.startsWith(k))).length === 0 && heard.tones >= 8,
+      `voices arrived after 1.2 s; heard ${heard.said.length} lines (${heard.said.slice(0, 5).map((x) => '"' + x.slice(0, 26) + '…"').join(', ')}), story lines cut off: ${heard.cancelled.length}, intro tune notes: ${heard.tones}`);
   } catch (e) { add('run', false, String(e && e.stack || e)); }
   await browser.close();
   fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true }); fs.writeFileSync(out, JSON.stringify({ version: 1, steps }, null, 2));

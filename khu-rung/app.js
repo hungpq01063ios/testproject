@@ -28,14 +28,34 @@
     magic() { [784, 988, 1175, 1568, 1319, 1568, 2093].forEach((f, i) => this.tone(f, 0.35, 'triangle', 0.07, i * 0.09)); },
     thunder() { if (!this.on || !this.ctx || FAST) return; const c = this.ctx, b = c.createBuffer(1, c.sampleRate * 1.2, c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2); const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); f.type = 'lowpass'; f.frequency.value = 400; g.gain.value = 0.35; s.buffer = b; s.connect(f).connect(g).connect(c.destination); s.start(); },
     win() { [523, 659, 784, 1047, 880, 1047, 1319].forEach((f, i) => this.tone(f, i > 4 ? 0.6 : 0.2, 'triangle', 0.1, i * 0.14)); },
+    intro() { [392, 523, 659, 784, 659, 784, 1047].forEach((f, i) => this.tone(f, i === 6 ? 0.9 : 0.28, 'triangle', 0.07, i * 0.22)); [196, 262, 330].forEach((f, i) => this.tone(f, 1.6, 'sine', 0.05, i * 0.6)); },
     gentle() { [392, 330, 294, 330, 392].forEach((f, i) => this.tone(f, 0.4, 'sine', 0.08, i * 0.22)); },
   };
   document.addEventListener('pointerdown', () => Sfx.ensure(), { passive: true });
-  const Voice = { on: store.get('khurung.voice') !== 'off', voice: null,
-    pick() { try { const v = speechSynthesis.getVoices(); this.voice = v.find((x) => /^vi/i.test(x.lang)) || null; } catch (e) {} },
-    say(text) { if (!this.on || FAST || !window.speechSynthesis) return; try { if (!this.voice) this.pick(); if (!this.voice) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.voice = this.voice; u.lang = this.voice.lang; u.rate = 0.95; u.pitch = 1.15; speechSynthesis.speak(u); } catch (e) {} } };
-  try { speechSynthesis.onvoiceschanged = () => Voice.pick(); } catch (e) {}
-  const toggle = (btn, obj, key) => { btn.setAttribute('aria-pressed', String(obj.on)); btn.onclick = () => { obj.on = !obj.on; btn.setAttribute('aria-pressed', String(obj.on)); if (key) store.set(key, obj.on ? 'on' : 'off'); }; };
+  // Read-aloud: one sentence at a time (never cut off mid-sentence), and wait for the browser's voices to load —
+  // Chrome and Edge fill the voice list a moment after the page opens, which used to swallow the opening narration.
+  const Voice = {
+    on: store.get('khurung.voice') !== 'off', voice: null, ready: false, queue: [], speaking: false, waited: 0, cur: null,
+    pick() { try { const v = speechSynthesis.getVoices(); if (v.length) { this.ready = true; this.voice = v.find((x) => /^vi/i.test(x.lang)) || null; this.pump(); } } catch (e) {} },
+    // say(text) → Promise that settles when the sentence has been read (or skipped). interrupt: drop what is waiting.
+    say(text, opts) {
+      if (!this.on || FAST || !window.speechSynthesis || !text) return Promise.resolve();
+      if (opts && opts.interrupt) this.stop();
+      return new Promise((res) => { this.queue.push({ text, res }); while (this.queue.length > 3) this.queue.shift().res(); this.pump(); });
+    },
+    stop() { this.queue.splice(0).forEach((q) => q.res()); try { if (this.speaking) speechSynthesis.cancel(); } catch (e) {} if (this.cur) { this.cur.res(); this.cur = null; } this.speaking = false; },
+    pump() {
+      if (this.speaking || !this.queue.length) return;
+      if (!this.ready) { this.pick(); if (!this.ready && this.waited < 4000) { this.waited += 200; setTimeout(() => this.pump(), 200); return; } }
+      if (!this.voice) { this.queue.splice(0).forEach((q) => q.res()); return; } // no Vietnamese voice on this device
+      const q = this.queue.shift(), u = new SpeechSynthesisUtterance(q.text); u.voice = this.voice; u.lang = this.voice.lang; u.rate = 0.95; u.pitch = 1.15;
+      let done = false; const fin = () => { if (done) return; done = true; this.speaking = false; this.cur = null; q.res(); this.pump(); };
+      u.onend = fin; u.onerror = fin; setTimeout(fin, 1500 + q.text.length * 110); // some browsers never fire onend
+      this.speaking = true; this.cur = q; try { speechSynthesis.speak(u); } catch (e) { fin(); }
+    },
+  };
+  try { speechSynthesis.onvoiceschanged = () => Voice.pick(); Voice.pick(); } catch (e) {}
+  const toggle = (btn, obj, key) => { btn.setAttribute('aria-pressed', String(obj.on)); btn.onclick = () => { obj.on = !obj.on; btn.setAttribute('aria-pressed', String(obj.on)); if (key) store.set(key, obj.on ? 'on' : 'off'); if (!obj.on && obj.stop) obj.stop(); }; };
   toggle($('soundBtn'), Sfx); toggle($('voiceBtn'), Voice, 'khurung.voice');
 
   // ================= Renderer and world =================
@@ -144,15 +164,16 @@
     for (const s of shots) {
       if (skipCine) { s.start && s.start(); continue; }
       $('cineTitle').textContent = s.title || ''; $('cineText').textContent = s.text || ''; $('cineCap').classList.remove('show'); void $('cineCap').offsetWidth; $('cineCap').classList.add('show');
-      if (s.text || s.title) Voice.say(s.say || s.text || s.title);
+      const spoken = s.text || s.title ? Voice.say([s.title, s.say || s.text].filter(Boolean).join('. '), { interrupt: true }) : Promise.resolve();
+      let said = false; spoken.then(() => (said = true));
       const pFly = flyTo(s.target, s.pos, s.fly || 1.6);
       if (s.start) setTimeout(s.start, 300);
-      await pFly; await new Promise((r) => { const t0 = performance.now(); (function tick() { if (skipCine || performance.now() - t0 > (s.hold || 1800)) return r(); requestAnimationFrame(tick); })(); });
+      await pFly; await new Promise((r) => { const t0 = performance.now(); (function tick() { const el2 = performance.now() - t0; if (skipCine || (el2 > (s.hold || 1800) && (said || !Voice.on || el2 > 12000))) return r(); requestAnimationFrame(tick); })(); });
     }
     el.classList.remove('on'); setTimeout(() => (el.hidden = true), 400);
     cineOn = false; await flyTo(HOME_T, HOME_P, 1.2); busy = false; render();
   }
-  $('cineSkip').onclick = () => { skipCine = true; };
+  $('cineSkip').onclick = () => { skipCine = true; Voice.stop(); };
   const zonePose = (k, near) => { const c = W.zoneCenter(k), d = W.zoneDir(k); return { target: c.clone().setY(0.8), pos: c.clone().add(d.clone().multiplyScalar(near ? -7 : -11)).add(new T.Vector3(0, near ? 6 : 10, 0)).add(new T.Vector3(-d.z, 0, d.x).multiplyScalar(near ? 3 : 5)) }; };
 
   function introCinema() {
@@ -161,6 +182,7 @@
     s.push(Object.assign({ title: 'Nhưng rồi cơn bão năm ngoái…', text: 'Làm cây cối xơ xác, thác cạn nước, và các bạn nhỏ bị lạc mất mẹ.', hold: 3200 }, zonePose(2, true)));
     s.push({ title: 'Cây Mẹ nhờ các bạn', text: 'Hãy trồng cây ở mỗi vùng và tìm các bạn nhỏ, trước khi mùa bão mới tới nhé!', target: new T.Vector3(0, 3.5, 0), pos: new T.Vector3(0, 5, 9), hold: 3400 });
     s.push({ title: 'Cùng nhau, mình làm được!', text: st.players.map((p) => p.name).join(', ') + ' lên đường thôi!', target: new T.Vector3(0, 0.5, 0), pos: new T.Vector3(4, 7, 9), hold: 2400, start: () => tokens.forEach((t) => (t.party = 2)) });
+    Sfx.intro();
     return cinema('intro', s);
   }
   function rescueCinema(k) {
@@ -253,7 +275,7 @@
 
   // ================= Turn flow =================
   let stormSeenLevel = 0;
-  function announceTurn() { const p = F.current(st); focus = tokens[st.turn] ? tokens[st.turn].g.position.clone() : null; Voice.say(`Đến lượt bạn ${p.name}`); }
+  function announceTurn() { const p = F.current(st); focus = tokens[st.turn] ? tokens[st.turn].g.position.clone() : null; Voice.say(`Đến lượt bạn ${p.name}`, { interrupt: true }); }
   $('rollBtn').onclick = async () => {
     if (busy || st.phase !== 'roll') return; Sfx.ensure(); busy = true; render();
     const forced = window.__forceRoll; window.__forceRoll = null;
@@ -356,6 +378,7 @@
   window.__forest = { get state() { return st; }, get busy() { return busy || !!dieAnim || tokens.some((t) => t.hop) || cineOn; }, view() { return { webgl: !!renderer.getContext(), frames, tokens: tokens.map((t) => t.g.userData.kind), tokenTile: st ? st.players.map((p) => p.pos) : [], cuts: cutsSeen.slice(), quality: QUALITY }; } };
   window.__forestMiniBot = (kind) => MINI.play(kind, { bot: true, friendImg: FRIEND_IMG.douc, face: THUMB.bear });
   window.__banner = (t) => banner(t);
+  window.__voice = () => ({ on: Voice.on, ready: Voice.ready, voice: Voice.voice && Voice.voice.lang, waiting: Voice.queue.length, speaking: Voice.speaking });
   window.__bridgeClear = () => W.bridgeClearance();
   window.__bannerQueue = () => ({ waiting: bannerQ.length, shown: document.querySelectorAll('.banner').length });
   window.__forestDbg = { zone(k, trees, rescued, restored) { Object.assign(st.zones[k], { trees, rescued, restored }); syncWorld(false); render(); }, time(i) { st.round = i + 1; W.setTime(i); render(); }, look(k) { focus = null; const z = zonePose(k, true); return flyTo(z.target, z.pos, 0.01); }, home() { focus = null; return flyTo(HOME_T, HOME_P, 0.01); } };
