@@ -112,7 +112,15 @@
   function screenOf(v) { const p = v.clone().project(camera), r = canvas.getBoundingClientRect(); return { x: r.left + (p.x * 0.5 + 0.5) * r.width, y: r.top + (-p.y * 0.5 + 0.5) * r.height, ok: p.z < 1 }; }
   function popAt(world, icon, text, delay) { setTimeout(() => { const s = screenOf(world); if (!s.ok) return; const el = document.createElement('div'); el.className = 'pop'; el.innerHTML = (icon ? `<img src="${ICONS[icon]}" alt="">` : '') + esc(text); el.style.left = s.x + 'px'; el.style.top = s.y + 'px'; $('fxLayer').appendChild(el); setTimeout(() => el.remove(), 1700); }, FAST ? 0 : delay || 0); }
   const pop = (i, icon, text, delay) => tokens[i] && popAt(tokens[i].g.position.clone().add(new T.Vector3(0, 1.8, 0)), icon, text, delay);
-  function banner(text, dark) { if (FAST) return; const el = document.createElement('div'); el.className = 'banner' + (dark ? ' dark' : ''); el.textContent = text; document.body.appendChild(el); setTimeout(() => el.remove(), 2000); }
+  const bannerQ = []; let bannerBusy = false;
+  function banner(text, dark) { if (FAST) return; if (bannerQ.some((b) => b.text === text)) return; bannerQ.push({ text, dark }); pumpBanner(); }
+  function pumpBanner() {
+    if (bannerBusy || !bannerQ.length) return;
+    if (cineOn || document.querySelector('.mini:not([hidden])')) { setTimeout(pumpBanner, 300); return; }
+    bannerBusy = true; const { text, dark } = bannerQ.shift();
+    const el = document.createElement('div'); el.className = 'banner' + (dark ? ' dark' : ''); el.textContent = text; document.body.appendChild(el);
+    setTimeout(() => { el.remove(); bannerBusy = false; pumpBanner(); }, 1700);
+  }
   const parts = [], confGeo = new T.PlaneGeometry(0.2, 0.12), leafGeo = new T.CircleGeometry(0.12, 6), heartGeo = new T.SphereGeometry(0.12, 8, 6);
   const confM = ['#e2483d', '#ffcf3f', '#3fbf6f', '#3fa7e6', '#ff6f91', '#8c5ad6'].map((c) => new T.MeshBasicMaterial({ color: c, side: T.DoubleSide })), heartM = new T.MeshBasicMaterial({ color: '#ff4f7b' });
   function burst(pos, kind, n) { if (FAST) return; for (let i = 0; i < (reduced ? Math.min(n, 12) : n); i++) { const m = new T.Mesh(kind === 'leaf' ? leafGeo : kind === 'heart' ? heartGeo : confGeo, kind === 'leaf' ? confM[2] : kind === 'heart' ? heartM : confM[i % confM.length]); m.position.copy(pos).add(new T.Vector3(0, 1, 0)); scene.add(m); const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 3; parts.push({ m, v: new T.Vector3(Math.cos(a) * sp * 0.5, 3 + Math.random() * 4, Math.sin(a) * sp * 0.5), life: 2 + Math.random(), float: kind === 'heart' }); } }
@@ -266,7 +274,8 @@
     const m = st.mini, p = st.players[i];
     busy = true; render();
     let stars = 2;
-    if (!FAST) stars = await MINI.play(m.kind, { title: m.title, face: THUMB[p.animal], color: p.color, friendImg: m.friend ? FRIEND_IMG[m.friend] : null, say: (x) => Voice.say(x), sfx: { good: () => Sfx.good(), bad: () => Sfx.bad(), win: () => Sfx.tree() } });
+    if (FAST && m.rescue) stars = window.__rescueStars != null ? window.__rescueStars : 2;
+    if (!FAST) stars = await MINI.play(m.kind, { title: m.title, rescue: !!m.rescue, face: THUMB[p.animal], color: p.color, friendImg: m.friend ? FRIEND_IMG[m.friend] : FRIEND_IMG[F.ZONES[m.zone].friend.key], say: (x) => Voice.say(x), sfx: { good: () => Sfx.good(), bad: () => Sfx.bad(), win: () => Sfx.tree() } });
     F.miniResult(st, stars);
     await afterAction(before, i); busy = false; render(); save();
   }
@@ -281,6 +290,7 @@
       if (e.kind === 'spray') banner('Voi phun nước!');
       if (e.kind === 'clean' || e.kind === 'gift' || e.kind === 'hug') burst(pos, e.kind === 'clean' ? 'confetti' : 'heart', 20);
       if (e.kind === 'fact') { $('factImg').src = FRIEND_IMG[F.ZONES[e.zone].friend.key]; }
+      if (e.kind === 'rescueFail') banner('Lần sau thử lại nhé!', true);
     }
     if (st.result) Voice.say(st.result);
     const rescue = st.events.find((e) => e.kind === 'rescue'), restored = st.events.filter((e) => e.kind === 'restored');
@@ -301,7 +311,7 @@
     const stormBefore = st.storm;
     F.endTurn(st); save(); syncWorld(false);
     if (st.outcome) { render(); busy = true; await endingCinema(); busy = false; showEnd(); return; }
-    if (st.roundEvent) { const re = st.roundEvent; banner(re.time); if (re.dirty) { banner('Rừng nhiều rác quá!', true); W.thunder(); Sfx.thunder(); } else if (st.storm > stormBefore) Sfx.thunder(); }
+    if (st.roundEvent) { const re = st.roundEvent; if (re.dirty) { banner('Rừng nhiều rác quá!', true); W.thunder(); Sfx.thunder(); } else { banner(re.time); if (st.storm > stormBefore) Sfx.thunder(); } }
     const level = Math.floor((st.storm / st.stormMax) / 0.5 + 0.0001) + (st.storm / st.stormMax >= 0.75 ? 1 : 0);
     if (level > stormSeenLevel) { stormSeenLevel = level; await stormCinema(level); }
     placeAll(false); render();
@@ -345,6 +355,9 @@
   // Test hooks (read-only), used by selftest.cjs
   window.__forest = { get state() { return st; }, get busy() { return busy || !!dieAnim || tokens.some((t) => t.hop) || cineOn; }, view() { return { webgl: !!renderer.getContext(), frames, tokens: tokens.map((t) => t.g.userData.kind), tokenTile: st ? st.players.map((p) => p.pos) : [], cuts: cutsSeen.slice(), quality: QUALITY }; } };
   window.__forestMiniBot = (kind) => MINI.play(kind, { bot: true, friendImg: FRIEND_IMG.douc, face: THUMB.bear });
+  window.__banner = (t) => banner(t);
+  window.__bridgeClear = () => W.bridgeClearance();
+  window.__bannerQueue = () => ({ waiting: bannerQ.length, shown: document.querySelectorAll('.banner').length });
   window.__forestDbg = { zone(k, trees, rescued, restored) { Object.assign(st.zones[k], { trees, rescued, restored }); syncWorld(false); render(); }, time(i) { st.round = i + 1; W.setTime(i); render(); }, look(k) { focus = null; const z = zonePose(k, true); return flyTo(z.target, z.pos, 0.01); }, home() { focus = null; return flyTo(HOME_T, HOME_P, 0.01); } };
   window.__forestCine = { intro: () => introCinema(), rescue: (k) => rescueCinema(k), restore: (k) => restoreCinema(k), skip: () => { skipCine = true; } };
 

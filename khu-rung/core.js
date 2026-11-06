@@ -28,7 +28,11 @@
   ];
 
   // Each zone is a loop of 9 tiles out from the Mother Tree and back; tile 4 is the tip with a bridge to the next zone.
-  const MINI = { catch: 'Hứng hạt dẻ', sprout: 'Tưới cây con', sort: 'Phân loại rác', count: 'Đếm cá', clouds: 'Xua mây', find: 'Tìm bạn trốn' };
+  const MINI = { catch: 'Hứng hạt dẻ', sprout: 'Tưới cây con', sort: 'Phân loại rác', count: 'Đếm cá', clouds: 'Xua mây', find: 'Tìm bạn trốn',
+    runner: 'Chạy về nhà', race: 'Đua xe lá', river: 'Nhảy đá qua suối', flappy: 'Bay cùng Sếu', maze: 'Mê cung hang đá' };
+  const GAME_POOL = ['catch', 'sprout', 'sort', 'count', 'clouds', 'find'];
+  // Each lost friend comes home through its own challenge; failing it means trying again on a later visit.
+  const RESCUE_GAME = { bamboo: 'runner', flower: 'race', falls: 'river', lotus: 'flappy', rocks: 'maze' };
   const PETALS = {
     bamboo: ['seed', 'game:catch', 'water', 'plant', 'story', 'rescue', 'plant', 'help', 'seed'],
     flower: ['water', 'seed', 'game:sprout', 'plant', 'luck', 'rescue', 'cloud', 'plant', 'seed'],
@@ -74,7 +78,7 @@
   ];
   const TIMES = ['Buổi sáng', 'Buổi trưa', 'Buổi chiều', 'Buổi tối'];
 
-  const TUNE = { need: [1, 2, 2, 3, 3, 4], stormMax: [38, 27, 15, 15, 12, 12], yield: 2, dirtyAt: 4, maxTrash: 5 };
+  const TUNE = { need: [1, 2, 2, 3, 3, 4], stormMax: [48, 32, 19, 18, 14, 13], yield: 2, dirtyAt: 4, maxTrash: 5 };
 
   // ---------- helpers ----------
   function rand(st) { let t = (st.seed = (st.seed + 0x6D2B79F5) | 0); t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
@@ -155,11 +159,12 @@
         const n = TUNE.yield + (p.animal === 'turtle' ? 1 : 0); gain(p, 'water', n); log(st, `lấy ${n} giọt nước`, p); return done(st, `Lấy được ${n} giọt nước${p.animal === 'turtle' ? ' (Rùa bơi giỏi!)' : ''}.` + extra);
       }
       case 'plant': return plantSpot(st, p, extra);
-      case 'game': st.phase = 'mini'; st.choice = null; st.mini = { kind: t.mini, title: MINI[t.mini], zone: t.zone, extra }; return;
+      case 'game': { const kind = GAME_POOL[Math.floor(rand(st) * GAME_POOL.length)]; st.phase = 'mini'; st.choice = null; st.mini = { kind, title: MINI[kind], zone: t.zone, extra }; return; }
       case 'rescue': {
         const z = st.zones[t.zone];
         if (z.rescued) { gain(p, 'hearts', 1); log(st, `ghé thăm ${ZONES[t.zone].friend.name}`, p); return done(st, `${ZONES[t.zone].friend.name} vẫy tay chào bạn! +1 tim.` + extra); }
-        st.phase = 'mini'; st.choice = null; st.mini = { kind: 'find', title: `Tìm ${ZONES[t.zone].friend.name}`, zone: t.zone, friend: ZONES[t.zone].friend.key, extra }; return;
+        const kind = RESCUE_GAME[ZONES[t.zone].key];
+        st.phase = 'mini'; st.choice = null; st.mini = { kind, rescue: true, title: `${MINI[kind]}: giúp ${ZONES[t.zone].friend.name}`, zone: t.zone, friend: ZONES[t.zone].friend.key, extra }; return;
       }
       case 'story': { p.stats.facts++; gain(p, 'hearts', 1); st.stars++; p.stats.stars++; ev(st, { kind: 'fact', zone: t.zone, who: me }); log(st, `nghe chuyện ${ZONES[t.zone].name}`, p); return done(st, 'Bé có biết? ' + ZONES[t.zone].fact + ' (+1 tim, +1 sao)' + extra); }
       case 'help': {
@@ -236,7 +241,8 @@
     if (m.kind === 'count') { gain(p, 'seeds', Math.max(1, stars)); gain(p, 'water', Math.max(1, stars)); text = `Đếm giỏi lắm! +${Math.max(1, stars)} hạt và +${Math.max(1, stars)} giọt nước.`; }
     if (m.kind === 'sort') { const n = stars >= 2 ? 2 : stars; for (let i = 0; i < n && st.trash.length; i++) { st.trash.shift(); p.stats.cleaned++; } gain(p, 'seeds', 1); text = `Phân loại rác đúng ${stars === 3 ? 'hết' : 'nhiều'}! ${n ? `Rừng bớt ${n} đống rác.` : ''} +1 hạt.`; }
     if (m.kind === 'clouds') { const n = stars >= 3 ? 2 : stars >= 1 ? 1 : 0; st.storm = Math.max(0, st.storm - n); text = n ? `Xua được mây, bão lùi lại ${n} nấc!` : 'Mây vẫn còn đó, lần sau cố lên nhé!'; }
-    if (m.kind === 'find') { const z = st.zones[m.zone]; z.rescued = true; p.stats.rescues++; gain(p, 'hearts', 2); ev(st, { kind: 'rescue', zone: m.zone, who: st.turn }); log(st, `tìm thấy ${ZONES[m.zone].friend.name}!`, p); text = `Tìm thấy ${ZONES[m.zone].friend.name} rồi! Bạn ấy về với mẹ. +2 tim.`; checkZone(st, m.zone); }
+    if (m.rescue && stars === 0) { gain(p, 'hearts', 1); p.stats.tries = (p.stats.tries || 0) + 1; ev(st, { kind: 'rescueFail', zone: m.zone, who: st.turn }); log(st, `chưa giúp được ${ZONES[m.zone].friend.name}`, p); text = `${ZONES[m.zone].friend.name} sợ quá chạy vào rừng mất rồi. Lần sau quay lại thử nữa nhé! (+1 tim vì đã cố gắng)`; }
+    if (m.rescue && stars > 0) { const z = st.zones[m.zone]; z.rescued = true; p.stats.rescues++; gain(p, 'hearts', 2); ev(st, { kind: 'rescue', zone: m.zone, who: st.turn }); log(st, `tìm thấy ${ZONES[m.zone].friend.name}!`, p); text = `Tìm thấy ${ZONES[m.zone].friend.name} rồi! Bạn ấy về với mẹ. +2 tim.`; checkZone(st, m.zone); }
     log(st, `${m.title}: ${stars} sao`, p);
     ev(st, { kind: 'mini', mini: m.kind, stars, who: st.turn });
     done(st, `${text} (${stars} sao)` + extra);
@@ -279,7 +285,7 @@
     log(st, st.outcome === 'win' ? 'Cả 5 vùng rừng đã hồi sinh! Cả nhóm chiến thắng!' : `Mùa bão tới khi ${restoredCount(st)}/5 vùng đã hồi sinh. Cùng thử lại nhé!`);
   }
 
-  const api = { TUNE, ANIMALS, SCARVES, ZONES, TILES, LUCK, BADGES, MINI, TIMES, newGame, roll, step, choose, miniResult, endTurn, current: cur, animalOf, time, restoredCount, need };
+  const api = { GAME_POOL, RESCUE_GAME, TUNE, ANIMALS, SCARVES, ZONES, TILES, LUCK, BADGES, MINI, TIMES, newGame, roll, step, choose, miniResult, endTurn, current: cur, animalOf, time, restoredCount, need };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.ForestCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

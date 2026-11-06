@@ -193,15 +193,22 @@
       const m = new T.Mesh(g, material); m.receiveShadow = true; add(m); return c;
     }
     F.ZONES.forEach((z, k) => { const pts = [new T.Vector3(0, 0, 0).add(dirOf(k).multiplyScalar(2.2)).add(nOf(k).multiplyScalar(0.8))]; for (let i = 0; i < 9; i++) pts.push(tilePos[1 + k * 9 + i].clone().setY(0)); pts.push(new T.Vector3(0, 0, 0).add(dirOf(k).multiplyScalar(2.2)).add(nOf(k).multiplyScalar(-0.8))); ribbon(pts, 2.1, sand, 0.03); });
-    const plank = mat('#a8743a', { roughness: 0.9 });
+    const plank = mat('#a8743a', { roughness: 0.9 }), planks = [];
     F.ZONES.forEach((z, k) => {
-      const a = tilePos[1 + k * 9 + 4].clone(), b = tilePos[1 + ((k + 1) % NZ) * 9 + 5].clone(), len = a.distanceTo(b);
-      const mid = a.clone().lerp(b, 0.5); mid.y = 1.1;
-      const c = new T.QuadraticBezierCurve3(a.clone().setY(0.25), mid, b.clone().setY(0.25)), n = Math.ceil(len / 0.32);
-      for (let i = 1; i < n; i++) { const p = c.getPoint(i / n), q = c.getPoint(Math.min(1, i / n + 0.02)); const pl = mesh(new T.BoxGeometry(1.2, 0.08, 0.26), plank, p.x, p.y, p.z); pl.lookAt(q); add(pl); }
-      for (const s2 of [-0.6, 0.6]) { const side = new T.Vector3().subVectors(b, a).normalize(); const off = new T.Vector3(-side.z, 0, side.x).multiplyScalar(s2); const pts = []; for (let i = 0; i <= 16; i++) pts.push(c.getPoint(i / 16).add(off).add(new T.Vector3(0, 0.45, 0))); add(mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 30, 0.04, 6), mat('#8a5a2b'))); }
-      // a little creek under each bridge
-      const cr = []; const mid2 = a.clone().lerp(b, 0.5), rad = mid2.clone().normalize(); for (let i = -1; i <= 1; i += 0.25) cr.push(mid2.clone().add(rad.clone().multiplyScalar(i * 5)).setY(0)); ribbon(cr, 1.3, new T.MeshStandardMaterial({ color: '#5ab8ec', roughness: 0.15 }), 0.025);
+      // The bridge leaves the tip of zone k and swings outside both petals to reach zone k+1, clear of every tile.
+      const k2 = (k + 1) % NZ, a = tilePos[1 + k * 9 + 4].clone().setY(0), b = tilePos[1 + k2 * 9 + 5].clone().setY(0);
+      const outA = dirOf(k), outB = nOf(k2).multiplyScalar(-1), others = tilePos.filter((tp, i) => i !== 0 && i !== 1 + k * 9 + 4 && i !== 1 + k2 * 9 + 5);
+      let best = null;
+      for (const r1 of [1.5, 2.5, 3.5, 4.5]) for (const r2 of [1.5, 2.5, 3.5, 4.5]) {
+        const cv = new T.CubicBezierCurve3(a.clone().addScaledVector(outA, 1.15), a.clone().addScaledVector(outA, 1.15 + r1), b.clone().addScaledVector(outB, 1.15 + r2), b.clone().addScaledVector(outB, 1.15));
+        let clear = 99; for (let i = 0; i <= 40; i++) { const p = cv.getPoint(i / 40); others.forEach((tp) => (clear = Math.min(clear, Math.hypot(p.x - tp.x, p.z - tp.z)))); }
+        const len = cv.getLength(); if (!best || clear > 1.3 && (best.clear <= 1.3 || len < best.len) || (best.clear <= 1.3 && clear > best.clear)) best = { cv, clear, len };
+      }
+      const base = best.cv, c = { getPoint: (u) => base.getPoint(u).setY(0.32 + Math.sin(u * Math.PI) * 0.8) }, n = Math.ceil(best.len / 0.32);
+      for (let i = 0; i <= n; i++) { const p = c.getPoint(i / n), q = c.getPoint(Math.min(1, i / n + 0.01)); const pl = mesh(new T.BoxGeometry(1.2, 0.08, 0.26), plank, p.x, p.y, p.z); pl.lookAt(i === n ? p.clone().add(p.clone().sub(c.getPoint(1 - 0.01))) : q); add(pl); planks.push(pl); }
+      for (const s2 of [-0.6, 0.6]) { const pts = []; for (let i = 0; i <= 24; i++) { const u = i / 24, p = c.getPoint(u), tt = base.getTangent(u); pts.push(p.add(new T.Vector3(-tt.z, 0, tt.x).normalize().multiplyScalar(s2)).add(new T.Vector3(0, 0.45, 0))); } add(mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 40, 0.04, 6), mat('#8a5a2b'))); for (const u of [0, 1]) { const pp = pts[u * 24]; add(mesh(new T.CylinderGeometry(0.06, 0.06, 0.6, 8), mat('#8a5a2b'), pp.x, pp.y - 0.3, pp.z)); } }
+      // a little creek under the middle of the bridge, running out to sea
+      const mid2 = base.getPoint(0.5), rad = mid2.clone().setY(0).normalize(), cr = []; for (let i = -1; i <= 1; i += 0.25) cr.push(mid2.clone().add(rad.clone().multiplyScalar(i * 4)).setY(0)); ribbon(cr, 1.3, new T.MeshStandardMaterial({ color: '#5ab8ec', roughness: 0.15 }), 0.025);
     });
 
     // tiles: log slices with icons
@@ -401,6 +408,7 @@
       zoneCenter: (k) => zoneCenter(k), zoneDir: (k) => dirOf(k), friendPos: (k) => zoneSet[k].friend.bush.position.clone(), homePos: (k) => zoneSet[k].friend.home.clone(),
       setStorm(v, max) { stormTarget = Math.min(1, v / max); }, setTime(i) { timeIdx = ((i % 4) + 4) % 4; }, thunder() { flash = 1; },
       ending(kind) { ending = kind; if (kind === 'win') { rainbow.visible = true; rainbow.children.forEach((m) => (m.material.opacity = 0)); } },
+      bridgeClearance: () => Math.min(...planks.map((pl) => Math.min(...tilePos.slice(1).map((tp) => Math.hypot(pl.position.x - tp.x, pl.position.z - tp.z))))),
       motherPos: () => new T.Vector3(0, 0, 0), plotPos: (k, i) => zoneSet[k].plots[i % zoneSet[k].plots.length].p.clone(),
     };
   }

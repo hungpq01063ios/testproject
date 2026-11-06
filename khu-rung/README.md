@@ -23,13 +23,24 @@ Một vùng hồi sinh khi có đủ cây và bạn nhỏ đã về với mẹ. 
 | Cây Mẹ | Nghỉ ngơi: +1 hạt, +1 nước, +1 tim (đi ngang cũng được 1 hạt) |
 | Hạt giống / Suối mát | +2 hạt / +2 giọt nước |
 | Vườn ươm | 1 hạt + 1 nước = 1 cây (tối đa 2). Đi ngang mà vùng còn thiếu cây và bé có đủ thì dừng lại trồng. Thiếu thì nhờ bạn |
-| Bạn nhỏ bị lạc | Đi ngang là dừng lại tìm bạn (trò chơi Tìm bạn trốn) |
-| Trò chơi | Một trong 5 trò chơi nhỏ |
+| Bạn nhỏ bị lạc | Đi ngang là dừng lại giúp bạn qua **thử thách riêng của vùng** (bảng dưới). Thua thì bạn nhỏ chạy mất, lần sau quay lại thử tiếp |
+| Trò chơi | Một trong 6 trò chơi nhỏ, chọn ngẫu nhiên mỗi lần dừng |
 | Bé có biết? | Thẻ kể về loài vật, thiên nhiên (có đọc to) |
 | Giúp bạn / Điều may mắn / Mây đen | Tặng bạn; quà bất ngờ; bão tới gần |
 | Đống rác | Nhặt rác +1 tim (rác ≥ 4 đống làm bão tới nhanh gấp đôi) |
 
-## 6 trò chơi nhỏ (15–20 giây, chạm là chơi, 0–3 sao)
+## 5 thử thách giải cứu (có thể thua)
+| Vùng / bạn nhỏ | Thử thách | Điều khiển | Thua khi |
+|---|---|---|---|
+| Rừng Tre / Voọc con | Chạy về nhà: nhảy qua đá, khúc gỗ, nấm | Space hoặc nút NHẢY | Va 3 lần |
+| Đồi Hoa / Nai con | Đua xe lá: đổi làn tránh đá, nhặt hoa | ← → hoặc nút ◀ ▶ | Va 3 lần |
+| Thác Nước / Rái cá con | Nhảy đá qua suối: chỉ nhảy khi đá nổi lên | Space hoặc nút NHẢY | Rơi xuống nước 3 lần hoặc hết giờ |
+| Đầm Sen / Sếu con | Bay cùng Sếu: luồn qua khe lau sậy | Space hoặc nút VỖ CÁNH | Va 3 lần |
+| Núi Đá / Tê tê con | Mê cung hang đá (mỗi lần một mê cung mới) | Phím mũi tên hoặc 4 nút | Hết 45 giây |
+
+Về đích càng ít va chạm (hoặc càng nhanh) thì càng nhiều sao.
+
+## 6 trò chơi nhỏ ở ô Trò chơi (15–20 giây, chạm là chơi, 0–3 sao)
 | Trò chơi | Cách chơi | Thưởng |
 |---|---|---|
 | Hứng hạt dẻ | Kéo giỏ hứng hạt dẻ rơi (hạt vàng được 2) | Hạt giống |
@@ -37,7 +48,7 @@ Một vùng hồi sinh khi có đủ cây và bạn nhỏ đã về với mẹ. 
 | Phân loại rác | Bỏ rác vào thùng Hữu cơ / Tái chế | Dọn rác trên bản đồ |
 | Đếm cá | Đếm cá đang bơi, chọn số đúng (3 lượt) | Hạt và nước |
 | Xua mây | Chạm mây đen trước khi tới rừng | Bão lùi lại |
-| Tìm bạn trốn | Nhớ bụi cây có bạn nhỏ, bụi cây đổi chỗ, chạm đúng bụi | Cứu bạn nhỏ |
+| Tìm bạn trốn | Nhớ bụi cây có bạn nhỏ, bụi cây đổi chỗ, chạm đúng bụi (chỉ 2 lần đoán) | Sao và tim |
 
 ## Hoạt cảnh
 Mở đầu kể chuyện (4 cảnh), giải cứu bạn nhỏ (về với mẹ), vùng hồi sinh (camera bay quanh vùng đang biến đổi), mây bão kéo tới (nửa và ba phần tư thanh bão), kết thúc (lễ hội cầu vồng hoặc trú bão dưới Cây Mẹ). Có nút "Bỏ qua". Mỗi vòng đổi buổi: sáng, trưa, chiều, tối (tối có trăng, đom đóm, đèn lồng trên Cây Mẹ).
@@ -55,7 +66,7 @@ Gấu dọn 2 đống rác · Thỏ được nhảy thêm 2 ô · Sóc nhặt th
 |---|---|
 | `core.js` | Luật chơi thuần, có seed, dùng được trong Node |
 | `world.js` | Bản đồ 3D: Cây Mẹ, 5 vùng biến đổi khi hồi sinh, cầu, 6 bạn thú, 5 bạn nhỏ và bố mẹ, ngày đêm, bão, cầu vồng |
-| `minigames.js` | 6 trò chơi nhỏ trên canvas, có bot tự chơi cho self-test |
+| `minigames.js` | 11 trò chơi nhỏ trên canvas (6 trò ở ô Trò chơi, 5 thử thách giải cứu), nút điều khiển trên màn hình và phím, bot tự chơi cho self-test |
 | `app.js` | Giao diện cho bé, xúc xắc 3D, lượt chơi, hoạt cảnh trong thế giới, âm thanh, giọng đọc, màn kết thúc |
 | `selftest.cjs` | Self-test theo contract `--self-test` của Craft Anything |
 
@@ -63,6 +74,6 @@ Gấu dọn 2 đống rác · Thỏ được nhảy thêm 2 ô · Sóc nhặt th
 ```bash
 node selftest.cjs --self-test checks/self-test.json
 ```
-Các bước: mini-games (bot chơi cả 6 trò), setup, fork, move, act, hud, render-3d, zones, storm-clock, cinematics, finish, player-rolls, no-errors.
+Các bước: mini-games (bot chơi cả 11 trò), bridges-clear (cầu không che ô), setup, fork, move, act, hud, render-3d, zones, rescue-can-fail, storm-clock, cinematics, finish, player-rolls, no-errors, one-message-at-a-time (thông báo hiện lần lượt).
 
 Ý tưởng game thiếu nhi khác được lưu ở `../docs/y-tuong-game-thieu-nhi.md`.

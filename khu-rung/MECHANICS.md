@@ -16,13 +16,13 @@ Mọi giá trị là ước lượng thiết kế, chỉnh bằng mô phỏng (`
 | Người chơi | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|
 | Cây mỗi vùng | 1 | 2 | 2 | 3 | 3 | 4 |
-| Nấc bão | 38 | 27 | 15 | 15 | 12 | 12 |
+| Nấc bão | 48 | 32 | 19 | 18 | 14 | 13 |
 
-## Mô phỏng (300 ván mỗi cấu hình, trò chơi nhỏ ngẫu nhiên 1–3 sao)
+## Mô phỏng (300 ván mỗi cấu hình; thử thách giải cứu thua 30% số lần, trò chơi nhỏ 0–3 sao)
 | Người chơi | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|
-| Chọn hướng theo gợi ý (vùng còn cần gì) | 91% | 86% | 83% | 81% | 94% | 93% |
-| Chọn hướng ngẫu nhiên | 14% | 31% | 25% | 32% | 49% | 62% |
-| Số vòng trung bình | 20 | 15 | 11 | 11 | 9 | 9 |
+| Chọn hướng theo gợi ý (vùng còn cần gì) | 66% | 87% | 77–85% | 88% | 92% | 88% |
+| Chọn hướng ngẫu nhiên | 5–10% | 26% | 22–26% | 32% | 44% | 52% |
+| Số vòng trung bình | 25 | 17 | 12 | 12 | 10 | 9 |
 
-Đọc gợi ý và giúp nhau làm tỉ lệ thắng tăng rõ, đúng tinh thần hợp tác.
+Thử thách giải cứu có 3 tim (va chạm) hoặc giới hạn giờ; thua thì bạn nhỏ còn lạc, phải quay lại lần sau.

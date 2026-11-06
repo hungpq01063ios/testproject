@@ -50,54 +50,6 @@
       "source": ""
     },
     {
-      "name": "storm steps with 1 player(s)",
-      "value": 38,
-      "unit": "steps",
-      "group": "storm",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "storm steps with 2 player(s)",
-      "value": 27,
-      "unit": "steps",
-      "group": "storm",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "storm steps with 3 player(s)",
-      "value": 15,
-      "unit": "steps",
-      "group": "storm",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "storm steps with 4 player(s)",
-      "value": 15,
-      "unit": "steps",
-      "group": "storm",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "storm steps with 5 player(s)",
-      "value": 12,
-      "unit": "steps",
-      "group": "storm",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "storm steps with 6 player(s)",
-      "value": 12,
-      "unit": "steps",
-      "group": "storm",
-      "estimated": true,
-      "source": ""
-    },
-    {
       "name": "per round",
       "value": 1,
       "unit": "step",
@@ -150,54 +102,6 @@
       "value": "1-6",
       "unit": "",
       "group": "board",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "catch",
-      "value": "Hứng hạt dẻ",
-      "unit": "",
-      "group": "mini-games",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "sprout",
-      "value": "Tưới cây con",
-      "unit": "",
-      "group": "mini-games",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "sort",
-      "value": "Phân loại rác",
-      "unit": "",
-      "group": "mini-games",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "count",
-      "value": "Đếm cá",
-      "unit": "",
-      "group": "mini-games",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "clouds",
-      "value": "Xua mây",
-      "unit": "",
-      "group": "mini-games",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "find",
-      "value": "Tìm bạn trốn",
-      "unit": "",
-      "group": "mini-games",
       "estimated": true,
       "source": ""
     },
@@ -286,6 +190,182 @@
       "value": "Tê tê con",
       "unit": "",
       "group": "zones",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps with 1 player(s)",
+      "value": 48,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps with 2 player(s)",
+      "value": 32,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps with 3 player(s)",
+      "value": 19,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps with 4 player(s)",
+      "value": 18,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps with 5 player(s)",
+      "value": 14,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "storm steps with 6 player(s)",
+      "value": 13,
+      "unit": "steps",
+      "group": "storm",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "rescue challenge in bamboo",
+      "value": "runner",
+      "unit": "",
+      "group": "rescue",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "rescue challenge in flower",
+      "value": "race",
+      "unit": "",
+      "group": "rescue",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "rescue challenge in falls",
+      "value": "river",
+      "unit": "",
+      "group": "rescue",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "rescue challenge in lotus",
+      "value": "flappy",
+      "unit": "",
+      "group": "rescue",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "rescue challenge in rocks",
+      "value": "maze",
+      "unit": "",
+      "group": "rescue",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "catch",
+      "value": "Hứng hạt dẻ",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "sprout",
+      "value": "Tưới cây con",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "sort",
+      "value": "Phân loại rác",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "count",
+      "value": "Đếm cá",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "clouds",
+      "value": "Xua mây",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "find",
+      "value": "Tìm bạn trốn",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "runner",
+      "value": "Chạy về nhà",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "race",
+      "value": "Đua xe lá",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "river",
+      "value": "Nhảy đá qua suối",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "flappy",
+      "value": "Bay cùng Sếu",
+      "unit": "",
+      "group": "mini-games",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "maze",
+      "value": "Mê cung hang đá",
+      "unit": "",
+      "group": "mini-games",
       "estimated": true,
       "source": ""
     }

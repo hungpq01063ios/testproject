@@ -146,6 +146,10 @@ h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.05; text-wr
 .mini-stars span { font-size: clamp(3rem, 10vw, 5rem); color: #d8dee6; display: inline-block; animation: drop .6s cubic-bezier(.3,1.5,.5,1) both; }
 .mini-stars span.on { color: var(--sun); text-shadow: 0 4px 0 #d9a51a; }
 .mini-cheer { font-family: var(--font-display); font-weight: 800; font-size: 2rem; }
+.mini-count.dim { background: rgba(255, 253, 246, .82); border-radius: 18px; color: var(--leaf-deep); text-shadow: 0 6px 0 rgba(35,48,73,.15); }
+.mini-ctrl { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.mini-ctrl .big { min-width: 96px; min-height: 64px; font-size: 1.6rem; touch-action: manipulation; user-select: none; }
+.mini-ctrl .mc-act { min-width: 220px; background: var(--berry); box-shadow: 0 6px 0 #c94a6a; }
 .mini-bar { height: 12px; border-radius: 99px; background: #e8eef5; overflow: hidden; } .mini-bar div { height: 100%; background: linear-gradient(90deg, var(--sun), var(--berry)); transition: width .1s linear; }
 @media (max-width: 900px) { .zones { grid-template-columns: repeat(3, minmax(0, 1fr)); } .mrow { grid-template-columns: 1fr auto; } .mrow .meter { grid-column: 1 / -1; } }
 @media (max-width: 900px) {
