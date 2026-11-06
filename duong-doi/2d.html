@@ -178,7 +178,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
     <section class="card">
       <div class="table-scroll">
         <table class="hud" id="hud">
-          <thead><tr><th>Người chơi</th><th class="r">Tiền</th><th class="r">Lương</th><th class="r">★</th></tr></thead>
+          <thead><tr><th>Người chơi</th><th class="r">Tiền</th><th class="r">Lương</th><th class="r">♥ ◆ ✚ ★</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -196,7 +196,8 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
           <li>Ở ngã rẽ, bạn chọn đường. Đại học tốn 50 tr nhưng mở nghề lương cao.</li>
           <li>Hết tiền thì tự động vay 50 tr. Mỗi khoản vay phải trả 60 tr khi kết thúc, hoặc trả sớm trước khi quay.</li>
           <li>Người nghỉ hưu thứ 1/2/3/4+ nhận 40/30/20/10 tr. Nhà được bán lại theo vòng quay may rủi.</li>
-          <li><b>Điểm Đời</b> = tiền + giá bán nhà − nợ + 2 × hạnh phúc (★).</li>
+          <li>4 khía cạnh: ♥ Gia đình · ◆ Tri thức · ✚ Sức khoẻ · ★ Cống hiến. Mỗi người chọn một ước mơ đầu ván; khía cạnh của ước mơ được nhân đôi điểm.</li>
+          <li><b>Điểm Đời</b> = tài sản ròng ÷ 5 + điểm 4 khía cạnh + thưởng cân bằng.</li>
         </ul>
       </details>
     </section>
@@ -209,7 +210,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
     <h2 id="winnerTitle">—</h2>
     <div class="table-scroll">
       <table class="hud" id="finalTable">
-        <thead><tr><th>#</th><th>Người chơi</th><th class="r">Tiền</th><th class="r">Bán nhà</th><th class="r">Nợ</th><th class="r">★</th><th class="r">Điểm Đời</th></tr></thead>
+        <thead><tr><th>#</th><th>Người chơi</th><th class="r">Tài sản</th><th class="r">♥</th><th class="r">◆</th><th class="r">✚</th><th class="r">★</th><th class="r">Cân bằng</th><th class="r">Điểm Đời</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -240,7 +241,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
 
   // ---------- Storage (best effort) ----------
   function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(st)); } catch (e) {} }
-  function loadSaved() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); return s && s.version === 1 && s.players ? s : null; } catch (e) { return null; } }
+  function loadSaved() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); return s && s.version === 2 && s.players ? s : null; } catch (e) { return null; } }
   function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
 
   // ---------- Setup ----------
@@ -312,7 +313,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
       } else {
         const [fill, glyph] = tileStyle(t);
         let tip = t.label;
-        if (t.type === 'money' || t.type === 'happy') tip += ` (${t.cash ? (t.cash > 0 ? '+' : '') + t.cash + ' tr ' : ''}${t.stars ? (t.stars > 0 ? '+' : '') + t.stars + '★' : ''})`;
+        if (t.type === 'money' || t.type === 'happy') tip += ` (${L.fxText(t, t.cash || 0)})`;
         tiles += `<g class="tile" data-tile="${t.id}"><title>${esc(tip)}</title><circle cx="${x}" cy="${y}" r="17" fill="${fill}"/><text class="g" x="${x}" y="${y}">${glyph}</text>` +
           lines.map((ln, i) => `<text class="l" x="${x}" y="${y + 28 + i * 9.5}">${esc(ln)}</text>`).join('') + '</g>';
       }
@@ -415,7 +416,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
   function renderHud() {
     $('hud').querySelector('tbody').innerHTML = st.players.map((p, i) => {
       const tags = [];
-      if (p.degree) tags.push('<span class="tag">Có bằng</span>');
+      tags.push(`<span class="tag">${L.EDU_NAME[p.edu]}</span>`);
       if (p.married) tags.push('<span class="tag">Đã cưới</span>');
       if (p.kids) tags.push(`<span class="tag">${p.kids} con</span>`);
       if (p.house) tags.push(`<span class="tag">${esc(p.house.name)}</span>`);
@@ -423,8 +424,8 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
       return `<tr class="${i === st.turn && st.phase !== 'over' ? 'active' : ''}" data-player-row="${i}">
         <td><div class="pname"><i style="background:${p.color}"></i>${esc(p.name)}</div><div class="job">${esc(p.career || 'Chưa có việc')}</div><div class="row" style="gap:4px;margin-top:3px">${tags.join('')}</div></td>
         <td class="r num" data-cash>${p.cash} tr${p.loans ? `<div class="debt">nợ ${p.loans}×${L.LOAN}</div>` : ''}</td>
-        <td class="r num" data-salary>${p.salary}</td>
-        <td class="r num" data-stars>${p.stars}</td></tr>`;
+        <td class="r num" data-salary>${L.income(p)}</td>
+        <td class="r num" data-stars>${L.ASPECTS.map((A) => A.icon + p[A.key]).join(' ')}</td></tr>`;
     }).join('');
   }
   function render() {
@@ -462,7 +463,7 @@ details.rules ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); fon
     const f = st.final;
     $('winnerTitle').textContent = `${f[0].name} có cuộc đời viên mãn nhất!`;
     $('finalTable').querySelector('tbody').innerHTML = f.map((r, i) => `<tr><td class="num">${i + 1}</td><td><div class="pname"><i style="background:${r.color}"></i>${esc(r.name)}</div></td>
-      <td class="r num">${r.cash}</td><td class="r num">${r.resale}${r.resaleSpin ? ` <span class="job">(quay ${r.resaleSpin})</span>` : ''}</td><td class="r num debt">${r.debt ? '−' + r.debt : 0}</td><td class="r num">${r.stars}</td><td class="r num"><b>${r.score}</b></td></tr>`).join('');
+      <td class="r num">${r.assetPts}</td>${L.ASPECTS.map((A) => `<td class="r num">${r.aspects[A.key]}</td>`).join('')}<td class="r num">${r.balance || '–'}</td><td class="r num"><b>${r.score}</b></td></tr>`).join('');
     $('overOverlay').hidden = overDismissed;
     $('spinBtn').hidden = true; $('endTurnBtn').hidden = true;
     $('result').innerHTML = `Ván đã kết thúc. <strong>${esc(f[0].name)}</strong> thắng với ${f[0].score} Điểm Đời.`;

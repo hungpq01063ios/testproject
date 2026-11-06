@@ -42,6 +42,14 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
     await page.click('#startBtn');
     await idle();
 
+    // ---- goal: player 1 picks a life goal before the first spin ----
+    await page.waitForSelector('[data-choice="0"]');
+    const goalTitle = await page.textContent('#choices .choice-title');
+    await page.click('[data-choice="0"]');
+    await idle();
+    const sg = await S();
+    add('goal', !!sg.players[0].goal && sg.phase === 'spin', `"${goalTitle}" → ${sg.players[0].name} chose goal "${sg.players[0].goal}", then the wheel unlocked`);
+
     // ---- move: player 1 spins (forced 6), picks the university branch at the start fork ----
     let s0 = await S();
     await page.evaluate(() => { window.__forceSpin = 6; });
@@ -58,18 +66,19 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
       `spun 6 at "${forkTitle}", ${p1.name} rode from tile ${s0.players[0].pos} to tile ${p1.pos} ("${label}"); the 3D motorbike is on tile ${view1.tokenTile[0]}`);
 
     // ---- act: the main action resolves — tuition paid (loan taken) and the landing tile applied ----
-    const tuitionOk = p1.degree && p1.loans >= 1;
+    const tuitionOk = p1.edu === 'uni' && p1.loans >= 1;
     add('act', tuitionOk && s1.phase === 'done' && s1.log.length > s0.log.length,
       `university fork charged 50 tr (cash ${s0.players[0].cash} → ${p1.cash}, loans ${p1.loans}); landing result: "${s1.result}"`);
 
     // ---- hud: names, cash, salary, stars for every player, plus the turn card ----
     const hud = await page.evaluate(() => {
       const rows = [...document.querySelectorAll('[data-player-row]')];
-      return { rows: rows.map((r) => ({ name: r.querySelector('.pname').textContent.trim(), cash: r.querySelector('[data-cash]').textContent, salary: r.querySelector('[data-salary]').textContent, stars: r.querySelector('[data-stars]').textContent })),
+      const st = window.__duongdoi.state, L = window.LifeCore;
+      return { rows: rows.map((r, i) => ({ name: r.querySelector('.pname').textContent.trim(), cash: r.querySelector('[data-cash]').textContent, salary: r.querySelector('[data-salary]').textContent, aspects: [...r.querySelectorAll('[data-aspects] b')].map((b) => +b.textContent), want: L.ASPECTS.map((A) => st.players[i][A.key]), income: L.income(st.players[i]) })),
         turn: document.getElementById('turnName').textContent, view: window.__duongdoi.view() };
     });
-    const hudOk = hud.rows.length === 3 && hud.rows.every((r, i) => r.name === names[i] && r.cash === `${s1.players[i].cash} tr` && r.stars === String(s1.players[i].stars) && r.salary === String(s1.players[i].salary)) && hud.turn === names[0] && hud.view.tokens === 3;
-    add('hud', hudOk, `turn panel shows ${hud.turn}; player cards show ${hud.rows.map((r) => `${r.name} ${r.cash} / ${r.stars}★`).join(', ')}; ${hud.view.tokens} motorbikes on ${hud.view.tiles} tiles`);
+    const hudOk = hud.rows.length === 3 && hud.rows.every((r, i) => r.name === names[i] && r.cash === `${s1.players[i].cash} tr` && r.salary === String(r.income) && JSON.stringify(r.aspects) === JSON.stringify(r.want)) && hud.turn === names[0] && hud.view.tokens === 3;
+    add('hud', hudOk, `turn panel shows ${hud.turn}; player cards show ${hud.rows.map((r) => `${r.name} ${r.cash} ♥◆✚★ ${r.aspects.join('/')}`).join(', ')}; ${hud.view.tokens} motorbikes on ${hud.view.tiles} tiles`);
 
     // ---- render: the 3D scene is drawing (WebGL frames, a non-flat picture) ----
     await page.waitForTimeout(1500);
@@ -80,6 +89,7 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
     // ---- hot-seat: end turn passes the device to player 2, who takes the other branch ----
     await page.click('#endTurnBtn');
     await idle();
+    await page.waitForSelector('[data-choice="0"]'); await page.click('[data-choice="0"]'); await idle(); // player 2's goal
     let s2 = await S();
     await page.evaluate(() => { window.__forceSpin = 3; });
     await page.click('#spinBtn');
@@ -93,13 +103,13 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
     if (shot) { await page.click('#endTurnBtn'); await idle(); }
 
     // ---- full game: keep clicking whatever the game offers until everyone retires ----
-    let actions = 0, choicesMade = 0; const spinFors = {};
+    let actions = 0, choicesMade = 0; const spinFors = {}, kinds = {};
     while (actions < 3000) {
       const st = await S();
       if (st.phase === 'over') break;
       actions++;
       if (shot && actions === 40) await page.screenshot({ path: shot, fullPage: true });
-      if (st.phase === 'choice') { const n = st.choice.options.length; await page.click(`[data-choice="${actions % n}"]`); choicesMade++; }
+      if (st.phase === 'choice') { const n = st.choice.options.length; kinds[st.choice.kind] = (kinds[st.choice.kind] || 0) + 1; await page.click(`[data-choice="${actions % n}"]`); choicesMade++; }
       else if (st.phase === 'spin') await page.click('#spinBtn');
       else if (st.phase === 'spinFor') { spinFors[st.spinFor.kind] = (spinFors[st.spinFor.kind] || 0) + 1; await page.click('#spinBtn'); }
       else if (st.phase === 'done') await page.click('#endTurnBtn');
@@ -115,6 +125,10 @@ try { ({ chromium } = require('playwright')); } catch (e) { console.error('Playw
     add('family-on-bike', JSON.stringify(fam) === JSON.stringify(vEnd.passengers), `passengers riding each motorbike ${JSON.stringify(vEnd.passengers)} match spouse + kids ${JSON.stringify(fam)}`);
     add('player-spins', end.rolls === end.playerRolls && Object.keys(spinFors).length > 0,
       `every one of ${end.rolls} spins came from a player pressing the wheel (${end.playerRolls} clicks); outcome spins: ${Object.entries(spinFors).map(([k, n]) => `${k}×${n}`).join(', ')}; automatic spins: ${end.rolls - end.playerRolls}`);
+    const scoresAdd = end.final.every((f) => f.score === f.assetPts + f.aspectPts + f.balance && ['love', 'know', 'health', 'comm'].every((k) => typeof f[k] === 'number'));
+    add('life-aspects', scoresAdd, end.final.map((f) => `${f.name}: tài sản ${f.assetPts} + ♥${f.aspects.love} ◆${f.aspects.know} ✚${f.aspects.health} ★${f.aspects.comm} + cân bằng ${f.balance} = ${f.score} (ước mơ ${f.goal})`).join('; '));
+    const fees = end.log.filter((e) => /thu phí/.test(e.text)).length;
+    add('choices-and-careers', Object.keys(kinds).length >= 6, `decision kinds met: ${Object.entries(kinds).map(([k, n]) => `${k}×${n}`).join(', ')}; careers ${end.players.map((p) => p.career).join(', ')}; branches ${end.players.map((p) => p.branches.join('>')).join(' | ')}; service fees collected ${fees}× (in the last 80 log lines)`);
     add('no-errors', errors.length === 0, errors.length ? errors.join(' | ') : 'no script errors in the page');
   } catch (e) {
     add('run', false, String(e && e.stack || e));

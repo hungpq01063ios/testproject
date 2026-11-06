@@ -26,16 +26,16 @@
       "source": ""
     },
     {
-      "name": "payday landing bonus",
-      "value": 5,
+      "name": "university tuition",
+      "value": 50,
       "unit": "tr",
       "group": "economy",
       "estimated": true,
       "source": ""
     },
     {
-      "name": "university tuition",
-      "value": 50,
+      "name": "vocational tuition",
+      "value": 20,
       "unit": "tr",
       "group": "economy",
       "estimated": true,
@@ -50,6 +50,14 @@
       "source": ""
     },
     {
+      "name": "service fee commission over 20 tr",
+      "value": 10,
+      "unit": "%",
+      "group": "economy",
+      "estimated": true,
+      "source": ""
+    },
+    {
       "name": "spinner range",
       "value": "1-10",
       "unit": "",
@@ -59,24 +67,72 @@
     },
     {
       "name": "board tiles",
-      "value": 79,
+      "value": 94,
       "unit": "tiles",
       "group": "movement",
       "estimated": true,
       "source": ""
     },
     {
-      "name": "stop spaces end movement",
-      "value": true,
+      "name": "forks",
+      "value": 3,
       "unit": "",
       "group": "movement",
       "estimated": true,
       "source": ""
     },
     {
-      "name": "star value",
+      "name": "assetDiv",
+      "value": 5,
+      "unit": "",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "aspect",
       "value": 2,
-      "unit": "tr per star",
+      "unit": "",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "goalAspect",
+      "value": 4,
+      "unit": "",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "balanceMin",
+      "value": 6,
+      "unit": "",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "balance",
+      "value": 20,
+      "unit": "",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "balanceGoal",
+      "value": 70,
+      "unit": "",
+      "group": "scoring",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "richMult",
+      "value": 1.5,
+      "unit": "",
       "group": "scoring",
       "estimated": true,
       "source": ""
@@ -106,146 +162,386 @@
       "source": ""
     },
     {
-      "name": "retire bonus #4+",
+      "name": "retire bonus #4",
       "value": 10,
       "unit": "tr",
       "group": "scoring",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "house resale spin 1-3",
-      "value": 0.8,
-      "unit": "x price",
-      "group": "scoring",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "house resale spin 4-7",
-      "value": 1.2,
-      "unit": "x price",
-      "group": "scoring",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "house resale spin 8-10",
-      "value": 1.6,
-      "unit": "x price",
-      "group": "scoring",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "child cost",
-      "value": 4,
-      "unit": "tr",
-      "group": "family",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "child happiness",
-      "value": 6,
-      "unit": "stars",
-      "group": "family",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "wedding happiness",
-      "value": 10,
-      "unit": "stars",
-      "group": "family",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "invest stake",
-      "value": 20,
-      "unit": "tr",
-      "group": "invest",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "invest return spin 7-10",
-      "value": 60,
-      "unit": "tr",
-      "group": "invest",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "invest return spin 4-6",
-      "value": 20,
-      "unit": "tr",
-      "group": "invest",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "Thợ cơ khí salary",
-      "value": 14,
-      "unit": "tr/payday",
-      "group": "careers (basic)",
       "estimated": true,
       "source": ""
     },
     {
       "name": "Tài xế công nghệ salary",
-      "value": 12,
+      "value": 16,
       "unit": "tr/payday",
-      "group": "careers (basic)",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
     {
-      "name": "Đầu bếp salary",
-      "value": 15,
-      "unit": "tr/payday",
-      "group": "careers (basic)",
+      "name": "Tài xế công nghệ education",
+      "value": "none",
+      "unit": "",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
     {
-      "name": "Thợ cắt tóc salary",
-      "value": 11,
-      "unit": "tr/payday",
-      "group": "careers (basic)",
+      "name": "Tài xế công nghệ collects",
+      "value": "travel",
+      "unit": "",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
     {
       "name": "Nhân viên bán hàng salary",
+      "value": 15,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nhân viên bán hàng education",
+      "value": "none",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nhân viên bán hàng collects",
+      "value": "shop",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nông dân salary",
       "value": 13,
       "unit": "tr/payday",
-      "group": "careers (basic)",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nông dân education",
+      "value": "none",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nông dân collects",
+      "value": "food",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Công nhân nhà máy salary",
+      "value": 17,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Công nhân nhà máy education",
+      "value": "none",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Shipper salary",
+      "value": 14,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Shipper education",
+      "value": "none",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Shipper collects",
+      "value": "shop",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "YouTuber salary",
+      "value": 8,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "YouTuber education",
+      "value": "none",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "YouTuber collects",
+      "value": "tech",
+      "unit": "",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
     {
       "name": "Thợ điện salary",
+      "value": 18,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ điện education",
+      "value": "trade",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ điện collects",
+      "value": "house",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Đầu bếp salary",
+      "value": 19,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Đầu bếp education",
+      "value": "trade",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Đầu bếp collects",
+      "value": "food",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ sửa xe salary",
+      "value": 17,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ sửa xe education",
+      "value": "trade",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ sửa xe collects",
+      "value": "vehicle",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Điều dưỡng salary",
+      "value": 18,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Điều dưỡng education",
+      "value": "trade",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Điều dưỡng collects",
+      "value": "health",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ trang điểm cô dâu salary",
       "value": 16,
       "unit": "tr/payday",
-      "group": "careers (basic)",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ trang điểm cô dâu education",
+      "value": "trade",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Thợ trang điểm cô dâu collects",
+      "value": "wedding",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Hướng dẫn viên du lịch salary",
+      "value": 17,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Hướng dẫn viên du lịch education",
+      "value": "trade",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Hướng dẫn viên du lịch collects",
+      "value": "travel",
+      "unit": "",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
     {
       "name": "Kỹ sư phần mềm salary",
-      "value": 30,
+      "value": 32,
       "unit": "tr/payday",
-      "group": "careers (degree)",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Kỹ sư phần mềm education",
+      "value": "uni",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Kỹ sư phần mềm collects",
+      "value": "tech",
+      "unit": "",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
     {
       "name": "Bác sĩ salary",
-      "value": 35,
+      "value": 36,
       "unit": "tr/payday",
-      "group": "careers (degree)",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Bác sĩ education",
+      "value": "uni",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Bác sĩ collects",
+      "value": "health",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Giáo viên salary",
+      "value": 22,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Giáo viên education",
+      "value": "uni",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Giáo viên collects",
+      "value": "school",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Luật sư salary",
+      "value": 34,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Luật sư education",
+      "value": "uni",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Luật sư collects",
+      "value": "legal",
+      "unit": "",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
@@ -253,31 +549,23 @@
       "name": "Kiến trúc sư salary",
       "value": 28,
       "unit": "tr/payday",
-      "group": "careers (degree)",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
     {
-      "name": "Giáo viên salary",
-      "value": 20,
-      "unit": "tr/payday",
-      "group": "careers (degree)",
+      "name": "Kiến trúc sư education",
+      "value": "uni",
+      "unit": "",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
     {
-      "name": "Kế toán salary",
-      "value": 22,
-      "unit": "tr/payday",
-      "group": "careers (degree)",
-      "estimated": true,
-      "source": ""
-    },
-    {
-      "name": "Luật sư salary",
-      "value": 32,
-      "unit": "tr/payday",
-      "group": "careers (degree)",
+      "name": "Kiến trúc sư collects",
+      "value": "house",
+      "unit": "",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
@@ -285,7 +573,103 @@
       "name": "Nhà báo salary",
       "value": 24,
       "unit": "tr/payday",
-      "group": "careers (degree)",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nhà báo education",
+      "value": "uni",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Kế toán salary",
+      "value": 24,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Kế toán education",
+      "value": "uni",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Kế toán collects",
+      "value": "tax",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nhà khoa học salary",
+      "value": 26,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Nhà khoa học education",
+      "value": "uni",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Phi công salary",
+      "value": 38,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Phi công education",
+      "value": "uni",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Phi công collects",
+      "value": "travel",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Ca sĩ salary",
+      "value": 10,
+      "unit": "tr/payday",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Ca sĩ education",
+      "value": "uni",
+      "unit": "",
+      "group": "careers",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Ca sĩ collects",
+      "value": "wedding",
+      "unit": "",
+      "group": "careers",
       "estimated": true,
       "source": ""
     },
@@ -318,6 +702,54 @@
       "value": 330,
       "unit": "tr",
       "group": "houses",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Đại gia",
+      "value": "Điểm tài sản ×1,5",
+      "unit": "",
+      "group": "goals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Gia đình hạnh phúc",
+      "value": "Mỗi ♥ được 4 điểm thay vì 2",
+      "unit": "",
+      "group": "goals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Học giả",
+      "value": "Mỗi ◆ được 4 điểm thay vì 2",
+      "unit": "",
+      "group": "goals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Sống khoẻ sống lâu",
+      "value": "Mỗi ✚ được 4 điểm thay vì 2",
+      "unit": "",
+      "group": "goals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Người truyền cảm hứng",
+      "value": "Mỗi ★ được 4 điểm thay vì 2",
+      "unit": "",
+      "group": "goals",
+      "estimated": true,
+      "source": ""
+    },
+    {
+      "name": "Cuộc đời cân bằng",
+      "value": "Thưởng cân bằng 70 điểm thay vì 20 (mọi khía cạnh ≥ 6)",
+      "unit": "",
+      "group": "goals",
       "estimated": true,
       "source": ""
     }

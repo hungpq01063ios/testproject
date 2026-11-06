@@ -184,14 +184,14 @@
   function banner(text, sub) {
     if (FAST) return; const el = document.createElement('div'); el.className = 'banner'; el.innerHTML = esc(text) + (sub ? `<small>${esc(sub)}</small>` : ''); document.body.appendChild(el); setTimeout(() => el.remove(), 1900);
   }
-  const snapshot = () => st.players.map((p) => ({ net: p.cash - p.loans * L.LOAN, stars: p.stars, loans: p.loans, salary: p.salary }));
+  const snapshot = () => st.players.map((p) => ({ net: p.cash - p.loans * L.LOAN, loans: p.loans, salary: p.salary, love: p.love, know: p.know, health: p.health, comm: p.comm }));
   function showDiff(before) {
     let good = false, bad = false;
     st.players.forEach((p, i) => {
-      const a = before[i], dn = p.cash - p.loans * L.LOAN - a.net, ds = p.stars - a.stars, dl = p.loans - a.loans, dsal = p.salary - a.salary;
+      const a = before[i], dn = p.cash - p.loans * L.LOAN - a.net, dl = p.loans - a.loans, dsal = p.salary - a.salary;
       let d = 0;
       if (dn) { popup(i, (dn > 0 ? '+' : '−') + Math.abs(dn) + ' tr', dn > 0 ? 'good' : 'bad', d); d += 260; dn > 0 ? (good = true) : (bad = true); }
-      if (ds) { popup(i, (ds > 0 ? '+' : '−') + Math.abs(ds) + '★', 'star', d); d += 260; if (ds > 0) Sfx.star(); }
+      L.ASPECTS.forEach((A) => { const v = p[A.key] - a[A.key]; if (v) { popup(i, (v > 0 ? '+' : '−') + Math.abs(v) + A.icon + ' ' + A.name, 'a-' + A.key, d); d += 260; if (v > 0) Sfx.star(); } });
       if (dsal) { popup(i, 'Lương ' + (dsal > 0 ? '+' : '−') + Math.abs(dsal), dsal > 0 ? 'good' : 'bad', d); d += 260; }
       if (dl > 0) popup(i, 'Vay ' + dl * L.LOAN + ' tr', 'info', d);
     });
@@ -223,11 +223,11 @@
 
   // Tile info on hover / tap
   const ray = new T.Raycaster(), ptr = new T.Vector2();
-  const DESC = { payday: 'Đi qua: nhận lương. Dừng đúng: thêm 5 tr', event: 'Rút một sự kiện ngẫu nhiên', baby: 'Thêm một đứa trẻ: −4 tr, +6★', tax: 'Nộp 30% lương', invest: 'Góp 20 tr rồi tự quay để thu lời', career: 'Có thể đổi nghề', fork: 'Ngã rẽ: chọn đường', start: 'Điểm xuất phát' };
-  const STOPD = { grad: 'Chọn 1 trong 3 nghề có bằng', job: 'Chọn 1 trong 3 nghề phổ thông', marry: 'Kết hôn: tự quay số tiền mừng cưới, +10★', house: 'Chọn mua nhà hoặc tiếp tục thuê', mid: 'Học thạc sĩ, khởi nghiệp (tự quay) hoặc sống chậm', retire: 'Về đích, nhận thưởng nghỉ hưu' };
+  const DESC = { payday: 'Đi qua: nhận lương. Dừng đúng: thêm 5 tr', event: 'Rút một sự kiện ngẫu nhiên', baby: 'Thêm một đứa trẻ: −4 tr (phí y tế), +3♥, −1✚', tax: 'Nộp 30% lương', invest: 'Góp 20 tr rồi tự quay để thu lời', career: 'Có thể đổi nghề', fork: 'Ngã rẽ: chọn đường', start: 'Điểm xuất phát' };
+  const STOPD = { grad: 'Chọn 1 trong 3 nghề cần bằng đại học', job: 'Chọn 1 trong 3 nghề phổ thông', trade: 'Chọn 1 trong 3 nghề kỹ thuật', marry: 'Kết hôn (tự quay tiền mừng cưới, +5♥) hoặc sống độc thân (+2✚ +2◆)', house: 'Chọn mua nhà hoặc tiếp tục thuê', mid: 'Học thạc sĩ, khởi nghiệp (tự quay) hoặc sống chậm', retire: 'Về đích, nhận thưởng và chọn cách sống tuổi già' };
   function describe(t) {
     if (t.type === 'stop') return STOPD[t.stop];
-    if (t.type === 'money' || t.type === 'happy') return [t.cash ? (t.cash > 0 ? '+' : '−') + Math.abs(t.cash) + ' tr' : '', t.stars ? (t.stars > 0 ? '+' : '') + t.stars + '★' : ''].filter(Boolean).join(', ');
+    if (t.type === 'money' || t.type === 'happy') return L.fxText(t, t.cash || 0) + (t.tag ? ` · phí ${L.PERKS[t.tag].toLowerCase()}` : '');
     if (t.type === 'raise') return `Lương +${t.amount} tr/kỳ`;
     if (t.type === 'gift') return `Mỗi người khác mừng ${t.amount} tr`;
     return DESC[t.type] || '';
@@ -322,7 +322,7 @@
 
   // ================= Storage =================
   function save() { if (st) store.set(SAVE_KEY, JSON.stringify(st)); }
-  function loadSaved() { try { const s = JSON.parse(store.get(SAVE_KEY) || 'null'); return s && s.version === 1 && s.players ? s : null; } catch (e) { return null; } }
+  function loadSaved() { try { const s = JSON.parse(store.get(SAVE_KEY) || 'null'); return s && s.version === 2 && s.players ? s : null; } catch (e) { return null; } }
 
   // ================= Setup =================
   function renderSetup() {
@@ -375,7 +375,7 @@
       }
       renderHud();
       if (r === 'step') showDiff(before);
-      else if (r === 'landed' || r === 'choice') { if (r === 'landed' || st.choice.kind !== 'fork') land(i, before); else showDiff(before); }
+      else if (r === 'landed' || r === 'choice') { if (!(st.choice && st.choice.kind === 'fork')) land(i, before); else showDiff(before); }
     }
     placeAll(false); busy = false; render(); save();
   }
@@ -413,9 +413,9 @@
   $('endTurnBtn').onclick = () => {
     if (busy || !L.endTurn(st)) return;
     placeAll(false); render(); save();
-    if (st.phase === 'spin' || st.phase === 'spinFor') {
+    if (st.phase === 'spin' || st.phase === 'spinFor' || st.phase === 'choice') {
       const p = L.current(st), h = $('handover');
-      h.textContent = st.phase === 'spinFor' ? `${p.name} quay giá bán nhà` : `Chuyền máy cho ${p.name}`; h.style.borderColor = p.color; h.hidden = false;
+      h.textContent = st.phase === 'spinFor' ? `${p.name} quay giá bán nhà` : st.phase === 'choice' ? `${p.name}: chọn ước mơ` : `Chuyền máy cho ${p.name}`; h.style.borderColor = p.color; h.hidden = false;
       clearTimeout(h._t); h._t = setTimeout(() => (h.hidden = true), FAST ? 0 : 1800);
       enterRegion(p.pos, false); focusPlayer(st.turn);
     }
@@ -428,7 +428,9 @@
     if (kind === 'fork') { runMove(); return; }
     showDiff(before);
     const pos = bikes[who].group.position.clone();
-    if (kind === 'job' || (kind === 'career' && st.players[who].salary !== before[who].salary)) { burst(pos, 'confetti', 40); banner(st.players[who].career); }
+    if (kind === 'goal') { const g = L.GOALS.find((x) => x.key === st.players[who].goal); banner('Ước mơ: ' + g.name, g.hint); Sfx.chime(); }
+    if (kind === 'job' || (kind === 'career' && st.players[who].salary !== before[who].salary)) { const c = L.careerOf(st.players[who].career); burst(pos, 'confetti', 40); banner(st.players[who].career, c && c.perk ? 'Thu phí dịch vụ: ' + L.PERKS[c.perk] : ''); }
+    if (kind === 'retire') { burst(pos, 'confetti', 50); }
     if (kind === 'house' && st.players[who].house && before[who].net !== st.players[who].cash - st.players[who].loans * L.LOAN) { burst(pos, 'confetti', 60); banner('Nhà mới!', st.players[who].house.name); Sfx.fanfare(); }
     placeAll(false); render(); save();
   }
@@ -437,15 +439,20 @@
   function renderHud() {
     $('playersPanel').innerHTML = st.players.map((p, i) => {
       const tags = [];
-      if (p.degree) tags.push('<span class="tag">Có bằng</span>');
+      const g = L.GOALS.find((x) => x.key === p.goal), c = L.careerOf(p.career);
+      if (g) tags.push(`<span class="tag goal" title="${esc(g.hint)}">Ước mơ: ${esc(g.name)}</span>`);
+      tags.push(`<span class="tag">${L.EDU_NAME[p.edu]}</span>`);
+      if (c && c.perk) tags.push(`<span class="tag">Thu phí ${esc(L.PERKS[c.perk].toLowerCase())}</span>`);
       if (p.married) tags.push('<span class="tag">Đã cưới</span>');
+      if (p.single) tags.push('<span class="tag">Độc thân</span>');
       if (p.kids) tags.push(`<span class="tag">${p.kids} con</span>`);
       if (p.house) tags.push(`<span class="tag">${esc(p.house.name)}</span>`);
       if (p.retired) tags.push(`<span class="tag done">Nghỉ hưu #${p.retireOrder}</span>`);
       return `<div class="pcard ${i === st.turn && st.phase !== 'over' ? 'active' : ''}" data-player-row="${i}" style="--pc:${p.color}">
         <div class="pname"><i style="background:${p.color}"></i>${esc(p.name)}</div>
         <div class="job">${esc(p.career || 'Chưa có việc')} · ${esc(W.REGIONS[W.regionOf(p.pos)].name)}</div>
-        <div class="stats"><span><small>Tiền</small><b data-cash>${p.cash} tr</b>${p.loans ? `<em class="debt">nợ ${p.loans}×${L.LOAN}</em>` : ''}</span><span><small>Lương</small><b data-salary>${p.salary}</b></span><span><small>★</small><b data-stars>${p.stars}</b></span></div>
+        <div class="stats"><span><small>Tiền</small><b data-cash>${p.cash} tr</b>${p.loans ? `<em class="debt">nợ ${p.loans}×${L.LOAN}</em>` : ''}</span><span><small>Lương/kỳ</small><b data-salary>${L.income(p)}</b></span><span><small>Điểm</small><b data-score>${L.scoreOf(p).score}</b></span></div>
+        <div class="asp" data-aspects>${L.ASPECTS.map((A) => `<span class="a-${A.key}${p.goal === A.key ? ' is-goal' : ''}" title="${A.name}">${A.icon}<b>${p[A.key]}</b></span>`).join('')}</div>
         ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}</div>`;
     }).join('');
   }
@@ -456,7 +463,8 @@
     $('turnPanel').style.setProperty('--pc', p.color);
     $('roundLbl').textContent = `Vòng ${st.round} · ${W.REGIONS[W.regionOf(p.pos)].name}`;
     $('turnName').textContent = p.name;
-    $('turnMeta').textContent = `${p.career ? p.career + ' · ' + p.salary + ' tr/kỳ' : 'Chưa có việc'} · ô “${L.TILES[p.pos].label}”`;
+    const goal = L.GOALS.find((x) => x.key === p.goal);
+    $('turnMeta').textContent = `${p.career ? p.career + ' · ' + L.income(p) + ' tr/kỳ' : 'Chưa có việc'}${goal ? ' · Ước mơ: ' + goal.name : ''} · ô “${L.TILES[p.pos].label}”`;
     const spinBtn = $('spinBtn');
     spinBtn.hidden = !['spin', 'moving', 'spinFor'].includes(st.phase);
     spinBtn.disabled = busy || (st.phase !== 'spin' && st.phase !== 'spinFor');
@@ -484,8 +492,8 @@
   function renderOver() {
     const f = st.final;
     $('winnerTitle').textContent = `${f[0].name} có cuộc đời viên mãn nhất!`;
-    $('finalTable').querySelector('tbody').innerHTML = f.map((r, i) => `<tr><td class="num">${i + 1}</td><td><div class="pname"><i style="background:${r.color}"></i>${esc(r.name)}</div></td>
-      <td class="r num">${r.cash}</td><td class="r num">${r.resale}${r.resaleSpin ? ` <span class="job">(quay ${r.resaleSpin})</span>` : ''}</td><td class="r num debt">${r.debt ? '−' + r.debt : 0}</td><td class="r num">${r.stars}</td><td class="r num"><b>${r.score}</b></td></tr>`).join('');
+    $('finalTable').querySelector('tbody').innerHTML = f.map((r, i) => { const g = L.GOALS.find((x) => x.key === r.goal); return `<tr><td class="num">${i + 1}</td><td><div class="pname"><i style="background:${r.color}"></i>${esc(r.name)}</div><div class="job">${esc(g ? g.name : '')}</div></td>
+      <td class="r num" title="Tiền ${r.cash} + bán nhà ${r.resale} − nợ ${r.debt}">${r.assetPts}<div class="job">${r.net} tr</div></td>${L.ASPECTS.map((A) => `<td class="r num a-${A.key}${r.goal === A.key ? ' is-goal' : ''}">${r.aspects[A.key]}<div class="job">${r[A.key]}${A.icon}</div></td>`).join('')}<td class="r num">${r.balance || '–'}</td><td class="r num"><b>${r.score}</b></td></tr>`; }).join('');
     $('overOverlay').hidden = overDismissed;
     $('spinBtn').hidden = true; $('endTurnBtn').hidden = true;
     $('result').innerHTML = `Ván đã kết thúc. <strong>${esc(f[0].name)}</strong> thắng với ${f[0].score} Điểm Đời.`;

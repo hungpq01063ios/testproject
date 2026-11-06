@@ -100,6 +100,13 @@ ol.log b { font-weight: 800; }
 
 #fxLayer { position: fixed; inset: 0; pointer-events: none; z-index: 12; overflow: hidden; }
 .fx { position: absolute; transform: translate(-50%, -50%); font-weight: 800; font-size: 1.35rem; white-space: nowrap; text-shadow: 0 2px 0 rgba(0, 0, 0, .55), 0 0 12px rgba(0, 0, 0, .4); animation: rise 1.7s ease-out forwards; }
+.asp { display: flex; gap: 4px; flex-wrap: wrap; }
+.asp span { display: inline-flex; align-items: center; gap: 3px; font-size: .78rem; padding: 1px 7px; border-radius: 999px; background: rgba(0,0,0,.25); border: 1px solid transparent; }
+.asp b { font-variant-numeric: tabular-nums; color: var(--eggshell); }
+.asp .is-goal, td.is-goal { border-color: currentColor; font-weight: 800; }
+.a-love { color: #ff8fab; } .a-know { color: #7fc2ff; } .a-health { color: #8fe0b2; } .a-comm { color: #ffd36b; }
+.tag.goal { border-color: var(--gold); color: var(--gold-soft); }
+.fx.a-love { color: #ff8fab; } .fx.a-know { color: #7fc2ff; } .fx.a-health { color: #8fe0b2; } .fx.a-comm { color: #ffd36b; }
 .fx.good { color: var(--good); } .fx.bad { color: var(--bad); } .fx.star { color: var(--star); } .fx.info { color: var(--gold-soft); font-size: 1.05rem; }
 @keyframes rise { 0% { opacity: 0; transform: translate(-50%, -20%) scale(.6); } 15% { opacity: 1; transform: translate(-50%, -60%) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -260%) scale(1); } }
 .banner small { display: block; font-family: var(--font-body); font-size: .32em; letter-spacing: .18em; text-transform: uppercase; color: var(--eggshell); text-shadow: 0 2px 6px rgba(0,0,0,.6); margin-top: 4px; }
@@ -173,12 +180,15 @@ table.final .r { text-align: right; }
     <details class="rules" style="margin-top:8px"><summary>Luật chơi</summary>
       <ul>
         <li>Quay 1–10, đi đúng số ô. Ô vàng có công trình là <b>điểm dừng bắt buộc</b>.</li>
-        <li>Đi qua <b>Ngày lương</b> nhận lương; dừng đúng ô được thêm 5 tr.</li>
+        <li>Đi qua <b>Ngày lương</b> nhận lương và chỉ số của nghề; dừng đúng ô được thêm 5 tr.</li>
         <li>Mọi vòng quay đều do bạn bấm: đi đường, mừng cưới, đầu tư, khởi nghiệp và giá bán nhà lúc kết thúc.</li>
-        <li>Ngã rẽ: Đại học (−50 tr, nghề lương cao) hay Đi làm ngay; sau đó Gia đình hay Sự nghiệp.</li>
+        <li>3 ngã rẽ: Đại học (−50 tr) / Học nghề (−20 tr) / Đi làm ngay; Gia đình / Sự nghiệp; Cống hiến / Làm giàu.</li>
         <li>Hết tiền tự vay 50 tr; mỗi khoản trả 60 tr khi kết thúc hoặc trả sớm trước khi quay.</li>
         <li>Nghỉ hưu thứ 1/2/3/4+ nhận 40/30/20/10 tr. Nhà bán lại theo vòng quay may rủi.</li>
-        <li><b>Điểm Đời</b> = tiền + giá bán nhà − nợ + 2 × ★. Rê chuột hoặc chạm vào ô để xem chi tiết.</li>
+        <li>Cuộc đời có 4 khía cạnh: <b>♥ Gia đình · ◆ Tri thức · ✚ Sức khoẻ · ★ Cống hiến</b>. Mỗi ô, nghề, nhà và lựa chọn tác động khác nhau.</li>
+        <li>Đầu ván mỗi người chọn một <b>ước mơ</b>: khía cạnh của ước mơ được 4 điểm mỗi đơn vị thay vì 2.</li>
+        <li>Mỗi nghề có lương, chỉ số tăng mỗi kỳ lương và <b>quyền thu phí dịch vụ</b>: ai trả tiền cho dịch vụ đó (viện phí, sửa xe…) sẽ trả cho bạn.</li>
+        <li><b>Điểm Đời</b> = tài sản ròng ÷ 5 + điểm 4 khía cạnh + thưởng cân bằng 20 (mọi khía cạnh ≥ 6). Rê chuột hoặc chạm vào ô để xem chi tiết.</li>
       </ul>
     </details>
   </aside>
@@ -206,7 +216,7 @@ table.final .r { text-align: right; }
     <h2 id="winnerTitle">—</h2>
     <div class="table-scroll">
       <table class="final" id="finalTable">
-        <thead><tr><th>#</th><th>Người chơi</th><th class="r">Tiền</th><th class="r">Bán nhà</th><th class="r">Nợ</th><th class="r">★</th><th class="r">Điểm Đời</th></tr></thead>
+        <thead><tr><th>#</th><th>Người chơi · ước mơ</th><th class="r">Tài sản</th><th class="r">♥</th><th class="r">◆</th><th class="r">✚</th><th class="r">★</th><th class="r">Cân bằng</th><th class="r">Điểm Đời</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>

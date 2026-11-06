@@ -15,12 +15,14 @@ Ván đang chơi được tự lưu trong trình duyệt. Mở lại trang và b
 
 ## Luật chính
 
-- **Điểm dừng bắt buộc** (ô vàng lớn): Tốt nghiệp / Nhận việc, Kết hôn, Mua nhà, Tuổi 40, Nghỉ hưu.
-- **Ngã rẽ**: Đại học (−50 tr, mở nghề lương 20–35 tr) hoặc Đi làm ngay (nghề 11–16 tr). Giữa ván có ngã rẽ thứ hai: Đường gia đình hoặc Đường sự nghiệp.
-- **Ngày lương**: đi qua thì nhận lương, dừng đúng ô thì được thêm 5 tr.
-- **Vay nợ**: hết tiền thì tự vay 50 tr. Mỗi khoản phải trả 60 tr lúc kết thúc, hoặc trả sớm trước khi quay.
-- **Nghỉ hưu**: người về thứ 1/2/3/4+ nhận 40/30/20/10 tr. Nhà được bán lại theo vòng quay (×0,8 / ×1,2 / ×1,6).
-- **Điểm Đời** = tiền mặt + giá bán nhà − nợ + 2 × ★ hạnh phúc.
+- **4 khía cạnh cuộc sống**: ♥ Gia đình · ◆ Tri thức · ✚ Sức khoẻ · ★ Cống hiến, cộng với tài sản. Mỗi ô, sự kiện, nghề, nhà và lựa chọn tác động khác nhau.
+- **Ước mơ**: đầu ván mỗi người chọn 1 trong 3 lá (Đại gia, Gia đình hạnh phúc, Học giả, Sống khoẻ sống lâu, Người truyền cảm hứng, Cuộc đời cân bằng); khía cạnh của ước mơ được nhân đôi điểm.
+- **22 nghề, 3 hệ** (phổ thông / học nghề / đại học): mỗi nghề có lương, chỉ số tăng mỗi kỳ lương và quyền **thu phí dịch vụ** khi người khác trả tiền cho dịch vụ đó. Ca sĩ và YouTuber có lương tăng theo ★.
+- **3 ngã rẽ**: Đại học / Học nghề / Đi làm ngay → Gia đình / Sự nghiệp → Cống hiến / Làm giàu. Cùng các lựa chọn: kết hôn hay độc thân, mua nhà, tuổi 40, cách sống khi nghỉ hưu.
+- **Mọi vòng quay do người chơi bấm**: đi đường, mừng cưới, đầu tư, khởi nghiệp, giá bán nhà.
+- **Điểm Đời** = tài sản ròng ÷ 5 + điểm 4 khía cạnh + thưởng cân bằng.
+
+Chi tiết từng con số ở `MECHANICS.md`.
 
 ## Cấu trúc
 
@@ -39,13 +41,13 @@ Ván đang chơi được tự lưu trong trình duyệt. Mở lại trang và b
 
 | Vùng | Trên bàn cờ | Cảnh vật | Không khí |
 |---|---|---|---|
-| Hà Nội | Xuất phát → Tốt nghiệp / Nhận việc | Hồ Gươm, Tháp Rùa, cầu Thê Húc, đền Ngọc Sơn, Chùa Một Cột, Khuê Văn Các, hàng phượng đỏ, cổng làng | Buổi sáng |
+| Hà Nội | Xuất phát → Tốt nghiệp / Ra nghề / Nhận việc | Hồ Gươm, Tháp Rùa, cầu Thê Húc, đền Ngọc Sơn, Chùa Một Cột, Khuê Văn Các, xưởng học nghề, hàng phượng đỏ, cổng làng | Buổi sáng |
 | Hội An | Kết hôn | Dãy phố vàng, dây đèn lồng, Chùa Cầu, thuyền thắp đèn trên sông | Chiều vàng, đèn lồng sáng |
 | Đà Lạt | Mua nhà | Rừng thông, đồi hoa, biệt thự Pháp, cánh hoa bay | Sương mù se lạnh |
 | Vịnh | Ngã rẽ | Đảo đá vôi, thuyền buồm nâu | |
 | Sapa / Sài Gòn | Đường gia đình / Đường sự nghiệp | Ruộng bậc thang, nhà sàn, núi Fansipan / toà tháp chọc trời, tháp có sân đỗ trực thăng, đèn đường | Trời trong / nắng trưa |
 | Bà Nà | Tuổi 40 | Cầu Vàng có đôi bàn tay đá đỡ, lâu đài, mây trong thung lũng | Mây mù |
-| Phú Quốc | Nghỉ hưu | Bãi biển, rặng dừa, cầu tàu, thuyền thúng, tháp chùa 7 tầng | Hoàng hôn, đom đóm |
+| Phú Quốc | Đường cống hiến / Đường làm giàu → Nghỉ hưu | Bãi biển, rặng dừa, cầu tàu, thuyền thúng, tháp chùa 7 tầng | Hoàng hôn, đom đóm |
 
 Khi quân xe sang vùng mới, tên vùng hiện lên và bầu trời, nắng, sương chuyển dần sang không khí của vùng đó.
 
@@ -67,6 +69,7 @@ Script mở game trong Chromium (Playwright), thiết lập 3 người chơi b�
 
 | Step | Đo gì |
 |---|---|
+| `goal` | Người chơi chọn ước mơ trước lượt quay đầu tiên |
 | `move` | Quay 6 ở ngã rẽ, quân đi đúng 6 ô và token được vẽ ở ô mới |
 | `act` | Học phí đại học bị trừ (tự vay) và hiệu ứng ô dừng được áp dụng |
 | `hud` | Tên, tiền, lương, ★ của mọi người chơi và thẻ lượt hiển thị đúng state |
@@ -75,6 +78,8 @@ Script mở game trong Chromium (Playwright), thiết lập 3 người chơi b�
 | `player-spins` | Mọi lần quay trong ván đều đến từ người chơi bấm vòng quay, không có lần quay tự động nào |
 | `hot-seat` | Chuyển lượt sang người 2, người 2 chọn nhánh còn lại |
 | `retire` | Chơi hết ván tới khi mọi người nghỉ hưu và màn tổng kết hiện ra |
+| `life-aspects` | Điểm tổng kết đúng bằng tài sản + 4 khía cạnh + cân bằng |
+| `choices-and-careers` | Ván thử đi qua ít nhất 6 loại quyết định (ước mơ, ngã rẽ, nghề, kết hôn, nhà, tuổi 40, nghỉ hưu…) |
 | `no-errors` | Không có lỗi script trong trang |
 
 ## Quy trình làm

@@ -83,7 +83,7 @@
   }
 
   // ---------------- Terrain ----------------
-  const ISL = { a: 21, b: 23.5 };
+  const ISL = { a: 21.5, b: 29, zc: 1.3 };
   const LAKE = { x: -1.6, z: rowZ(1.1), rx: 6.6, rz: 1.55 };            // Hồ Gươm
   const BAY = { x: 5.6, z: rowZ(5.5), rx: 6.2, rz: 1.75 };              // vịnh
   const CANAL_X = 4.2, CANAL = { z0: BAY.z, z1: rowZ(2.75) };           // sông Hoài to the bay
@@ -91,7 +91,7 @@
   const SAPA = { x0: -15, x1: -1.6, z0: rowZ(4.4) + 1.35, z1: rowZ(6.5) - 1.35 };
   const CITY = { z0: rowZ(7.9) + 1.3, z1: rowZ(9.2) - 1.3 };
   function island(x, z) {
-    const e = Math.pow(Math.abs(x) / ISL.a, 4) + Math.pow(Math.abs(z) / ISL.b, 4) + (fbm(x * 0.11 + 11, z * 0.11 - 7) - 0.5) * 0.45;
+    const e = Math.pow(Math.abs(x) / ISL.a, 4) + Math.pow(Math.abs(z - ISL.zc) / ISL.b, 4) + (fbm(x * 0.11 + 11, z * 0.11 - 7) - 0.5) * 0.45;
     return smooth(1.1, 0.88, e);
   }
   const ell = (x, z, e) => ((x - e.x) / e.rx) ** 2 + ((z - e.z) / e.rz) ** 2;
@@ -210,8 +210,8 @@
     const glass = (tex) => new T.MeshStandardMaterial({ map: tex, metalness: 0.55, roughness: 0.18, envMap, envMapIntensity: 1.2 });
 
     // ---------- Terrain ----------
-    const TW = 70, TD = 76, SEG = quality === 'low' ? 150 : 230;
-    const tg = new T.PlaneGeometry(TW, TD, SEG, Math.round(SEG * TD / TW)); tg.rotateX(-Math.PI / 2);
+    const TW = 70, TD = 92, SEG = quality === 'low' ? 150 : 230;
+    const tg = new T.PlaneGeometry(TW, TD, SEG, Math.round(SEG * TD / TW)); tg.rotateX(-Math.PI / 2); tg.translate(0, 0, ISL.zc);
     const pos = tg.attributes.position, cols = new Float32Array(pos.count * 3), col = new T.Color(), c2 = new T.Color();
     const C = (h) => c2.set(h);
     for (let i = 0; i < pos.count; i++) {
@@ -234,7 +234,7 @@
     }
     tg.setAttribute('color', new T.BufferAttribute(cols, 3)); tg.computeVertexNormals();
     const detail = canvasTex(256, 256, (g, w) => { g.fillStyle = '#f0f0f0'; g.fillRect(0, 0, w, w); for (let i = 0; i < 5000; i++) { const v = 200 + Math.random() * 55 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(Math.random() * w, Math.random() * w, 2, 2); } });
-    detail.wrapS = detail.wrapT = T.RepeatWrapping; detail.repeat.set(28, 30);
+    detail.wrapS = detail.wrapT = T.RepeatWrapping; detail.repeat.set(28, 36);
     const terrain = new T.Mesh(tg, new T.MeshStandardMaterial({ vertexColors: true, map: detail, roughness: 0.95 }));
     terrain.receiveShadow = true; add(terrain);
 
@@ -288,7 +288,9 @@
       start: ['#3f9b83', '►'], payday: ['#d39f2a', '₫'], event: ['#b23a2e', '?'], happy: ['#cf5f82', '★'], baby: ['#2f9a9a', '✿'], tax: ['#62504a', '%'],
       invest: ['#8b5aa8', '↗'], gift: ['#c88a2c', '✉'], raise: ['#3b8f6c', '▲'], career: ['#5a6fb0', '⇄'], fork: ['#8a5a32', 'Y'],
     };
-    const look = (t) => (t.type === 'money' ? [t.cash >= 0 ? '#3b8f6c' : '#bf3b2f', t.cash >= 0 ? '+' : '−'] : STYLE[t.type] || ['#777', '']);
+    const ASP_LOOK = { love: ['#d9577a', '♥'], know: ['#3f7fc4', '◆'], health: ['#3f9a62', '✚'], comm: ['#c9971f', '★'] };
+    const mainAspect = (t) => ['love', 'know', 'health', 'comm'].reduce((b, k) => ((t[k] || 0) > (t[b] || 0) ? k : b), 'love');
+    const look = (t) => (t.type === 'happy' ? ASP_LOOK[mainAspect(t)] : t.type === 'money' ? [t.cash >= 0 ? '#3b8f6c' : '#bf3b2f', t.cash >= 0 ? '+' : '−'] : STYLE[t.type] || ['#777', '']);
     const faceTex = {};
     function face(color, glyph) {
       const k = color + glyph; if (faceTex[k]) return faceTex[k];
@@ -396,6 +398,18 @@
       g.add(mesh(new T.ConeGeometry(0.1, 0.45, 8), gold, 0, y + 0.2, 0));
       return g;
     }
+    function workshop() { // vocational workshop with a sawtooth roof and a gear sign
+      const g = new T.Group();
+      g.add(mesh(new T.BoxGeometry(1.8, 0.8, 1.1), mat('#c9c1b0'), 0, 0.4, 0));
+      for (let i = 0; i < 3; i++) { const s = new T.Shape(); s.moveTo(0, 0); s.lineTo(0.6, 0); s.lineTo(0, 0.38); s.lineTo(0, 0); const geo = new T.ExtrudeGeometry(s, { depth: 1.1, bevelEnabled: false }); geo.translate(-0.9 + i * 0.6, 0.8, -0.55); g.add(mesh(geo, mat(i % 2 ? '#5d7f99' : '#6b8fa8', { roughness: 0.5 }))); }
+      const door = mesh(new T.BoxGeometry(0.6, 0.55, 0.04), mat('#47566a'), 0, 0.28, 0.56, false); g.add(door);
+      const gear = new T.Group(); gear.position.set(0.55, 0.95, 0.6); g.add(gear);
+      gear.add(mesh(new T.TorusGeometry(0.16, 0.05, 8, 16), gold));
+      for (let k = 0; k < 8; k++) { const tooth = mesh(new T.BoxGeometry(0.08, 0.08, 0.06), gold, Math.cos(k * Math.PI / 4) * 0.23, Math.sin(k * Math.PI / 4) * 0.23, 0); tooth.rotation.z = k * Math.PI / 4; gear.add(tooth); }
+      animated.push({ update(dt) { gear.rotation.z -= dt * 0.8; } });
+      g.add(mesh(new T.CylinderGeometry(0.08, 0.1, 1.5, 10), mat('#8a7c6a'), -0.65, 1.1, -0.3));
+      return g;
+    }
     function villageGate() {
       const g = new T.Group();
       for (const x of [-1.15, 1.15]) g.add(mesh(new T.BoxGeometry(0.3, 1.9, 0.3), mat('#d6c6a2'), x, 0.95, 0));
@@ -406,15 +420,15 @@
     }
 
     // ---------- Stops: landmark + floating sign ----------
-    const STOP_PIECE = { grad: [khueVanCac, -2.3, 'TỐT NGHIỆP'], job: [officeTower, -2.2, 'NHẬN VIỆC'], marry: [weddingHall, -1.95, 'KẾT HÔN'], house: [dalatVilla, -1.9, 'MUA NHÀ'], mid: [banaCastle, 2.1, 'TUỔI 40'], retire: [() => towerPagoda(7), 2.2, 'NGHỈ HƯU'] };
+    const STOP_PIECE = { grad: [khueVanCac, 0, 2.3, 'TỐT NGHIỆP'], job: [officeTower, 3.0, 0.6, 'NHẬN VIỆC'], trade: [workshop, 0, -2.2, 'RA NGHỀ'], marry: [weddingHall, 0, -1.95, 'KẾT HÔN'], house: [dalatVilla, 0, -1.9, 'MUA NHÀ'], mid: [banaCastle, 0, 2.1, 'TUỔI 40'], retire: [() => towerPagoda(7), -2.7, 0.3, 'NGHỈ HƯU'] };
     L.TILES.forEach((t, i) => {
       if (t.type === 'stop') {
-        const [fn, dz, label] = STOP_PIECE[t.stop], p = tilePos[i];
-        const lm = fn(); const x = p.x + (t.stop === 'job' ? 3.0 : 0), z = p.z + (t.stop === 'job' ? 0.6 : dz); lm.position.set(x, Math.max(terrainH(x, z), 0.3), z); if (dz > 0) lm.rotation.y = Math.PI; add(lm); reserve(x, z, 1.4);
+        const [fn, dx, dz, label] = STOP_PIECE[t.stop], p = tilePos[i];
+        const lm = fn(); const x = p.x + dx, z = p.z + dz; lm.position.set(x, Math.max(terrainH(x, z), 0.3), z); if (dz > 0) lm.rotation.y = Math.PI; add(lm); reserve(x, z, 1.4);
         const top = new T.Box3().setFromObject(lm).max.y;
         const s = sign(label, 1.7); s.position.set(x, top + 0.4, z); add(s);
       }
-      if (t.type === 'start') { reserve(tilePos[i].x, tilePos[i].z, 2.2); const g = villageGate(); const ahead = tilePos[i].clone().addScaledVector(tangents[i], 1.7); ahead.y = terrainH(ahead.x, ahead.z); g.position.copy(ahead); g.scale.setScalar(0.9); reserve(ahead.x, ahead.z, 1.6); g.rotation.y = Math.atan2(-tangents[i].x, -tangents[i].z); add(g); }
+      if (t.type === 'start') { reserve(tilePos[i].x, tilePos[i].z, 2.2); const g = villageGate(); const ahead = tilePos[i].clone().addScaledVector(tangents[i], -1.5); ahead.y = terrainH(ahead.x, ahead.z); g.position.copy(ahead); g.scale.setScalar(0.9); reserve(ahead.x, ahead.z, 1.6); g.rotation.y = Math.atan2(-tangents[i].x, -tangents[i].z); add(g); }
       if (t.type === 'fork') {
         const g = new T.Group(); g.add(mesh(new T.CylinderGeometry(0.05, 0.06, 1.4, 8), wood, 0, 0.7, 0));
         L.TILES[i].next.forEach((n, k) => { const b = sign(L.TILES[n].branch.name, 1.5); b.position.set(0, 1.25 - k * 0.42, 0); g.add(b); });
@@ -583,11 +597,11 @@
       const ph = rnd() * 6; animated.push({ update(dt, t) { crown.rotation.z = Math.sin(t * 0.9 + ph) * 0.06; crown.rotation.x = Math.cos(t * 0.7 + ph) * 0.05; } });
     }
     for (let i = 0; i < (quality === 'low' ? 25 : 55); i++) {
-      const x = (rnd() - 0.5) * 36, z = rowZ(10.4) + 0.9 + rnd() * 5;
+      const x = (rnd() - 0.5) * 38, z = rowZ(10.6) + rnd() * 12;
       const h = terrainH(x, z); if (h > 0.25 && h < 1.6 && roadInfo(x, z).d > 1.3 && isFree(x, z, 0.4)) palm(x, z, 0.7 + rnd() * 0.4);
     }
-    for (let i = 0; i < 8; i++) { const a = Math.PI * (0.15 + rnd() * 0.7), x = Math.cos(a) * 20, z = Math.sin(a) * 25 - 0.5; const thung = mesh(new T.SphereGeometry(0.28, 14, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mat('#5b4426', { side: T.DoubleSide }), x, 0.15, z); add(thung); animated.push({ update(dt, t) { thung.position.y = 0.12 + Math.sin(t * 1.4 + i) * 0.03; } }); }
-    (function () { const x = -6, z0 = rowZ(10.4) + 3.0; for (let i = 0; i < 9; i++) { const z = z0 + i * 0.4; add(mesh(new T.BoxGeometry(0.6, 0.05, 0.36), mat('#8a6a46'), x, 0.42, z)); add(mesh(new T.CylinderGeometry(0.04, 0.04, 0.9, 6), wood, x - 0.27, 0.0, z)); add(mesh(new T.CylinderGeometry(0.04, 0.04, 0.9, 6), wood, x + 0.27, 0.0, z)); } })();
+    for (let i = 0; i < 8; i++) { const a = Math.PI * (0.15 + rnd() * 0.7), x = Math.cos(a) * 21, z = Math.sin(a) * 30 + 1.8; const thung = mesh(new T.SphereGeometry(0.28, 14, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mat('#5b4426', { side: T.DoubleSide }), x, 0.15, z); add(thung); animated.push({ update(dt, t) { thung.position.y = 0.12 + Math.sin(t * 1.4 + i) * 0.03; } }); }
+    (function () { const x = -5, z0 = 28.2; for (let i = 0; i < 9; i++) { const z = z0 + i * 0.4; add(mesh(new T.BoxGeometry(0.6, 0.05, 0.36), mat('#8a6a46'), x, 0.42, z)); add(mesh(new T.CylinderGeometry(0.04, 0.04, 0.9, 6), wood, x - 0.27, 0.0, z)); add(mesh(new T.CylinderGeometry(0.04, 0.04, 0.9, 6), wood, x + 0.27, 0.0, z)); } })();
 
     // ---------- Instanced vegetation everywhere else ----------
     const KINDS = {
@@ -601,7 +615,7 @@
     function treeAt(kind, x, z, s) { plan[kind].push([x, z, s]); reserve(x, z, 0.3 * s); }
     const N = quality === 'low' ? 600 : 1250; let tries = 0, placed = 0;
     while (placed < N && tries < N * 6) {
-      tries++; const x = (rnd() - 0.5) * 46, z = (rnd() - 0.5) * 50; const h = terrainH(x, z);
+      tries++; const x = (rnd() - 0.5) * 46, z = (rnd() - 0.5) * 60 + ISL.zc; const h = terrainH(x, z);
       if (h < 0.3 || island(x, z) < 0.98) continue; const r = roadInfo(x, z); if (!r || r.d < 1.7) continue;
       if (!isFree(x, z, 0.25)) continue;
       if (z > CITY.z0 - 0.3 && z < CITY.z1 + 0.3 && Math.abs(x) < 15) { if (rnd() < 0.85) continue; treeAt('bush', x, z, 1); placed++; continue; }
@@ -611,7 +625,7 @@
       if (dalat) kind = rnd() < 0.55 ? 'pine' : rnd() < 0.5 ? 'flower' : rnd() < 0.5 ? 'blossom' : 'bush';
       else if (h > 2.6) kind = rnd() < 0.7 ? 'pine' : 'bush';
       else if (z < rowZ(2.2) + 0.9) kind = rnd() < 0.15 ? 'flame' : rnd() < 0.55 ? 'round' : rnd() < 0.5 ? 'bush' : 'flower';
-      else if (z > rowZ(10.4) + 0.8) kind = rnd() < 0.6 ? 'bush' : 'round';
+      else if (z > rowZ(10.6)) kind = rnd() < 0.6 ? 'bush' : 'round';
       else kind = rnd() < 0.5 ? 'round' : rnd() < 0.4 ? 'pine' : rnd() < 0.5 ? 'bush' : 'flower';
       if (kind === 'flower') { for (let k = 0; k < 6; k++) plan.flower.push([x + (rnd() - 0.5) * 0.8, z + (rnd() - 0.5) * 0.8, 0.8 + rnd() * 0.5]); placed += 2; continue; }
       treeAt(kind, x, z, 0.7 + rnd() * 0.6); placed++;
@@ -649,7 +663,7 @@
       const pts = new T.Points(g, new T.PointsMaterial({ color, size, map: glowTex, transparent: true, depthWrite: false, blending: T.AdditiveBlending, opacity: 0.9 })); add(pts); return { pts, V, area };
     }
     const petals = quality === 'low' ? null : particles(160, '#ffc4d8', 0.18, [-15, 15, 0.6, 4, rowZ(3.3) + 0.6, rowZ(4.4) - 0.6]);
-    const flies = quality === 'low' ? null : particles(120, '#fff1a1', 0.16, [-16, 16, 0.6, 2.2, rowZ(10.4) - 1.5, rowZ(10.4) + 4]);
+    const flies = quality === 'low' ? null : particles(120, '#fff1a1', 0.16, [-16, 16, 0.6, 2.2, rowZ(10.6), rowZ(12.4) + 3]);
 
     // ---------- Atmosphere blending ----------
     const cur = { top: new T.Color(), horizon: new T.Color(), bottom: new T.Color(), sunC: new T.Color(), sunI: 1, elev: 40, az: 150, hs: new T.Color(), hg: new T.Color(), hi: 0.7, fog: new T.Color(), fn: 40, ff: 120, glow: 0.4, win: 0.2, exposure: 1 };
